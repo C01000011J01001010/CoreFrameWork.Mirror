@@ -1,10 +1,8 @@
-public enum ePriority
+
+namespace CoreEngine
 {
-
-}
-
-
-public interface IPriority
-{
-    public int Priority { get; }
+    public interface IPriority
+    {
+        public int Priority { get; }
+    }
 }

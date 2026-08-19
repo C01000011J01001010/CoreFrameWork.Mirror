@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace CoreEngine
 {
-    public static partial class Extentions
+    public static partial class ExtentionsGameObject
     {
         public static T GetOrAddComponent<T>(this GameObject target) where T : Component
         {
