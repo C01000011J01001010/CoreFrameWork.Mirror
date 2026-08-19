@@ -1,5 +1,5 @@
 {
-  "name": "CoreEngine For Architecture",
+  "name": "com.ycjun.core-framework",
   "version": "1.0.0",
   "displayName": "Icarus Core Framework",
   "description": "3-Tier Architecture, EventBus, and UpdateManager for Unity.",
