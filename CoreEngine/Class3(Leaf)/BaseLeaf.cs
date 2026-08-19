@@ -23,6 +23,12 @@ namespace CoreEngine
         // 유니티 에디터에서 값이 변경되거나, 씬에 배치될 때 자동 호출되는 함수
         protected virtual void OnValidate()
         {
+            // [방어막 1] 유니티 에디터가 코드를 막 컴파일 중이거나, 객체가 파괴되는 중일 때 접근 방지
+            if (this == null) return;
+
+            // [방어막 2] 이 객체가 씬에 존재하는 객체가 아니라 '프리팹 에셋' 파일 자체라면 로직 실행 중단
+            if (!gameObject.scene.IsValid()) return;
+
             // 아직 스코프가 None(미지정) 상태일 때만 자동 추론을 작동시킵니다.
             if (myScope == ContextScope.None)
             {
