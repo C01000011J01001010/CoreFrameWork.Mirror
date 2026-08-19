@@ -4,6 +4,7 @@ using CoreEngine.EventBus;
 using CoreEngine.Test;
 using CoreEngine.Director;
 using CoreEngine.Loading;
+using CoreEngine.SceneManagement;
 
 namespace CoreEngine
 {
@@ -31,6 +32,12 @@ namespace CoreEngine
     [DefaultExecutionOrder((int)ExecutionOrder.ProjectContext)]
     public class ProjectContext : BaseContext<ProjectContext>
     {
+        [SerializeField] private SceneReference _globalScene;
+        public static SceneReference GlobalScene => Inst._globalScene;
+
+        [SerializeField] private SceneReference _firstScene;
+        public static SceneReference FirstScene => Inst._firstScene;
+
         protected override ContextScope myScope => ContextScope.Project;
 
         private IEnumerator Start()
@@ -51,7 +58,7 @@ namespace CoreEngine
             }
             else
             {
-                EventBus<SceneLoadRequestEvent>.Publish(new SceneLoadRequestEvent(Constants.SCENE_SampleScene));
+                EventBus<SceneLoadRequestEvent>.Publish(new SceneLoadRequestEvent(FirstScene));
             }
         }
     }

@@ -1,5 +1,6 @@
 
 using CoreEngine.EventBus;
+using CoreEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,6 +15,9 @@ namespace CoreEngine.Test
     [DefaultExecutionOrder((int)ExecutionOrder.TestDriver)] // 유니티 엔진 내에서 무조건 최우선으로 Awake() 실행 보장
     public class TestDriver : Singleton<TestDriver> // 1개만 존재해야하니 싱글톤으로 만들되, 절대 싱글톤 접근 사용 안함
     {
+        [SerializeField] private SceneReference _globalScene;
+        public static SceneReference GlobalScene => Inst._globalScene;
+
         public static Scene TestScene { get; private set; } = default;
 
         public static bool IsSceneTest => TestScene.IsValid() && TestScene.isLoaded;
@@ -72,7 +76,7 @@ namespace CoreEngine.Test
         private IEnumerator TestBootstrapSequence()
         {
             // 1. [코어 로드] 전역 씬 Additive 로드
-            SceneManager.LoadSceneAsync(Constants.SCENE_GlobalScene, LoadSceneMode.Additive);
+            SceneManager.LoadSceneAsync(GlobalScene, LoadSceneMode.Additive);
 
             // SceneContext가 초기화 될때까지 대기
             if (SceneContext.Inst != null)

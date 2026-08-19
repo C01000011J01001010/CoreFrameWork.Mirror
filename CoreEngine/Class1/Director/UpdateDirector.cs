@@ -208,12 +208,14 @@ namespace CoreEngine.Director
         // SceneContext가 초기화를 완료한 후 호출할 진입점
         internal static void StartTicking()
         {
+            if (Inst == null) return;
             Inst._isTickingAllowed = true;
             UtilityLog.Log("[UpdateManager] 업데이트 루프가 가동되었습니다.", LogColor.Green);
         }
 
         internal static void StopTicking()
         {
+            if (Inst == null) return;
             Inst._isTickingAllowed = false;
             UtilityLog.Log("[UpdateManager] 업데이트 루프가 멈췄습니다.", LogColor.Green);
         }

@@ -30,7 +30,7 @@ namespace CoreEngine
                 // 하이라키에 올려두는 순간 즉시 판별됩니다.
                 string mySceneName = gameObject.scene.name;
 
-                if (mySceneName == Constants.SCENE_GlobalScene)
+                if (mySceneName == ProjectContext.GlobalScene)
                 {
                     myScope = ContextScope.Project;
                     // 에디터 인스펙터 창의 값을 강제로 갱신하고 저장 상태로 만듭니다.
