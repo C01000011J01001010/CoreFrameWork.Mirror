@@ -1,6 +1,6 @@
 {
   "name": "com.ycjun.core-framework",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "displayName": "Icarus Core Framework",
   "description": "3-Tier Architecture, EventBus, and UpdateManager for Unity.",
   "unity": "2022.3",

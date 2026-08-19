@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
-public interface IModuleHub : IInitialize, ILateInitialize
+namespace CoreEngine
 {
+    public interface IModuleHub : IInitialize, ILateInitialize
+    {
+    }
 }

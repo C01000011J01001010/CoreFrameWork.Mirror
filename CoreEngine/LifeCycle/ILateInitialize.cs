@@ -1,6 +1,9 @@
 using System.Collections;
 
-public interface ILateInitialize
-{ 
-    IEnumerator LateInitialize(); 
+namespace CoreEngine
+{
+    public interface ILateInitialize
+    {
+        IEnumerator LateInitialize();
+    }
 }
