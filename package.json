@@ -1,0 +1,10 @@
+{
+  "name": "CoreEngine For Architecture",
+  "version": "1.0.0",
+  "displayName": "Icarus Core Framework",
+  "description": "3-Tier Architecture, EventBus, and UpdateManager for Unity.",
+  "unity": "2022.3",
+  "dependencies": {
+    "com.unity.cinemachine": "2.9.7"
+  }
+}
