@@ -1,0 +1,1 @@
+public interface IScenedGameObject : IInitialize, ILateInitialize, IPriority { }
