@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using CoreEngine.Manager; // BaseManager 경로
 
 namespace CoreEngine.Pool
 {
@@ -52,6 +51,7 @@ namespace CoreEngine.Pool
             _isShuttingDown = true;
         }
 
+        #region Initialize & Prewarm
         private void InitializeHandlers()
         {
             _handlers.Clear();
@@ -97,10 +97,10 @@ namespace CoreEngine.Pool
                 yield return null;
             }
         }
+        #endregion
 
-        // ==========================================
-        // [외부 노출 API] - 실제 연산은 Handler에 위임
-        // ==========================================
+        #region 외부 노출 API : 실제 연산은 Handler에 위임
+
         public GameObject Spawn(TPoolType type, Vector3 position)
         {
             if (!_handlers.TryGetValue(type, out var handler)) return null;
@@ -111,6 +111,7 @@ namespace CoreEngine.Pool
         {
             return Spawn(type, new Vector3(position2D.x, position2D.y, 0));
         }
+        #endregion
 
 #if UNITY_EDITOR
         private HashSet<TPoolType> ___typeCheckSet = new HashSet<TPoolType>();

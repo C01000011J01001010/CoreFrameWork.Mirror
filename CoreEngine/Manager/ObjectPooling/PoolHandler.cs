@@ -78,6 +78,7 @@ namespace CoreEngine.Pool
 
         #endregion
 
+        #region PoolManager에 호출 위임
         public GameObject Spawn(Vector3 position)
         {
             GameObject obj = _pool.Get();
@@ -103,5 +104,6 @@ namespace CoreEngine.Pool
         {
             _pool.Clear();
         }
+        #endregion
     }
 }
