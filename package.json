@@ -1,8 +1,8 @@
 {
   "name": "com.ycjun.core-framework",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "displayName": "CoreFramework",
-  "description": "3-Tier Architecture, EventBus, and UpdateManager for Unity.",
+  "description": "3-Tier Architecture, EventBus, and Update Management for Unity.",
   "unity": "2022.3",
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "3.2.1",
