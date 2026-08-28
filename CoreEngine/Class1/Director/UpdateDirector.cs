@@ -99,7 +99,7 @@ namespace CoreEngine
 
 namespace CoreEngine.Director
 {
-    [DefaultExecutionOrder((int)ExecutionOrder.Director)]
+    [DefaultExecutionOrder((int)ExecutionOrder.UpdateDirector)]
     internal sealed class UpdateDirector : BaseDirector<UpdateDirector>
     {
         #region Runner

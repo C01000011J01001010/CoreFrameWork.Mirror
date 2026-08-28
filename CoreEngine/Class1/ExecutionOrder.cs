@@ -11,7 +11,9 @@ namespace CoreEngine
         #endregion
 
         #region 게임 시작을 위한 인프라(뼈와 살)
-        Director = -80,
+        UpdateDirector = -90,
+        TimeDirector = -80,
+        SceneFlowDirector = -70,
         #endregion
 
         #region 게임에 옷입히기

@@ -33,7 +33,7 @@ namespace CoreEngine.Director
 {
     
 
-    [DefaultExecutionOrder((int)ExecutionOrder.Director)]
+    [DefaultExecutionOrder((int)ExecutionOrder.SceneFlowDirector)]
     internal sealed class SceneFlowDirector : BaseDirector<SceneFlowDirector>
     {
         private static Scene currentScene;

@@ -12,7 +12,7 @@ namespace CoreEngine
         StretchLeft, StretchCenter, StretchRight, StretchAll
     }
 
-    public static partial class Extensions
+    public static class UiAnchorExtentions
     {
         private struct Anchors
         {
