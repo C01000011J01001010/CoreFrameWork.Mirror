@@ -1,7 +1,7 @@
-using UnityEditor;
+using CoreEngine.LevelDesign;
 using UnityEngine;
 
-namespace CoreEngine.Environment
+namespace UnityEditor.LevelDesign
 {
     [CustomEditor(typeof(SpaceZoneCore))]
     public class SpaceZoneCoreEditor : Editor

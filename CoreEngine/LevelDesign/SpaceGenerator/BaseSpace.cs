@@ -1,8 +1,8 @@
 using UnityEngine;
 
-namespace CoreEngine.Environment
+namespace CoreEngine.LevelDesign
 {
-    public abstract class BaseEnvironment : MonoBehaviour
+    public abstract class BaseSpace : MonoBehaviour
     {
         protected abstract string FolderName { get;}
         protected virtual void Awake()

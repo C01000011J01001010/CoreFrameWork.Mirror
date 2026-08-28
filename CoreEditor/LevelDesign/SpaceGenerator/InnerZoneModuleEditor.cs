@@ -1,7 +1,8 @@
+using CoreEngine.LevelDesign;
 using UnityEditor;
 using UnityEngine;
 
-namespace CoreEngine.Environment
+namespace CoreEditor.LevelDesign
 {
     [CustomEditor(typeof(InnerZoneModule))]
     public class InnerZoneModuleEditor : Editor

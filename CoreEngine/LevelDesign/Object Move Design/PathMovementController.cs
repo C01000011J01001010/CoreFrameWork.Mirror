@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CoreEngine.LevelDesign
 {
-    public class PathMovementController : MonoBehaviour //, ITickable
+    public class PathMovementController : CoreMonoBehaviour, ITickable, IFixedTickable
     {
         private enum PathState { Moving, Waiting, Finished }
 
@@ -58,8 +58,13 @@ namespace CoreEngine.LevelDesign
 
         private Transform _runtimeReferenceParent;
 
-        private void OnEnable()
+        public TickGroup TickGroup => TickGroup.Object;
+
+        public FixedTickGroup FixedTickGroup => FixedTickGroup.Physics;
+
+        protected override void OnEnable()
         {
+            base.OnEnable();
             if (!_isParentTracked)
             {
                 _lastGhostParentRef = isPathRelativeToObject ? transform : transform.parent;
@@ -98,6 +103,16 @@ namespace CoreEngine.LevelDesign
 
         public void Tick(float deltaTime)
         {
+            if (updateMode == UpdateMode.Transform) OnTick(deltaTime);
+        }
+
+        public void FixedTick(float fixedDeltaTime)
+        {
+            if (updateMode == UpdateMode.Rigidbody) OnTick(fixedDeltaTime);
+        }
+
+        protected void OnTick(float deltaTime)
+        {
             if (_currentState == PathState.Finished) return;
 
             if (_currentState == PathState.Waiting)
@@ -109,9 +124,6 @@ namespace CoreEngine.LevelDesign
 
             if (_currentState == PathState.Moving) ProcessMovement(deltaTime);
         }
-
-        private void Update() { if (updateMode == UpdateMode.Transform) Tick(Time.deltaTime); }
-        private void FixedUpdate() { if (updateMode == UpdateMode.Rigidbody) Tick(Time.fixedDeltaTime); }
 
         private void ProcessMovement(float dt)
         {
@@ -369,6 +381,8 @@ namespace CoreEngine.LevelDesign
 #endif
             _coordTransformer.SetWorldPositionAndRotation(pt, wPos, wRot, Application.isPlaying ? _runtimeReferenceParent : _lastGhostParentRef, useRelativeCoordinates);
         }
+
+        
         #endregion
     }
 }

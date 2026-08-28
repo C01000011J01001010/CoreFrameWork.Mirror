@@ -1,7 +1,8 @@
+using CoreEngine.LevelDesign;
 using System;
 using UnityEngine;
 
-namespace CoreEngine.Environment
+namespace CoreEngine.LevelDesign
 {
     /// <summary>
     /// [모듈 조립 시스템의 코어]
@@ -9,7 +10,7 @@ namespace CoreEngine.Environment
     /// </summary>
     [ExecuteAlways]
     [RequireComponent(typeof(BoxCollider))]
-    public class SpaceZoneCore : BaseEnvironment
+    public class SpaceZoneCore : BaseSpace
     {
         [HideInInspector] public Vector3 zoneSize = new Vector3(10f, 10f, 10f);
 

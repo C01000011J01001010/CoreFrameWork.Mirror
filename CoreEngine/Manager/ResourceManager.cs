@@ -10,10 +10,12 @@ namespace CoreEngine.Manager
     /// <summary>
     /// Addressable 에셋 로드 및 메모리 관리를 전담하는 순수 범용 프레임워크 매니저
     /// </summary>
-    public class ResourceManager : BaseManager
+    public class ResourceManager : BaseManager, IPriority
     {
         // 싱글톤 캐싱 (유저님의 Hub/Facade 환경에 맞춰 접근 방식을 변형하셔도 좋습니다)
         public static ResourceManager Inst { get; private set; }
+
+        public int Priority => (int)ManagerPriority.Infrastructure;
 
         // 🌟 핵심: 제네릭 타입을 섞어서 보관하기 위해 비제네릭 AsyncOperationHandle 사용
         // 1. 공용 저장소 (게임 종료 시까지 유지)
@@ -91,6 +93,44 @@ namespace CoreEngine.Manager
                 {
                     Debug.LogError($"[ResourceManager] 에셋 로드 실패: {address}");
                     handleDict.Remove(address); // 실패 시 딕셔너리에서 지워 재시도 가능하게 함
+                }
+            };
+        }
+
+        /// <summary>
+        /// 라벨(Label)을 통해 다수의 공용 에셋을 한 번에 비동기 로드합니다.
+        /// </summary>
+        public void LoadGlobalAssetsByLabelAsync<T>(string label, Action<IList<T>> onComplete) where T : UnityEngine.Object
+        {
+            // 1. 이미 캐시에 라벨 로드 기록이 있는지 검사
+            if (_globalHandles.TryGetValue(label, out AsyncOperationHandle existingHandle))
+            {
+                if (existingHandle.IsDone)
+                {
+                    onComplete?.Invoke(existingHandle.Result as IList<T>);
+                }
+                else
+                {
+                    existingHandle.Completed += (op) => onComplete?.Invoke(op.Result as IList<T>);
+                }
+                return;
+            }
+
+            // 2. 캐시에 없다면 라벨로 다중 로드 요청
+            // 두 번째 인자(callback)를 null로 주면, 개별 콜백 대신 최종 완성된 IList<T>만 반환받습니다.
+            var newHandle = Addressables.LoadAssetsAsync<T>(label, null);
+            _globalHandles.Add(label, newHandle);
+
+            newHandle.Completed += (op) =>
+            {
+                if (op.Status == AsyncOperationStatus.Succeeded)
+                {
+                    onComplete?.Invoke(op.Result);
+                }
+                else
+                {
+                    Debug.LogError($"[ResourceManager] 라벨 기반 에셋 로드 실패: {label}");
+                    _globalHandles.Remove(label);
                 }
             };
         }

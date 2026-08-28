@@ -3,11 +3,11 @@
 using UnityEditor;
 #endif
 
-namespace CoreEngine.Environment
+namespace CoreEngine.LevelDesign
 {
     [ExecuteAlways]
     [RequireComponent(typeof(SpaceZoneCore))]
-    public class InnerZoneModule : BaseEnvironment
+    public class InnerZoneModule : BaseSpace
     {
         [HideInInspector][SerializeField] private float _zoneA_StartY = 6f;
         [HideInInspector][SerializeField] private float _zoneB_StartXAbs = 3f;

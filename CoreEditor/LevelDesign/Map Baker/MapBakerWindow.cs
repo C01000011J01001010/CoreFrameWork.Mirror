@@ -1,9 +1,9 @@
 ﻿#if UNITY_EDITOR
+using CoreEngine.LevelDesign;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
 
-namespace CoreEngine.LevelDesign.Editor
+namespace CoreEditor.LevelDesign
 {
     public class MapBakerWindow : EditorWindow
     {

@@ -77,16 +77,22 @@ namespace CoreEngine.Hub
             yield return base.Initialize();
 
             // 초기화 열차는 이미 떠났음을 알림
-            // Initialize -> LateInitialize 사이에 추가되는 Module 이 LateInitialize만 실행하는것 방지
             _isInitStarted = true;
-            _startInitModules = moduleDict.Values.ToArray();
 
-            foreach(var module in _startInitModules)
+            // IPriority를 상속받은 객체는 자신의 Priority 값으로 정렬하고,
+            // 상속받지 않은 객체는 int.MaxValue를 부여하여 무조건 맨 뒤(후순위)로 밀어냄
+            _startInitModules = moduleDict.Values
+                .OrderBy(m => m is IPriority p ? p.Priority : int.MaxValue)
+                .ToArray();
+
+            foreach (var module in _startInitModules)
             {
-                yield return module?.Initialize();
-                yield return null;
+                if (module != null)
+                {
+                    yield return module.Initialize();
+                }
+                yield return null; // 1프레임 대기 (화면 멈춤 방지)
             }
-            
         }
 
         public override IEnumerator LateInitialize()

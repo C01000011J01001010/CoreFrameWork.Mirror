@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1351432054095308934}
   - component: {fileID: 5760877599976662602}
   m_Layer: 0
-  m_Name: SceneCotext
+  m_Name: SceneContext
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -95,7 +95,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3914501553381721498, guid: 2249746ac62ee05489f2be0a29440687, type: 3}
       propertyPath: m_Name
-      value: SceneTester
+      value: SceneTestDriver
       objectReference: {fileID: 0}
     - target: {fileID: 8073195321966545389, guid: 2249746ac62ee05489f2be0a29440687, type: 3}
       propertyPath: m_LocalPosition.x

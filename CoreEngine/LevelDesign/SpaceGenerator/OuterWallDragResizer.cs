@@ -1,6 +1,7 @@
+using CoreEngine.LevelDesign;
 using UnityEngine;
 
-namespace CoreEngine.Environment
+namespace CoreEngine.LevelDesign
 {
     /// <summary>
     /// [모듈형 확장 플러그인]
@@ -10,7 +11,7 @@ namespace CoreEngine.Environment
     [ExecuteAlways]
     [RequireComponent(typeof(SpaceZoneCore))]
     [RequireComponent(typeof(OuterWallModule))] // 요구사항 반영: 외벽 생성 모듈 필수 제약(Require)
-    public class OuterWallDragResizer : BaseEnvironment
+    public class OuterWallDragResizer : BaseSpace
     {
         private SpaceZoneCore _core;
 

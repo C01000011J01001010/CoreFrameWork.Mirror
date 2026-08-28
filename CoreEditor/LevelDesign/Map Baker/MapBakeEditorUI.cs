@@ -2,9 +2,9 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using CoreEditor; // 🌟 갱신된 범용 에디터 유틸리티 네임스페이스 참조
+using CoreEngine.LevelDesign;
 
-namespace CoreEngine.LevelDesign.Editor
+namespace CoreEditor.LevelDesign
 {
     public static class MapBakeEditorUI
     {

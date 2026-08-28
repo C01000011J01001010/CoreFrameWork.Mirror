@@ -980,7 +980,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SystemLoadingScreen
   canvasGroup: {fileID: 2654268487238487406}
-  loadingImage: {fileID: 2639505920815538153}
+  loadingImage: {fileID: 7601024343789540530}
   loadingSlider: {fileID: 7948572480172318629}
   loadingText: {fileID: 4403986292118369575}
   rotationSpeed: -360

@@ -7,8 +7,10 @@ using CoreEngine.Utility; // JsonSerializer (및 Binary) 사용
 
 namespace CoreEngine.Manager
 {
-    public class DataManager : BaseManager
+    public class DataManager : BaseManager, IPriority
     {
+        public int Priority => (int)ManagerPriority.Infrastructure;
+
         //public GraphicOptionValues SavedGraphicOption { get; private set; }
 
         public override IEnumerator Initialize()

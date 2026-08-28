@@ -1,8 +1,7 @@
 using UnityEditor;
-using UnityEngine;
-using System.IO;
+using CoreEngine.LevelDesign;
 
-namespace CoreEngine.LevelDesign.Editor
+namespace CoreEditor.LevelDesign
 {
     [CustomEditor(typeof(MapBaker))]
     public class MapBakerEditor : UnityEditor.Editor

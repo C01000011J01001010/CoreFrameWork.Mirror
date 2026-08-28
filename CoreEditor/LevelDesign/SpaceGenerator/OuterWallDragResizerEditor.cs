@@ -1,7 +1,8 @@
 using UnityEditor;
 using UnityEngine;
+using CoreEngine.LevelDesign;
 
-namespace CoreEngine.Environment
+namespace CoreEditor.LevelDesign
 {
     /// <summary>
     /// OuterWallDragResizer 컴포넌트의 유니티 인스펙터 및 씬 뷰(Scene View) 조작을 커스터마이징하는 클래스입니다.

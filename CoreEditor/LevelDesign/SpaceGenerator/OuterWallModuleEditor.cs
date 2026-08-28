@@ -1,7 +1,8 @@
 using UnityEditor;
 using UnityEngine;
+using CoreEngine.LevelDesign;
 
-namespace CoreEngine.Environment
+namespace CoreEditor.LevelDesign
 {
     [CustomEditor(typeof(OuterWallModule))]
     public class OuterWallModuleEditor : Editor
