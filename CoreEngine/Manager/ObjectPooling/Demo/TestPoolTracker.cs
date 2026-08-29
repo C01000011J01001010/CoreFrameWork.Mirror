@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CoreEngine.Pool.Test
+namespace CoreEngine.Manager.Pool.Test
 {
     /// <summary>
     /// 스폰 버튼이 생성한 객체를 디스폰 버튼이 순차적으로 찾아서 꺼낼 수 있도록 돕는 테스트 전용 메모장

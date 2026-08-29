@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 
-namespace CoreEngine.Pool
+namespace CoreEngine.Manager.Pool
 {
     /// <summary>
     /// 순수 C#으로 분리된 풀링 논리 처리기 (부품)

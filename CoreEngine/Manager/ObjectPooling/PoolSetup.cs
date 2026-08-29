@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace CoreEngine.Pool
+namespace CoreEngine.Manager.Pool
 {
     [Serializable]
     public class PoolSetup<TPoolType> where TPoolType : Enum

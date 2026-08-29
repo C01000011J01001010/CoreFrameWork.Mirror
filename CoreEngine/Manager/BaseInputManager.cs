@@ -14,7 +14,6 @@ namespace CoreEngine.Manager
     {
         protected TInputAction inputAction { get; private set; }
 
-
         protected override void OnEnable()
         {
             base.OnEnable();

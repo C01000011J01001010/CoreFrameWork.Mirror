@@ -2,8 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using CoreEngine.Manager.Pool;
 
-namespace CoreEngine.Pool
+namespace CoreEngine.Manager
 {
     /// <summary>
     /// 3계층 아키텍처의 통제를 받는 풀링 매니저 (Global / Scene 구분 불필요)

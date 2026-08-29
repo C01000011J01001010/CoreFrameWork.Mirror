@@ -1,6 +1,6 @@
 
 
-namespace CoreEngine.Pool.Test
+namespace CoreEngine.Manager.Pool.Test
 {
     public enum TestPoolType
     {
