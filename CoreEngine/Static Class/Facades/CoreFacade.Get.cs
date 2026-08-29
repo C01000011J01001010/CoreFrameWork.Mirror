@@ -5,7 +5,7 @@ using CoreEngine.Hub;
 using CoreEngine.Manager.Culling;
 using UnityEngine;
 
-namespace CoreEngine
+namespace CoreEngine.Facades
 {
     /// <summary>
     /// 이카루스 프레임워크의 최상위 창구(Facade) 클래스입니다.

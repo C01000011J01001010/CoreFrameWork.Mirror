@@ -1,7 +1,7 @@
 ﻿using CoreEngine.EventBus;
 using UnityEngine;
 
-namespace CoreEngine.Utility
+namespace CoreEngine.Extentions
 {
     public static class TickRegistrationExtensions
     {

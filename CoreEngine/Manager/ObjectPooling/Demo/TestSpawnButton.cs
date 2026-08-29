@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
+using CoreEngine.Facades;
+using CoreEngine.Helpers;
 
 namespace CoreEngine.Pool.Test
 {
@@ -22,7 +24,7 @@ namespace CoreEngine.Pool.Test
 
             if (poolManager == null)
             {
-                UtilityLog.Log("[TestSpawnButton] TestObjectPoolManager가 Hub에 등록되지 않았습니다.");
+                LogHelper.Log("[TestSpawnButton] TestObjectPoolManager가 Hub에 등록되지 않았습니다.");
                 return;
             }
 

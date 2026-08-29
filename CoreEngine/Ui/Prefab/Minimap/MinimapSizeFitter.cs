@@ -1,4 +1,5 @@
 using CoreEngine;
+using CoreEngine.Helpers;
 using UnityEngine;
 
 namespace CoreEngine.Ui
@@ -29,7 +30,7 @@ namespace CoreEngine.Ui
         {
             if(_targetRectTransforms == null || _targetRectTransforms.Length < 1)
             {
-                UtilityLog.Log("[MinimapSizeFitter] 타겟 UI 요소가 할당되지 않았습니다.", LogColor.Yellow);
+                LogHelper.Log("[MinimapSizeFitter] 타겟 UI 요소가 할당되지 않았습니다.", LogColor.Yellow);
                 return;
             }
 

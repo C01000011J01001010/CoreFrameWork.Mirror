@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace CoreEngine
+namespace CoreEngine.Helpers
 {
-    public static class UtilitySystem
+    public static class SystemHelper
     {
         public static bool isUnityNull<T>(T obj)
         {

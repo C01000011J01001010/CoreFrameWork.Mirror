@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using CoreEngine.Extentions;
 using CoreEngine.Director; // BaseDirector 상속
 using CoreEngine.EventBus;
-using CoreEngine.Utility;
 
 namespace CoreEngine.TimeSystem
 {

@@ -1,4 +1,5 @@
 ﻿using CoreEngine;
+using CoreEngine.Helpers;
 using System.Collections;
 using UnityEditor;
 using UnityEngine;
@@ -41,7 +42,7 @@ namespace CoreEngine
 
         public override IEnumerator Initialize()
         {
-            UtilityLog.LogFunctionCallCount(this);
+            LogHelper.LogFunctionCallCount(this);
 
             // 1. 부모(BaseContext)의 전체 초기화 시퀀스를 먼저 완주합니다. 
             // (ManagerHub -> ActorHubs -> UiHub 순차 로드 완료 대기)

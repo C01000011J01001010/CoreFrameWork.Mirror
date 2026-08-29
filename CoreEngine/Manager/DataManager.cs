@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections;
 using UnityEngine;
 using CoreEngine.Data; // PathManager 사용
-using CoreEngine.Utility; // JsonSerializer (및 Binary) 사용
+using CoreEngine.Helpers; // JsonSerializer (및 Binary) 사용
 
 namespace CoreEngine.Manager
 {

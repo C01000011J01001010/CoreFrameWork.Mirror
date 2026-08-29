@@ -2,13 +2,14 @@
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using CoreEngine.Extentions;
 
-namespace CoreEngine
+namespace CoreEngine.Helpers
 {
     /// <summary>
     /// 구조체 <-> 바이트 배열 변환을 전담하는 직렬화 유틸리티
     /// </summary>
-    public static class BinarySerializer
+    public static class BinarySerializerHelper
     {
         public static byte[] Struct2ByteArray<T>(this T instance)
         where T : struct

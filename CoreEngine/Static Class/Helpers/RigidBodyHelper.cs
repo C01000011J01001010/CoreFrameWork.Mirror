@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace CoreEngine
+namespace CoreEngine.Helpers
 {
-    public static class UtilityRigidBody
+    public static class RigidBodyHelper
     {
         /// <summary>
         /// Rigidbody를 주어진 방향으로 부드럽고 안전하게 회전시킵니다. (짐벌락 방지 및 물리 충돌 방지)

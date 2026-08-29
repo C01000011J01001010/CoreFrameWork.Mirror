@@ -1,5 +1,6 @@
 ﻿using CoreEngine.EventBus;
 using System.Collections;
+using CoreEngine.Helpers;
 using System.Linq;
 using UnityEngine;
 
@@ -11,12 +12,12 @@ namespace CoreEngine.Hub
 
         public override IEnumerator Initialize()
         {
-            UtilityLog.LogFunctionCallStart(this);
+            LogHelper.LogFunctionCallStart(this);
             return base.Initialize();
         }
         public override IEnumerator LateInitialize()
         {
-            UtilityLog.LogFunctionCallStart(this);
+            LogHelper.LogFunctionCallStart(this);
             yield return base.LateInitialize();
 
             //TODO: 씬마다 HUD만 활성화시키는 기능 추가해야함

@@ -2,12 +2,12 @@
 using UnityEngine;
 using Newtonsoft.Json; // 패키지 매니저에서 설치한 Newtonsoft.Json 사용
 
-namespace CoreEngine.Utility
+namespace CoreEngine.Helpers
 {
     /// <summary>
     /// 객체 <-> JSON 문자열 변환을 전담하는 직렬화 유틸리티
     /// </summary>
-    public static class JsonSerializer
+    public static class JsonSerializerHelper
     {
         // 1. 객체 -> JSON 문자열 변환
         public static string ToJson<T>(this T obj)

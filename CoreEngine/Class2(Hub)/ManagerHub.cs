@@ -1,5 +1,6 @@
 ﻿
 using System.Collections;
+using CoreEngine.Helpers;
 
 namespace CoreEngine.Hub
 {
@@ -9,13 +10,13 @@ namespace CoreEngine.Hub
 
         public override IEnumerator Initialize()
         {
-            UtilityLog.LogFunctionCallStart(this);
+            LogHelper.LogFunctionCallStart(this);
             return base.Initialize();
         }
 
         public override IEnumerator LateInitialize()
         {
-            UtilityLog.LogFunctionCallStart(this);
+            LogHelper.LogFunctionCallStart(this);
             return base.LateInitialize();
         }
     }

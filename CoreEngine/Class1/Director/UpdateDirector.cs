@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using CoreEngine.Helpers;
 
 namespace CoreEngine
 {
@@ -133,14 +134,14 @@ namespace CoreEngine.Director
                 if (target is UnityEngine.Object unityObj && unityObj == null)
                 {
                     // 💥 개발 중에 발생하면 반드시 고쳐야 할 버그입니다!
-                    UtilityLog.Log($"[UpdateManager] 시스템 오류: 틱 리스트에 Destroy된 객체가 남아있습니다.", LogColor.Red);
+                    LogHelper.Log($"[UpdateManager] 시스템 오류: 틱 리스트에 Destroy된 객체가 남아있습니다.", LogColor.Red);
                     _pendingRemoves.Add(target);
                     return true;
                 }
                 // 2. 일반 C# 객체인 경우
                 else if (target == null)
                 {
-                    UtilityLog.Log($"[UpdateManager] 시스템 오류: 틱 리스트에 Null 객체가 있습니다.", LogColor.Red);
+                    LogHelper.Log($"[UpdateManager] 시스템 오류: 틱 리스트에 Null 객체가 있습니다.", LogColor.Red);
                     _pendingRemoves.Add(target);
                     return true;
                 }
@@ -210,14 +211,14 @@ namespace CoreEngine.Director
         {
             if (Inst == null) return;
             Inst._isTickingAllowed = true;
-            UtilityLog.Log("[UpdateManager] 업데이트 루프가 가동되었습니다.", LogColor.Green);
+            LogHelper.Log("[UpdateManager] 업데이트 루프가 가동되었습니다.", LogColor.Green);
         }
 
         internal static void StopTicking()
         {
             if (Inst == null) return;
             Inst._isTickingAllowed = false;
-            UtilityLog.Log("[UpdateManager] 업데이트 루프가 멈췄습니다.", LogColor.Green);
+            LogHelper.Log("[UpdateManager] 업데이트 루프가 멈췄습니다.", LogColor.Green);
         }
 
         private void OnEnable()

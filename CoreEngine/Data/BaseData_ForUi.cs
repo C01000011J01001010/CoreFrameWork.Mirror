@@ -1,4 +1,5 @@
 using UnityEngine;
+using CoreEngine.Extentions;
 
 namespace CoreEngine.Data
 {

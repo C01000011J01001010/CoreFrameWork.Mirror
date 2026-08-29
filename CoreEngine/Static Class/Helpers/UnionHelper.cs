@@ -1,13 +1,13 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace CoreEngine
+namespace CoreEngine.Helpers
 {
     // Union 공용체
     // 수학의 합집합과 같은 개념
     // 자료형에 상관없이 하나의 메모리를 사용함
     [StructLayout(LayoutKind.Explicit)]
-    public class Unions
+    public class UnionHelper
     {
         /*
          *  32bit 64bit -> 포인터의 크기가 데이터 쓰기, 읽기의 단위가 됨
@@ -153,7 +153,7 @@ namespace CoreEngine
 
 
 
-        public static Unions instance = new();
+        public static UnionHelper instance = new();
     }
 }
 

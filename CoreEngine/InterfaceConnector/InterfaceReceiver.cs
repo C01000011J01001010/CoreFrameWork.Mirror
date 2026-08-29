@@ -1,5 +1,6 @@
 using System;
 using CoreEngine.EventBus;
+using CoreEngine.Helpers;
 
 namespace CoreEngine.Interface
 {
@@ -37,7 +38,7 @@ namespace CoreEngine.Interface
 
         public bool TryGet(out TInterface target)
         {
-            if (UtilitySystem.isUnityNull(Target))
+            if (SystemHelper.isUnityNull(Target))
             {
                 target = null;
                 return false;

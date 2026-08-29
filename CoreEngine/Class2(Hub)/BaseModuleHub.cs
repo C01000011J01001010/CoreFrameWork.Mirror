@@ -1,4 +1,5 @@
 ﻿using CoreEngine.EventBus;
+using CoreEngine.Helpers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -51,19 +52,19 @@ namespace CoreEngine.Hub
             var modules = moduleDict.Values.ToArray();
             foreach (var module in modules)
             {
-                if (!UtilitySystem.isUnityNull(module)) module.Exit();
+                if (!SystemHelper.isUnityNull(module)) module.Exit();
             }
             // 모듈들정리를 끝낸 후 나도 구독취소
             // Hub가 어차피 사라질것이니 모듈들의 관리도 필요가 없어짐
             EventBus<ModuleRegistrationEvent>.Unsubscribe(OnLeafRegistration);
 
             // 게임이 종료 중이면 나머지 객체는 알아서 정리됨
-            if (UtilitySystem.IsAppQuitting) return;
+            if (SystemHelper.IsAppQuitting) return;
 
             foreach (var module in modules)
             {
                 // 허브와 다른씬에 남아서 살아남을 수도 있으니
-                if (!UtilitySystem.isUnityNull(module) && module is MonoBehaviour)
+                if (!SystemHelper.isUnityNull(module) && module is MonoBehaviour)
                 {
                     MonoBehaviour asMono = module as MonoBehaviour;
                     Debug.Log($"Hub에서 module {asMono.name}을 수동 삭제함");
@@ -134,7 +135,7 @@ namespace CoreEngine.Hub
 
             // 등록한적이 없거나 등록했던 객체가 페이크 널일때
             Type typeKey = module.GetType();
-            if (!moduleDict.TryGetValue(typeKey, out TModule old) || UtilitySystem.isUnityNull(old))
+            if (!moduleDict.TryGetValue(typeKey, out TModule old) || SystemHelper.isUnityNull(old))
             {
                 moduleDict[typeKey] = module;
             }

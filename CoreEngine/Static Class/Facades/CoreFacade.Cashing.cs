@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using CoreEngine.Hub;
 using CoreEngine.Manager.Culling;
+using CoreEngine.Helpers;
 using UnityEngine;
 
-namespace CoreEngine
+namespace CoreEngine.Facades
 {
     /// <summary>
     /// 이카루스 프레임워크의 최상위 창구(Facade) 클래스입니다.
@@ -39,9 +40,10 @@ namespace CoreEngine
                         // 에러 로그가 한 번도 출력된 적 없을 때만 출력!
                         if (!_isSpatialCullingErrorLogged)
                         {
-                            UtilityLog.Log("[CoreFacade] 현재 씬이나 프로젝트 환경에 'SpatialCullingManager'가 등록되지 않았습니다! 기본값(Zero)을 반환합니다.", LogColor.Red);
+                            LogHelper.Log("[CoreFacade] 현재 씬이나 프로젝트 환경에 'SpatialCullingManager'가 등록되지 않았습니다! 기본값(Zero)을 반환합니다.", LogColor.Red);
                             _isSpatialCullingErrorLogged = true; // 플래그 잠금
                         }
+
                         return null;
                     }
                     else
@@ -50,6 +52,7 @@ namespace CoreEngine
                         _isSpatialCullingErrorLogged = false;
                     }
                 }
+
                 return _spatialCullingManager;
             }
         }

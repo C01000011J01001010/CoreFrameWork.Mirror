@@ -2,6 +2,7 @@ using CoreEngine;
 using System;
 using UnityEngine;
 using UnityEngine.Pool;
+using CoreEngine.Helpers;
 
 namespace CoreEngine.Pool.Test
 {
@@ -11,12 +12,12 @@ namespace CoreEngine.Pool.Test
 
         public void OnDespawn()
         {
-            UtilityLog.Log($"[TestPoolObject] OnDespawn() called for {gameObject.name}");
+            LogHelper.Log($"[TestPoolObject] OnDespawn() called for {gameObject.name}");
         }
 
         public void OnSpawn()
         {
-            UtilityLog.Log($"[TestPoolObject] OnSpawn() called for {gameObject.name}");
+            LogHelper.Log($"[TestPoolObject] OnSpawn() called for {gameObject.name}");
         }
     }
 }

@@ -8,8 +8,9 @@ using System.Text;
 using UnityEditor;
 using UnityEditor.VersionControl;
 using UnityEngine;
+using CoreEngine.Helpers;
 
-namespace CoreEngine
+namespace CoreEngine.Extentions
 {
     public static class Extensions_Old
     {
@@ -217,7 +218,7 @@ namespace CoreEngine
             //        .ToArray();
 
 
-            // 1.번 객체를 직접 만든 후 박싱하여 건내준다. -> 박싱을 위한 오버헤드 발생
+            // 1.번 객체를 직접 만든 후 박싱하여 건네준다. -> 박싱을 위한 오버헤드 발생
             // TargetStruct targetStruct = default;
             // object Instance = targetStruct;
 
@@ -432,20 +433,20 @@ namespace CoreEngine
             if (target is int ||
                 targetType.IsEnum)
             {
-                Unions.instance.int0 = (int)target;
-                return Unions.instance.byteArr;
+                UnionHelper.instance.int0 = (int)target;
+                return UnionHelper.instance.byteArr;
             }
 
             else if (target is float)
             {
-                Unions.instance.float0 = (float)target;
-                return Unions.instance.byteArr;
+                UnionHelper.instance.float0 = (float)target;
+                return UnionHelper.instance.byteArr;
             }
 
             else if (target is short)
             {
-                Unions.instance.short0 = (short)target;
-                return new byte[] { Unions.instance.byte0, Unions.instance.byte1 };
+                UnionHelper.instance.short0 = (short)target;
+                return new byte[] { UnionHelper.instance.byte0, UnionHelper.instance.byte1 };
             }
 
             else if (target is byte)
@@ -485,32 +486,32 @@ namespace CoreEngine
             if (targetType == typeof(int) ||
                 targetType.IsEnum)
             {
-                Unions.instance.byteArr = originArray;
-                return Unions.instance.int0;
+                UnionHelper.instance.byteArr = originArray;
+                return UnionHelper.instance.int0;
             }
 
             else if (targetType == typeof(float))
             {
-                Unions.instance.byteArr = originArray;
-                return Unions.instance.float0;
+                UnionHelper.instance.byteArr = originArray;
+                return UnionHelper.instance.float0;
             }
 
             else if (targetType == typeof(short))
             {
-                Unions.instance.byteArr = originArray;
-                return Unions.instance.short0;
+                UnionHelper.instance.byteArr = originArray;
+                return UnionHelper.instance.short0;
             }
 
             else if (targetType == typeof(byte))
             {
-                Unions.instance.byteArr = originArray;
-                return Unions.instance.byte0;
+                UnionHelper.instance.byteArr = originArray;
+                return UnionHelper.instance.byte0;
             }
 
             else if (targetType == typeof(bool))
             {
-                Unions.instance.byteArr = originArray;
-                return Unions.instance.byte0 == 1;
+                UnionHelper.instance.byteArr = originArray;
+                return UnionHelper.instance.byte0 == 1;
             }
 
             else if (targetType == typeof(string))
@@ -975,7 +976,7 @@ namespace CoreEngine
                 // 현재 받고있는 중력만큼 떨어지기
                 // 시간에 따른 방향의 변화
                 // 중력에 의한 현재 속도
-                // gravity = 중력가속도 : 속도가 가면 갈수록 빨라짐!
+                // gravity = 중력가속도 : 속도가 가면 갈수록 빨라짐
                 // 9.80665 m/s^2
                 // 속도 = 중력가속도 * 소요된 시간
 

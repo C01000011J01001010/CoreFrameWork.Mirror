@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace CoreEngine
+namespace CoreEngine.Helpers
 {
-    public static class UtilityLog
+    public static class LogHelper
     {
         // 1. MonoBehaviour 대신 object로 받아 순수 C# 클래스(Hub, Data 등)에서도 쓸 수 있게 범용성 확장!
         [Conditional("UNITY_EDITOR")]

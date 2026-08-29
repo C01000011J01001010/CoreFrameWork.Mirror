@@ -1,4 +1,5 @@
 using CoreEngine.Interface;
+using CoreEngine.Helpers;
 using CoreEngine.LevelDesign;
 using CoreEngine.Manager; // 범용 프레임워크인 ResourceManager 호출용
 using CoreEngine.UI;
@@ -104,7 +105,7 @@ namespace CoreEngine.Ui
 
             var sizeFitter = GetComponentInParent<MinimapSizeFitter>();
             if (sizeFitter != null) sizeFitter.AdjustHeight();
-            else UtilityLog.Log("[MinimapController] 부모 구조에서 MinimapSizeFitter를 찾을 수 없습니다.", LogColor.Yellow);
+            else LogHelper.Log("[MinimapController] 부모 구조에서 MinimapSizeFitter를 찾을 수 없습니다.", LogColor.Yellow);
         }
 
 

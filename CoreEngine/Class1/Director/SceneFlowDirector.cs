@@ -1,5 +1,6 @@
 ﻿using CoreEngine.EventBus;
 using CoreEngine.Test;
+using CoreEngine.Helpers;
 using System.Collections;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -71,7 +72,7 @@ namespace CoreEngine.Director
         // EventBus를 통해 씬 전환 요청이 들어왔을 때 실행되는 핸들러
         private void OnSceneLoadRequest(SceneLoadRequestEvent evt)
         {
-            UtilityLog.LogFunctionCallStart(this);
+            LogHelper.LogFunctionCallStart(this);
             if(!_isRoutine)
             {
                 _isRoutine = true;
@@ -83,7 +84,7 @@ namespace CoreEngine.Director
         // 단독 씬 테스트 시작 요청을 받았을 때
         private void OnTestBootstrapRequest(SceneTestBootstrapRequestEvent evt)
         {
-            UtilityLog.LogFunctionCallStart(this);
+            LogHelper.LogFunctionCallStart(this);
             if (!_isRoutine)
             {
                 _isRoutine = true;
@@ -97,7 +98,7 @@ namespace CoreEngine.Director
         public static void RegisterCurrentScene(Scene newScene)
         {
             currentScene = newScene;
-            UtilitySceneManagement.SetActiveScene(currentScene);
+            SceneManagementHelper.SetActiveScene(currentScene);
         }
 
 
@@ -158,7 +159,7 @@ namespace CoreEngine.Director
         private IEnumerator InitializeSceneSystemRoutine()
         {
             // 안전하게 현재씬을 다시 고정
-            UtilitySceneManagement.SetActiveScene(currentScene);
+            SceneManagementHelper.SetActiveScene(currentScene);
 
             EventBus<SystemLoadingEvent>.Publish(new SystemLoadingEvent(SystemLoadingEvent.State.Progress, "새로운 시스템 환경 세팅 중...", 0.85f));
 

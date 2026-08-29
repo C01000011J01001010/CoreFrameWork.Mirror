@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-namespace CoreEngine
+namespace CoreEngine.Helpers
 {
-    public static class UtilityLevelDesign
+    public static class LevelDesignHelper
     {
         /// <summary>
         /// 3D 월드 좌표를 맵 이미지 상의 0.0 ~ 1.0 비율(Normalized) 좌표로 변환합니다.

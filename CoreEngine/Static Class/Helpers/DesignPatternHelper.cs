@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace CoreEngine
+namespace CoreEngine.Helpers
 {
-    public static class UtilityDesignPattern
+    public static class DesignPatternHelper
     {
         /// <summary>
         /// 싱글톤 만들때 수백번 필요한지 생각할것
@@ -20,7 +20,7 @@ namespace CoreEngine
             }
 
             // 이미 싱글톤으로 된 다른 객체가 존재하는 경우
-            UtilityLog.LogWarningSingleTon<T>(target); // no-op
+            LogHelper.LogWarningSingleTon<T>(target); // no-op
             return false;
         }
 

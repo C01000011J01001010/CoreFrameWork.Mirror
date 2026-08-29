@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using CoreEngine.Helpers;
 using System.Linq;
 using UnityEngine;
 
@@ -42,13 +43,13 @@ namespace CoreEngine.Hub
 
         public override IEnumerator Initialize()
         {
-            UtilityLog.LogFunctionCallStart(this);
+            LogHelper.LogFunctionCallStart(this);
             return base.Initialize();
         }
 
         public override IEnumerator LateInitialize()
         {
-            UtilityLog.LogFunctionCallStart(this);
+            LogHelper.LogFunctionCallStart(this);
             return base.LateInitialize();
         }
 

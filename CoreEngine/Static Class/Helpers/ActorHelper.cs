@@ -2,9 +2,9 @@
 using UnityEngine;
 using CoreEngine.Hub;
 
-namespace CoreEngine
+namespace CoreEngine.Helpers
 {
-    public static class UtilityActor
+    public static class ActorHelper
     {
         public static GameObject Spawn<ActorGroup>(GameObject prefab)
            where ActorGroup : Enum
@@ -24,7 +24,7 @@ namespace CoreEngine
 
             // 2. 컴포넌트 가져와서 인터페이스 확인 후 OnSpawn() 호출
             IActorSpawn actor = inst.GetComponent<IActorSpawn>();
-            if (UtilitySystem.isUnityNull(actor))
+            if (SystemHelper.isUnityNull(actor))
             {
                 actor.OnSpawn();
             }

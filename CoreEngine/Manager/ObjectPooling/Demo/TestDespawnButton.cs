@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using CoreEngine.Helpers;
 
 namespace CoreEngine.Pool.Test
 {
@@ -18,7 +19,7 @@ namespace CoreEngine.Pool.Test
         {
             if (TestPoolTracker.SpawnedObjects.Count == 0)
             {
-                UtilityLog.Log("[TestDespawnButton] 풀에 반환할 활성화된 객체가 없습니다.");
+                LogHelper.Log("[TestDespawnButton] 풀에 반환할 활성화된 객체가 없습니다.");
                 return;
             }
 
@@ -33,7 +34,7 @@ namespace CoreEngine.Pool.Test
             }
             else
             {
-                UtilityLog.Log("[TestDespawnButton] 풀에 반환할 객체가 이미 파괴되었거나 IPoolable을 구현하지 않은 객체입니다.");
+                LogHelper.Log("[TestDespawnButton] 풀에 반환할 객체가 이미 파괴되었거나 IPoolable을 구현하지 않은 객체입니다.");
             }    
         }
     }
