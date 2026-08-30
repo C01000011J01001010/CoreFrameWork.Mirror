@@ -1,0 +1,5 @@
+Source: SUIT by sun-typeface/SUIT
+Source URL: https://github.com/sun-typeface/SUIT/releases/latest/download/SUIT-ttf.zip
+License: SIL Open Font License 1.1
+Subset Unicode ranges: U+0020-007E,U+1100-11FF,U+3130-318F,U+AC00-D7A3
+Modified font name: FrameworkDefaultFont
