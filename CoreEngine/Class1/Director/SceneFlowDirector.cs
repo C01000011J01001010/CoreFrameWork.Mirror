@@ -41,7 +41,7 @@ namespace CoreEngine.Director
         /// <summary>
         /// SceneLoadRequestEvent 또는 SceneTestBootstrapRequestEvent 둘 중 하나를 수행중인지 판단하는 플래그
         /// </summary>
-        private bool _isRoutine;
+        protected bool _isRoutine;
 
         protected virtual void OnEnable()
         {

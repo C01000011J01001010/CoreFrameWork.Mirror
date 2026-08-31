@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6340379389859361183}
   - component: {fileID: 6155266894017450497}
   - component: {fileID: 8073934053959318825}
+  - component: {fileID: 1422687341806738606}
   m_Layer: 0
   m_Name: MainCameraController
   m_TagString: Untagged
@@ -67,7 +68,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.1
-  far clip plane: 5000
+  far clip plane: 50000
   field of view: 40
   orthographic: 0
   orthographic size: 10
@@ -103,7 +104,7 @@ MonoBehaviour:
   IgnoreTimeScale: 0
   WorldUpOverride: {fileID: 0}
   ChannelMask: -1
-  UpdateMethod: 2
+  UpdateMethod: 1
   BlendUpdateMethod: 1
   LensModeOverride:
     Enabled: 0
@@ -174,6 +175,14 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!81 &1422687341806738606
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2473471542849291835}
+  m_Enabled: 1
 --- !u!1 &7262996018152858335
 GameObject:
   m_ObjectHideFlags: 0
