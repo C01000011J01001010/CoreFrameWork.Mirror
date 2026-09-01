@@ -4,7 +4,7 @@ using System.Text;
 using UnityEngine;
 using CoreEngine.Helpers;
 
-namespace CoreEngine
+namespace CoreEngine.DesignPattern.Singleton
 { 
     public class Singleton<T> : MonoBehaviour 
         where T : Singleton<T>

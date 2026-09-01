@@ -15,14 +15,13 @@ namespace CoreEngine.CameraSystem
     [RequireComponent(typeof(CinemachineThirdPersonFollow))]
     public class ThirdPersonCameraController : VirtualCameraController
     {
-        // 💡 Has-A (합성) 구조: 부품들을 레고처럼 들고 있습니다.
         [SerializeField] private CameraZoomHandler _zoomHandler = new();
         [SerializeField] private CameraRotationHandler _rotationHandler = new();
 
         private CinemachineThirdPersonFollow _thirdPersonFollow;
 
         private InterfaceReceiver<IPlayerInputProvider> _inputProvider = new();
-        //private IPlayerInputProvider _inputProvider;
+
         private bool isMouseLock = true;
 
         protected override void Awake()
@@ -30,13 +29,13 @@ namespace CoreEngine.CameraSystem
             base.Awake();
             _thirdPersonFollow = GetComponent<CinemachineThirdPersonFollow>();
 
-            // 1. 줌 핸들러 초기화
+            // 줌 핸들러 초기화
             if (_thirdPersonFollow != null)
             {
                 _zoomHandler.Initialize(_thirdPersonFollow.CameraDistance);
             }
 
-            // 2. 회전 핸들러 초기화 (짐벌의 초기 각도를 캐싱하여 짐벌락 및 튀는 현상 방지)
+            // 회전 핸들러 초기화 (짐벌의 초기 각도를 캐싱하여 짐벌락 및 튀는 현상 방지)
             if (TrackingTarget != null)
             {
                 _rotationHandler.Initialize(TrackingTarget.eulerAngles);

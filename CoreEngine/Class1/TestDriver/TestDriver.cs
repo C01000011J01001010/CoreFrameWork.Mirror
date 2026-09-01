@@ -1,10 +1,9 @@
-
-using CoreEngine.EventBus;
-using CoreEngine.SceneManagement;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using CoreEngine.SceneManagement;
+using CoreEngine.DesignPattern.Singleton;
 
 namespace CoreEngine.Test
 {

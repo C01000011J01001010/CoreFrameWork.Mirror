@@ -3,6 +3,7 @@
 using CoreEngine.Hub;
 using System.Collections;
 using UnityEngine;
+using CoreEngine.DesignPattern.Singleton;
 
 namespace CoreEngine
 {

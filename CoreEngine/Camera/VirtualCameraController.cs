@@ -14,14 +14,18 @@ public abstract class VirtualCameraController : BaseActor
 
     protected Transform TrackingTarget { get; private set; }
 
+    // 이벤트 발행자가 먼저 발행하는 경우를 대비해서 RepeatEventConsumer를 사용하여 이벤트를 구독함
+    protected RepeatEventConsumer<SetCameraTargetEvent> _repeatEventConsumer;
+
     protected virtual void Awake()
     {
-        EventBus<SetCameraTargetEvent>.Subscribe(OnSetTarget);
+        _repeatEventConsumer = new RepeatEventConsumer<SetCameraTargetEvent>(OnSetTarget);
+        _repeatEventConsumer.Bind();
     }
 
     private void OnDestroy()
     {
-        EventBus<SetCameraTargetEvent>.Unsubscribe(OnSetTarget);
+        _repeatEventConsumer.Unbind();
     }
 
     protected override void OnEnable()

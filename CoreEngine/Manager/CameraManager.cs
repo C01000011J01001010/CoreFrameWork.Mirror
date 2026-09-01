@@ -47,10 +47,13 @@ namespace CoreEngine.Manager
 
     public class CameraManager : BaseManager, ILateTickable
     {
-        MainCameraController _mainCamera;
+        protected MainCameraController _mainCamera;
 
-        private List<VirtualCameraController> _virtualCameras = new();
-        private VirtualCameraController _currentCamera;
+        protected List<VirtualCameraController> _virtualCameras = new();
+        protected VirtualCameraController _currentCamera;
+
+        // 이벤트 발행자가 먼저 발행하는 경우를 대비해서 RepeatEventConsumer를 사용하여 이벤트를 구독함
+        protected RepeatEventConsumer<SwitchCameraEvent> _repeatEventConsumer;
 
         // ILateTickable 구현 (UpdateManager의 통제를 받음)
         public LateTickGroup LateTickGroup => LateTickGroup.Camera;
@@ -61,7 +64,9 @@ namespace CoreEngine.Manager
 
             // 이벤트 구독 (등록, 전환, 옵션변경 등)
             EventBus<RegisterVirtualCameraEvent>.Subscribe(OnVirtualCameraRegistered);
-            EventBus<SwitchCameraEvent>.Subscribe(OnSwitchCameraRequested);
+
+            _repeatEventConsumer = new RepeatEventConsumer<SwitchCameraEvent>(OnSwitchCameraRequested);
+            _repeatEventConsumer.Bind();
 
             if (_mainCamera != null)
                 yield return _mainCamera.Initialize();
@@ -70,7 +75,7 @@ namespace CoreEngine.Manager
         public override void Exit()
         {
             EventBus<RegisterVirtualCameraEvent>.Unsubscribe(OnVirtualCameraRegistered);
-            EventBus<SwitchCameraEvent>.Unsubscribe(OnSwitchCameraRequested);
+            _repeatEventConsumer.Unbind();
         }
 
         public void LateTick(float dt)
