@@ -76,10 +76,10 @@ namespace CoreEngine.Hub
 
             Type actorType = actor.GetType();
 
-            // ① 실제 구체 클래스 타입(예: CapsuleMan)으로 등록
+            // 실제 구체 클래스 타입(예: CapsuleMan)으로 등록
             AddToRegistry(actorType, actor);
 
-            // ② 해당 액터가 구현한 모든 상위 인터페이스(예: ICharacter, IDamageable 등)로도 자동 등록
+            // 해당 액터가 구현한 모든 상위 인터페이스(예: ICharacter, IDamageable 등)로도 자동 등록
             Type[] interfaces = actorType.GetInterfaces();
             foreach (Type @interface in interfaces)
             {

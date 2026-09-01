@@ -34,10 +34,10 @@ namespace CoreEngine
     public class ProjectContext : BaseContext<ProjectContext>
     {
         [SerializeField] private SceneReference _globalScene;
-        public static SceneReference GlobalScene => Inst._globalScene;
+        public static SceneReference GlobalScene => Inst?._globalScene;
 
         [SerializeField] private SceneReference _firstScene;
-        public static SceneReference FirstScene => Inst._firstScene;
+        public static SceneReference FirstScene => Inst?._firstScene;
 
         protected override ContextScope myScope => ContextScope.Project;
 
