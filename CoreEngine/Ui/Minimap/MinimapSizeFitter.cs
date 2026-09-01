@@ -2,7 +2,7 @@ using CoreEngine;
 using CoreEngine.Helpers;
 using UnityEngine;
 
-namespace CoreEngine.Ui
+namespace CoreEngine.UI
 {
     /// <summary>
     /// 내부 UI 요소(이름 텍스트, 지도 캔버스)의 세로 높이에 맞춰 

@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using CoreEngine.Extentions;
 
-namespace CoreEngine.Ui
+namespace CoreEngine.UI
 {
     public class PopUpController : MonoBehaviour
     {

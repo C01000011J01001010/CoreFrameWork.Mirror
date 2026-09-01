@@ -2,6 +2,7 @@
 using CoreEngine.EventBus;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace CoreEngine.Loading
 {
@@ -14,6 +15,27 @@ namespace CoreEngine.Loading
 
         [Header("Settings")]
         [SerializeField] private float fadeOutDuration = 0.5f; // 로딩 종료 시 페이드 아웃 시간
+
+        [Tooltip("유저에게 게임 툴팁을 보이기 위해 의도적으로 로딩 시간을 지연하는 경우 사용")]
+        public float delaySeconds = 0.0f;
+
+        // 플랫폼 확장에 따라 추가적인 입력 감지 로직이 필요할 수 있으므로
+        // AnyInput을 virtual로 선언하여 상속받은 클래스에서 오버라이드 가능하도록 함
+        protected virtual bool AnyInput
+        {
+            get
+            {
+                // 키보드 입력 감지 (Null 안전성 확보)
+                bool isKeyboardPressed = Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame;
+
+                // 마우스 클릭 감지 (좌클릭 등)
+                bool isMouseClicked = Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
+
+                // 터치스크린, 게임패드 등 다른 입력 장치 감지 로직을 추가할 수 있음
+
+                return isKeyboardPressed || isMouseClicked;
+            }
+        }
 
         private Coroutine fadeCoroutine;
 
@@ -92,6 +114,22 @@ namespace CoreEngine.Loading
             loadingScreen.SetAlpha(0f);
             loadingScreen.gameObject.SetActive(false);
             fadeCoroutine = null;
+        }
+
+        public static IEnumerator DelayLoadingForTooltip()
+        {
+            float timer = 0f;
+            while (timer < Inst.delaySeconds)
+            {
+                // 유저가 클릭하거나 키를 누르면 즉시 툴팁 대기 스킵
+                if (Inst.AnyInput)
+                {
+                    break;
+                }
+
+                timer += Time.unscaledDeltaTime;
+                yield return null;
+            }
         }
     }
 }

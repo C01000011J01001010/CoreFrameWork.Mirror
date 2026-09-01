@@ -1,7 +1,7 @@
 using CoreEngine.EventBus;
 using System;
 
-namespace CoreEngine.Ui
+namespace CoreEngine.UI
 {
     public enum PopUpType { Confirm, AcceptReject }
 

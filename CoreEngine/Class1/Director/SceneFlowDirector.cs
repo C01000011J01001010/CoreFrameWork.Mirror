@@ -5,6 +5,7 @@ using System.Collections;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using CoreEngine.Loading;
 
 namespace CoreEngine
 {
@@ -165,6 +166,8 @@ namespace CoreEngine.Director
             {
                 Debug.LogWarning($"[{gameObject.name}] 현재 씬에 SceneContext가 존재하지 않습니다.");
             }
+
+            yield return LoadingDirector.DelayLoadingForTooltip();
 
             // 로딩 최종 완료 공포
             EventBus<SystemLoadingEvent>.Publish(new SystemLoadingEvent(SystemLoadingEvent.State.Complete, "로딩 완료!", 1.0f));

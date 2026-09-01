@@ -2,11 +2,10 @@ using CoreEngine.Interface;
 using CoreEngine.Helpers;
 using CoreEngine.LevelDesign;
 using CoreEngine.Manager; // 범용 프레임워크인 ResourceManager 호출용
-using CoreEngine.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace CoreEngine.Ui
+namespace CoreEngine.UI
 {
     /// <summary>
     /// 화면 회전 없이, 플레이어의 월드 좌표만 추적하여 3x3 그리드 타일을 
