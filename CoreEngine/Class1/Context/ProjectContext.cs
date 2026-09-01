@@ -1,11 +1,13 @@
-﻿using System.Collections;
-using UnityEngine;
-using CoreEngine.Helpers;
+﻿using CoreEngine.Director;
 using CoreEngine.EventBus;
-using CoreEngine.Test;
-using CoreEngine.Director;
+using CoreEngine.Helpers;
 using CoreEngine.Loading;
 using CoreEngine.SceneManagement;
+using CoreEngine.Settings;
+using CoreEngine.Test;
+using System.Collections;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace CoreEngine
 {
@@ -33,8 +35,11 @@ namespace CoreEngine
     [DefaultExecutionOrder((int)ExecutionOrder.ProjectContext)]
     public class ProjectContext : BaseContext<ProjectContext>
     {
-        [SerializeField] private SceneReference _globalScene;
-        public static SceneReference GlobalScene => Inst?._globalScene;
+        //[SerializeField] private SceneReference _globalScene;
+        //public static SceneReference GlobalScene => Inst?._globalScene;
+
+        [Header("[ Framework Settings ]")]
+        [SerializeField] private CoreEngineSettingsSO _coreSettings;
 
         [SerializeField] private SceneReference _firstScene;
         public static SceneReference FirstScene => Inst?._firstScene;
@@ -44,6 +49,9 @@ namespace CoreEngine
         private IEnumerator Start()
         {
             LogHelper.LogFunctionCallCount(this);
+
+            // 코어 매니저들을 초기화하기 전, 확장 시스템 씬들을 먼저 런타임에 병합합니다.
+            yield return LoadExtensionScenesRoutine();
 
             // BaseContext의 초기화를 실행 (내부에서 0.3, 0.6, 0.9 순서로 이벤트가 발송됨)
             yield return Initialize();
@@ -60,6 +68,38 @@ namespace CoreEngine
             else
             {
                 EventBus<SceneLoadRequestEvent>.Publish(new SceneLoadRequestEvent(FirstScene));
+            }
+        }
+
+        /// <summary>
+        /// 설정에 등록된 모든 확장 씬을 비동기로 GlobalScene 공간에 병합합니다.
+        /// </summary>
+        private IEnumerator LoadExtensionScenesRoutine()
+        {
+            if (_coreSettings == null || _coreSettings.ExtensionSceneList == null)
+            {
+                yield break;
+            }
+
+            foreach (var extScene in _coreSettings.ExtensionSceneList)
+            {
+                string sceneName = extScene.SceneName;
+                if (!string.IsNullOrEmpty(sceneName))
+                {
+                    Debug.Log($"[ProjectContext] 확장 시스템 씬 로드 시작: {sceneName}");
+
+                    AsyncOperation asyncOp = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+
+                    // 메모리에 완전히 올라갈 때까지 대기
+                    while (!asyncOp.isDone)
+                    {
+                        yield return null;
+                    }
+
+                    // 이 코루틴 대기가 끝난 시점에는 확장 씬 내부 객체들의 Awake와 OnEnable이 이미 실행 완료된 상태
+                    // 즉, 확장 시스템들이 CoreFacade를 통해 전역 허브에 무사히 합류했음을 보장
+                    Debug.Log($"[ProjectContext] 확장 시스템 등록 완료: {sceneName}");
+                }
             }
         }
     }
