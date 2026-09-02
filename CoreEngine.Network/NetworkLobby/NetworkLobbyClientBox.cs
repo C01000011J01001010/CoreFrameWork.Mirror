@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Pool;
+using CoreEngine.Manager.Pool;
 
 namespace CoreEngine.Network.Lobby.Ui
 {
@@ -14,8 +15,8 @@ namespace CoreEngine.Network.Lobby.Ui
 
         private Color _originalColor;
 
-        // IPoolable 규약: Unity 내장 IObjectPool 참조[cite: 1]
-        public IObjectPool<GameObject> RootPool { get; set; }
+        // IPoolable 규약: Unity 내장 IObjectPool 참조
+        public IPoolReleaser Releaser { get; set; }
 
         private void Awake()
         {
@@ -57,9 +58,9 @@ namespace CoreEngine.Network.Lobby.Ui
         public void ReturnToPool()
         {
             // 객체지향의 "묻지 말고 시켜라" 원칙: Manager를 거치지 않고 직접 반환[cite: 1]
-            if (RootPool != null)
+            if (Releaser != null)
             {
-                RootPool.Release(gameObject);
+                Releaser.Release(gameObject);
             }
             else
             {

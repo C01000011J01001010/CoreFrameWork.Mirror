@@ -30,7 +30,7 @@ namespace CoreEngine.Manager.Pool.Test
             if (targetObj != null && targetObj.TryGetComponent(out IPoolable poolableItem))
             {
                 // Manager를 거치지 않고 IObjectPool 참조를 이용해 즉각 Release 처리!
-                poolableItem.RootPool.Release(targetObj);
+                poolableItem.Releaser.Release(targetObj);
             }
             else
             {

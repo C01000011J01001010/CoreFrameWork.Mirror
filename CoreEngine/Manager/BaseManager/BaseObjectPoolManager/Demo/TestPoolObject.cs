@@ -1,14 +1,11 @@
-using CoreEngine;
-using System;
 using UnityEngine;
-using UnityEngine.Pool;
 using CoreEngine.Helpers;
 
 namespace CoreEngine.Manager.Pool.Test
 {
     public class TestPoolObject : MonoBehaviour, IPoolable
     {
-        public IObjectPool<GameObject> RootPool { get; set; }
+        public IPoolReleaser Releaser { get; set; }
 
         public void OnDespawn()
         {

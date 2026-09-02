@@ -2,22 +2,25 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using CoreEngine.Manager.Pool;
 
-namespace CoreEngine.Manager
+namespace CoreEngine.Manager.Pool
 {
     /// <summary>
-    /// 3계층 아키텍처의 통제를 받는 풀링 매니저 (Global / Scene 구분 불필요)
+    /// BaseObjectPoolManager 또는 NetworkObjectPoolManager 사용 권장
     /// </summary>
-    public abstract class ObjectPoolManager<TPoolType> : BaseManager where TPoolType : Enum
+    public abstract class BasePoolManager<TPoolType, TPoolHandlerType> : BaseManager
+        where TPoolType : Enum
+        where TPoolHandlerType : BasePoolHandler<TPoolType>, new()
     {
         public List<PoolSetup<TPoolType>> poolSetups = new();
 
         // C# 부품들을 담아두는 딕셔너리
-        private Dictionary<TPoolType, PoolHandler<TPoolType>> _handlers = new();
+        private Dictionary<TPoolType, TPoolHandlerType> _handlers = new();
 
         // 씬 종료 플래그
         private bool _isShuttingDown = false;
+
+        //protected abstract TPoolHandlerType GenerateHandler(PoolSetup<TPoolType> setup, Transform parent, Func<bool> isShuttingDown);
 
         public override IEnumerator Initialize()
         {
@@ -67,7 +70,8 @@ namespace CoreEngine.Manager
                 parentObj.transform.SetParent(this.transform);
 
                 // C# 부품 생성 및 주입 (이때 씬 종료 여부를 묻는 델리게이트 전달)
-                var handler = new PoolHandler<TPoolType>(setup, parentObj.transform, () => _isShuttingDown);
+                TPoolHandlerType handler = new();
+                handler.Initialize(setup, parentObj.transform, () => _isShuttingDown);
                 _handlers.Add(setup.poolType, handler);
             }
         }

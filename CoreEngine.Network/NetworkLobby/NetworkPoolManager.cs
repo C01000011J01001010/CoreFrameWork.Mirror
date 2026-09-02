@@ -11,7 +11,7 @@ namespace CoreEngine.Network.Pool
     /// <summary>
     /// 네트워크 관련 UI나 객체들을 풀링으로 관리하는 전담 매니저
     /// </summary>
-    public class NetworkPoolManager : ObjectPoolManager<NetworkPoolType>
+    public class NetworkPoolManager : BaseObjectPoolManager<NetworkPoolType>
     {
 
     }

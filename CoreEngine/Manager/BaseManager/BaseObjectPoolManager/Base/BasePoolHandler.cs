@@ -5,18 +5,26 @@ using UnityEngine.Pool;
 
 namespace CoreEngine.Manager.Pool
 {
+    public interface IPoolReleaser
+    {
+        void Release(GameObject obj);
+    }
     /// <summary>
     /// 순수 C#으로 분리된 풀링 논리 처리기 (부품)
     /// </summary>
-    public class PoolHandler<TPoolType> where TPoolType : Enum
+    public abstract class BasePoolHandler<TPoolType> : IPoolReleaser
+        where TPoolType : Enum
     {
-        private readonly PoolSetup<TPoolType> _setup;
-        private readonly Transform _parent;
-        private readonly Func<bool> _isShuttingDown; // Host로부터 씬 종료 상태를 묻는 델리게이트
-        private readonly IObjectPool<GameObject> _pool;
+        protected PoolSetup<TPoolType> _setup;
+        protected Transform _parent;
+        protected Func<bool> _isShuttingDown; // Host로부터 씬 종료 상태를 묻는 델리게이트
+        protected IObjectPool<GameObject> _pool;
 
-        public PoolHandler(PoolSetup<TPoolType> setup, Transform parent, Func<bool> isShuttingDown)
+        private bool _isInit = false;
+        public void Initialize (PoolSetup<TPoolType> setup, Transform parent, Func<bool> isShuttingDown)
         {
+            if (_isInit) return;
+
             _setup = setup;
             _parent = parent;
             _isShuttingDown = isShuttingDown;
@@ -34,21 +42,23 @@ namespace CoreEngine.Manager.Pool
                 defaultCapacity: _setup.defaultCapacity,
                 maxSize: _setup.maxSize
             );
+
+            _isInit = true;
         }
 
         #region Pool Callbacks
 
-        private GameObject CreateItem()
+        protected GameObject CreateItem()
         {
             GameObject obj = UnityEngine.Object.Instantiate(_setup.prefab, _parent);
             if (obj.TryGetComponent(out IPoolable poolableItem))
             {
-                poolableItem.RootPool = _pool;
+                poolableItem.Releaser = this;
             }
             return obj;
         }
 
-        private void OnTakeFromPool(GameObject obj)
+        protected void OnTakeFromPool(GameObject obj)
         {
             obj.SetActive(true);
             if (obj.TryGetComponent(out IPoolable poolableItem))
@@ -57,7 +67,7 @@ namespace CoreEngine.Manager.Pool
             }
         }
 
-        private void OnReturnedToPool(GameObject obj)
+        protected void OnReturnedToPool(GameObject obj)
         {
             if (_isShuttingDown() || obj == null) return;
 
@@ -71,15 +81,15 @@ namespace CoreEngine.Manager.Pool
             obj.transform.SetParent(_parent);
         }
 
-        private void OnDestroyPoolObject(GameObject obj)
+        protected void OnDestroyPoolObject(GameObject obj)
         {
             if (obj != null) UnityEngine.Object.Destroy(obj);
         }
 
         #endregion
 
-        #region PoolManager에 호출 위임
-        public GameObject Spawn(Vector3 position)
+        #region 외부 API
+        public virtual GameObject Spawn(Vector3 position)
         {
             GameObject obj = _pool.Get();
             if (obj != null) obj.transform.position = position;
@@ -104,6 +114,14 @@ namespace CoreEngine.Manager.Pool
         {
             _pool.Clear();
         }
+
+        public virtual void Release(GameObject obj)
+        {
+            _pool.Release(obj);
+        }
         #endregion
+
+
+
     }
 }

@@ -8,7 +8,7 @@ namespace CoreEngine.Manager.Pool.Test
         NotPoolable
     }
 
-    public class TestObjectPoolManager : ObjectPoolManager<TestPoolType>
+    public class TestObjectPoolManager : BaseObjectPoolManager<TestPoolType>
     {
 
     }
