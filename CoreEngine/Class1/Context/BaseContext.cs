@@ -40,7 +40,7 @@ namespace CoreEngine
 
         protected override void OnDestroy()
         {
-            OnDestroyToss();
+            
             base.OnDestroy();
         }
 
@@ -57,25 +57,33 @@ namespace CoreEngine
             managerHub.SetScope(myScope);
             actorHub.SetScope(myScope);
             uiHub.SetScope(myScope);
-
-            AwakeToss();
         }
 
-        public void AwakeToss()
+        protected virtual void OnEnable()
+        {
+            OnEnableToss();
+        }
+
+        protected virtual void OnDisable()
+        {
+            OnDisableToss();
+        }
+
+        public void OnEnableToss()
         {
             // 가장 처음 시작하는 Context가 책임지고 Hub를 Awake (구독 시작)
             // Manager -> Actor -> UI 순서 명확화
-            managerHub?.AwakeFromContext();
-            actorHub?.AwakeFromContext();
-            uiHub?.AwakeFromContext();
+            managerHub?.OnEnableFromContext();
+            actorHub?.OnEnableFromContext();
+            uiHub?.OnEnableFromContext();
         }
 
-        public void OnDestroyToss()
+        public void OnDisableToss()
         {
             // 초기화의 반대 순서로 정리될수 있도록 보장
-            uiHub?.OnDestroyFromContext();
-            actorHub?.OnDestroyFromContext();
-            managerHub?.OnDestroyFromContext();
+            uiHub?.OnDisableFromContext();
+            actorHub?.OnDisableFromContext();
+            managerHub?.OnDisableFromContext();
         }
 
         public virtual IEnumerator Initialize()

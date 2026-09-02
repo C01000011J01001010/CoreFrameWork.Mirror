@@ -82,6 +82,8 @@ namespace CoreEngine.Director
 
             if (currentScene.IsValid() && currentScene.isLoaded)
             {
+                // 현재 씬을 비활성화하고 언로드
+                SceneContext.Inst.gameObject.SetActive(false);
                 await SceneManager.UnloadSceneAsync(currentScene);
             }
 
