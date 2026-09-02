@@ -1,6 +1,6 @@
 {
   "name": "com.ycjun.core-framework",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "displayName": "CoreFramework",
   "description": "3-Tier Architecture, EventBus, and Update Management for Unity.",
   "unity": "2022.3",
