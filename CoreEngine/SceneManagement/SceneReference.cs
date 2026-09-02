@@ -14,6 +14,7 @@ namespace CoreEngine.SceneManagement
     [Serializable]
     public class SceneReference : ISerializationCallbackReceiver
     {
+
 #if UNITY_EDITOR
         [SerializeField] private SceneAsset sceneAsset;
 #endif
@@ -21,9 +22,11 @@ namespace CoreEngine.SceneManagement
         // 런타임용 씬 경로 및 이름
         [SerializeField] private string scenePath = string.Empty;
         [SerializeField] private string sceneName = string.Empty;
+        [SerializeField] private string sceneGUID = string.Empty;
 
         public string SceneName => sceneName;
         public string ScenePath => scenePath;
+        public string SceneGUID => sceneGUID;
 
         // 에디터에서 값이 변경되거나 저장될 때 자동 호출
         public void OnBeforeSerialize()
@@ -33,11 +36,13 @@ namespace CoreEngine.SceneManagement
             {
                 scenePath = AssetDatabase.GetAssetPath(sceneAsset);
                 sceneName = sceneAsset.name;
+                sceneGUID = AssetDatabase.AssetPathToGUID(scenePath);
             }
             else
             {
                 scenePath = string.Empty;
                 sceneName = string.Empty;
+                sceneGUID = string.Empty;
             }
 #endif
         }

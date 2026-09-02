@@ -15,7 +15,7 @@ namespace CoreEngine.Test
     [DefaultExecutionOrder((int)ExecutionOrder.TestDriver)] // 유니티 엔진 내에서 무조건 최우선으로 Awake() 실행 보장
     public class TestDriver : Singleton<TestDriver> // 1개만 존재해야하니 싱글톤으로 만들되, 절대 싱글톤 접근 사용 안함
     {
-        public static SceneReference GlobalScene => CoreEngineSettingsSO.Instance.globalScene;
+        public static SceneReference GlobalScene => CoreEngineSettingsSO.Instance.GlobalScene;
 
         public static Scene TestScene { get; private set; } = default;
 

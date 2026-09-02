@@ -35,14 +35,11 @@ namespace CoreEngine
     [DefaultExecutionOrder((int)ExecutionOrder.ProjectContext)]
     public class ProjectContext : BaseContext<ProjectContext>
     {
-        //[SerializeField] private SceneReference _globalScene;
-        //public static SceneReference GlobalScene => Inst?._globalScene;
-
-        [Header("[ Framework Settings ]")]
-        [SerializeField] private CoreEngineSettingsSO _coreSettings;
-
-        [SerializeField] private SceneReference _firstScene;
+        
+        [Tooltip("GlobalScene에서 시작시 최종적으로 로드할 씬"),SerializeField] private SceneReference _firstScene;
         public static SceneReference FirstScene => Inst?._firstScene;
+
+        private CoreEngineSettingsSO CoreEngineSettings => CoreEngineSettingsSO.Instance;
 
         protected override ContextScope myScope => ContextScope.Project;
 
@@ -76,12 +73,12 @@ namespace CoreEngine
         /// </summary>
         private IEnumerator LoadExtensionScenesRoutine()
         {
-            if (_coreSettings == null || _coreSettings.ExtensionSceneList == null)
+            if (CoreEngineSettings == null || CoreEngineSettings.ExtensionSceneList == null)
             {
                 yield break;
             }
 
-            foreach (var extScene in _coreSettings.ExtensionSceneList)
+            foreach (var extScene in CoreEngineSettings.ExtensionSceneList)
             {
                 string sceneName = extScene.SceneName;
                 if (!string.IsNullOrEmpty(sceneName))

@@ -29,7 +29,7 @@ namespace CoreEngine.Extentions
                 if (settings != null)
                 {
                     // 메인 GlobalScene 검사
-                    if (mySceneName == settings.globalScene)
+                    if (mySceneName == settings.GlobalScene)
                     {
                         isProjectScope = true;
                     }

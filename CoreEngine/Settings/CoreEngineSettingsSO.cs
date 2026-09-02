@@ -9,9 +9,13 @@ namespace CoreEngine.Settings
     [CreateAssetMenu(fileName = "CoreEngineSettings", menuName = "CoreEngine/Settings")]
     public class CoreEngineSettingsSO : ScriptableObject
     {
-        // Project Settings 창에서 드래그 앤 드롭으로 씬을 할당할 수 있도록 HideInInspector 처리
-        public SceneReference globalScene; // 여기에 GlobalScene.unity를 드래그 앤 드롭!
-        public SceneReference[] ExtensionSceneList; // 여기에 확장 시스템 씬들을 드래그 앤 드롭!
+        // 데이터와 동기화 로직을 모두 캡슐화한 Tracker 선언
+        [SerializeField] 
+        private AutoBuildSceneTracker _sceneTracker = new AutoBuildSceneTracker();
+
+        // 런타임에서 다른 매니저들이 안전하게 읽을 수 있도록 프로퍼티 개방
+        public SceneReference GlobalScene => _sceneTracker.globalScene;
+        public SceneReference[] ExtensionSceneList => _sceneTracker.extensionSceneList;
 
         private static CoreEngineSettingsSO _instance;
         public static CoreEngineSettingsSO Instance
@@ -56,5 +60,12 @@ namespace CoreEngine.Settings
                 return _instance;
             }
         }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            _sceneTracker.Validate(this);
+        }
+#endif
     }
 }

@@ -770,17 +770,21 @@ PrefabInstance:
       value: ProjectContext
       objectReference: {fileID: 0}
     - target: {fileID: 1173322470707460156, guid: 8d94df64944788d4495b1939c0dff321, type: 3}
+      propertyPath: _firstScene.sceneGUID
+      value: 862f1e54750912848867c02f1f606a79
+      objectReference: {fileID: 0}
+    - target: {fileID: 1173322470707460156, guid: 8d94df64944788d4495b1939c0dff321, type: 3}
       propertyPath: _firstScene.sceneName
-      value: TitleScene
+      value: Sample Scene
       objectReference: {fileID: 0}
     - target: {fileID: 1173322470707460156, guid: 8d94df64944788d4495b1939c0dff321, type: 3}
       propertyPath: _firstScene.scenePath
-      value: Assets/CoreFramework/DemoScene/TitleScene.unity
+      value: Assets/CoreFramework/Scene/Sample Scene.unity
       objectReference: {fileID: 0}
     - target: {fileID: 1173322470707460156, guid: 8d94df64944788d4495b1939c0dff321, type: 3}
       propertyPath: _firstScene.sceneAsset
       value: 
-      objectReference: {fileID: 102900000, guid: 29f3ff7ffa194ac45b90f0ec21d5cca2, type: 3}
+      objectReference: {fileID: 102900000, guid: 862f1e54750912848867c02f1f606a79, type: 3}
     - target: {fileID: 1173322470707460156, guid: 8d94df64944788d4495b1939c0dff321, type: 3}
       propertyPath: _globalScene.sceneName
       value: GlobalScene

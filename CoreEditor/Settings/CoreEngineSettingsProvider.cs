@@ -27,22 +27,30 @@ namespace CoreEditor.EditorTools
 
                     EditorGUILayout.Space();
 
+                    var sceneTracker = so.FindProperty("_sceneTracker");
+                    // 방어 코드: 누군가 원본 변수명을 바꿔서 찾지 못했을 경우, 에러 없이 친절한 안내 문구 출력
+                    if (sceneTracker == null)
+                    {
+                        EditorGUILayout.HelpBox("[CoreEngineSettingsSO] 내부에 '_sceneTracker' 변수를 찾을 수 없습니다. 직렬화 변수명을 확인해주세요.", MessageType.Error);
+                        return;
+                    }
+
                     // ==============================================
-                    // 1. 코어 전역 씬 설정
+                    // 코어 전역 씬 설정
                     // ==============================================
                     EditorGUILayout.LabelField("Framework System Scenes", EditorStyles.boldLabel);
-                    EditorGUILayout.PropertyField(so.FindProperty("globalScene"), new GUIContent("Global Scene"));
+                    EditorGUILayout.PropertyField(sceneTracker.FindPropertyRelative("globalScene"), new GUIContent("Global Scene"));
 
                     EditorGUILayout.Space(10);
 
                     // ==============================================
-                    // 2. 확장 시스템 씬 설정 (새로 추가된 부분)
+                    // 확장 시스템 씬 설정 (새로 추가된 부분)
                     // ==============================================
                     EditorGUILayout.LabelField("Extension System Scenes", EditorStyles.boldLabel);
                     EditorGUILayout.HelpBox("GlobalScene 로드 시 Additive로 자동 병합될 확장 패키지(예: FishNet)의 씬들을 등록합니다.", MessageType.Info);
 
-                    // 💡 배열(Array)을 인스펙터에 전개하려면 세 번째 인자(includeChildren)를 반드시 true로 넘겨야 합니다.
-                    EditorGUILayout.PropertyField(so.FindProperty("ExtensionSceneList"), new GUIContent("Extension Scenes"), true);
+                    // 배열(Array)을 인스펙터에 전개하려면 세 번째 인자(includeChildren)를 반드시 true로 넘겨야 함
+                    EditorGUILayout.PropertyField(sceneTracker.FindPropertyRelative("extensionSceneList"), new GUIContent("Extension Scenes"), true);
 
                     so.ApplyModifiedProperties();
                 },
