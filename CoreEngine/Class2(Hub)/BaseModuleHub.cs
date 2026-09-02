@@ -37,26 +37,16 @@ namespace CoreEngine.Hub
         private bool _isInitStarted = false;
         private TModule[] _startInitModules;
 
-        internal override void AwakeFromContext()
-        {
-            base.AwakeFromContext();
 
-            // 모듈이 등록할 수 있도록 Context로부터 시작하는 가장 빠른 Awake 사용하여 구독
-            EventBus<ModuleRegistrationEvent>.Subscribe(OnLeafRegistration);
-        }
-
-        internal override void OnDestroyFromContext()
+        internal override void OnDisableFromContext()
         {
-            base.OnDestroyFromContext();
+            base.OnDisableFromContext();
 
             var modules = moduleDict.Values.ToArray();
             foreach (var module in modules)
             {
                 if (!SystemHelper.isUnityNull(module)) module.Exit();
             }
-            // 모듈들정리를 끝낸 후 나도 구독취소
-            // Hub가 어차피 사라질것이니 모듈들의 관리도 필요가 없어짐
-            EventBus<ModuleRegistrationEvent>.Unsubscribe(OnLeafRegistration);
 
             // 게임이 종료 중이면 나머지 객체는 알아서 정리됨
             if (SystemHelper.IsAppQuitting) return;

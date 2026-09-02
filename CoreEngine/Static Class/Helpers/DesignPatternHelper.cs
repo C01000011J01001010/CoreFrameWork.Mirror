@@ -12,7 +12,7 @@ namespace CoreEngine.Helpers
         /// </summary>
         public static bool TryMakeSingleton<T>(T target, ref T slot) where T : MonoBehaviour
         {
-            if (target is null) return false;
+            if (target == null) return false;
             else if (CanSingleTon(target, ref slot))
             {
                 slot = target;

@@ -11,21 +11,25 @@ namespace CoreEngine.Hub
     }
 
     public abstract class BaseHub<TRegistrationEvent> : MonoBehaviour//, IInitialize, ILateInitialize
-        where TRegistrationEvent : IEvent, IRegistration
+        where TRegistrationEvent : struct, IEvent, IRegistration
     {
         public ContextScope myScope { get; private set; }
-
 
         internal void SetScope(ContextScope scope)
         {
             myScope = scope;
         }
 
-        internal virtual void AwakeFromContext() { }
-        internal virtual void OnDestroyFromContext() {}
+        internal virtual void OnEnableFromContext() 
+        {
+            EventBus<TRegistrationEvent>.Subscribe(OnLeafRegistration);
+        }
+        internal virtual void OnDisableFromContext() 
+        {
+            EventBus<TRegistrationEvent>.Unsubscribe(OnLeafRegistration);
+        }
 
         public virtual IEnumerator Initialize() { yield break; }
-
         public virtual IEnumerator LateInitialize() { yield break; }
 
         protected virtual void OnLeafRegistration(TRegistrationEvent evt)

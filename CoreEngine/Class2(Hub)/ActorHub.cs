@@ -53,22 +53,11 @@ namespace CoreEngine.Hub
             return base.LateInitialize();
         }
 
-        internal override void AwakeFromContext()
+        internal override void OnDisableFromContext()
         {
-            base.AwakeFromContext();
-            EventBus<ActorRegistrationEvent>.Subscribe(OnLeafRegistration);
-        }
-
-        internal override void OnDestroyFromContext()
-        {
-            base.OnDestroyFromContext();
-            EventBus<ActorRegistrationEvent>.Unsubscribe(OnLeafRegistration);
+            base.OnDisableFromContext();
             _actorRegistry.Clear();
         }
-
-        //public override IEnumerator Initialize() => null;
-        //public override IEnumerator LateInitialize() => null;
-
 
         protected override void RegisterLeaf(ActorRegistrationEvent evt)
         {
