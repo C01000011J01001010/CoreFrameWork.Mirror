@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 using CoreEngine.SceneManagement;
 using CoreEngine.DesignPattern.Singleton;
 using CoreEngine.Settings;
+using CoreEngine.Helpers;
 
 namespace CoreEngine.Test
 {
@@ -74,7 +75,7 @@ namespace CoreEngine.Test
 
         private IEnumerator TestBootstrapSequence()
         {
-            // 1. [코어 로드] 전역 씬 Additive 로드
+            // [코어 로드] 전역 씬 Additive 로드
             SceneManager.LoadSceneAsync(GlobalScene, LoadSceneMode.Additive);
 
             // SceneContext가 초기화 될때까지 대기
@@ -86,8 +87,8 @@ namespace CoreEngine.Test
                 }
             }
 
-            // 3. [재부팅] 전역 코어 세팅이 완료되었으므로, 동면했던 객체들을 깨움
-            Debug.Log($"[SceneTester] 전역 코어 세팅 완료! 동면 중이던 {targetRoots.Count}개의 루트 객체를 깨웁니다.");
+            // [재부팅] 전역 코어 세팅이 완료되었으므로, 동면했던 객체들을 깨움
+            LogHelper.Log($"[SceneTester] 전역 코어 세팅 완료! 동면 중이던 {targetRoots.Count}개의 루트 객체를 깨웁니다.");
 
             foreach (var root in targetRoots)
             {
@@ -98,8 +99,8 @@ namespace CoreEngine.Test
                 }
             }
 
-            // 4. 임무 완료 후 자폭
-            Debug.Log("[SceneTester] 단독 씬 테스트 환경 구축 성공. 부트스트래퍼를 종료합니다.");
+            // 임무 완료 후 자폭
+            LogHelper.Log("[SceneTester] 단독 씬 테스트 환경 구축 성공. 부트스트래퍼를 종료합니다.");
             Destroy(gameObject);
         }
 

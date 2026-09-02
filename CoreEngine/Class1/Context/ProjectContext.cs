@@ -35,9 +35,6 @@ namespace CoreEngine
     [DefaultExecutionOrder((int)ExecutionOrder.ProjectContext)]
     public class ProjectContext : BaseContext<ProjectContext>
     {
-        
-        [Tooltip("GlobalScene에서 시작시 최종적으로 로드할 씬"),SerializeField] private SceneReference _firstScene;
-        public static SceneReference FirstScene => Inst?._firstScene;
 
         private CoreEngineSettingsSO CoreEngineSettings => CoreEngineSettingsSO.Instance;
 
@@ -64,7 +61,7 @@ namespace CoreEngine
             }
             else
             {
-                EventBus<SceneLoadRequestEvent>.Publish(new SceneLoadRequestEvent(FirstScene));
+                EventBus<SceneLoadRequestEvent>.Publish(new SceneLoadRequestEvent(CoreEngineSettings.FirstScene));
             }
         }
 

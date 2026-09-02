@@ -16,6 +16,7 @@ namespace CoreEngine.Settings
         // 런타임에서 다른 매니저들이 안전하게 읽을 수 있도록 프로퍼티 개방
         public SceneReference GlobalScene => _sceneTracker.globalScene;
         public SceneReference[] ExtensionSceneList => _sceneTracker.extensionSceneList;
+        public SceneReference FirstScene => _sceneTracker.firstScene;
 
         private static CoreEngineSettingsSO _instance;
         public static CoreEngineSettingsSO Instance

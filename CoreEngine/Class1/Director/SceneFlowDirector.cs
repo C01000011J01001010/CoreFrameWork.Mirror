@@ -75,28 +75,6 @@ namespace CoreEngine.Director
             }
         }
 
-        // 단독 씬 테스트 시작 요청을 받았을 때
-        protected void OnTestBootstrapRequest(SceneTestBootstrapRequestEvent evt)
-        {
-            LogHelper.LogFunctionCallStart(this);
-            if (!_isRoutine)
-            {
-                _isRoutine = true;
-                StartCoroutine(BootstrapTestSceneRoutine(evt.TestScene));
-            }
-        }
-
-        /// <summary>
-        /// 에디터 테스트 및 런타임 초기화 시, SceneContext가 자신의 씬 정보를 다이렉트로 등록하기 위한 함수
-        /// </summary>
-        public static void RegisterCurrentScene(Scene newScene)
-        {
-            currentScene = newScene;
-            SceneManagementHelper.SetActiveScene(currentScene);
-        }
-
-
-
         protected async Task ChangeScene(string sceneName)
         {
             // 수정된 SystemLoadingEvent 구조체(State, Message, Progress) 규격에 맞게 발송
@@ -129,6 +107,17 @@ namespace CoreEngine.Director
             while (!sceneChangeProgress.isDone) yield return null;
 
             yield return InitializeSceneSystemRoutine();
+        }
+
+        // 단독 씬 테스트 시작 요청을 받았을 때
+        protected void OnTestBootstrapRequest(SceneTestBootstrapRequestEvent evt)
+        {
+            LogHelper.LogFunctionCallStart(this);
+            if (!_isRoutine)
+            {
+                _isRoutine = true;
+                StartCoroutine(BootstrapTestSceneRoutine(evt.TestScene));
+            }
         }
 
         /// <summary>
@@ -173,6 +162,16 @@ namespace CoreEngine.Director
             EventBus<SystemLoadingEvent>.Publish(new SystemLoadingEvent(SystemLoadingEvent.State.Complete, "로딩 완료!", 1.0f));
 
             _isRoutine = false;
+        }
+
+
+        /// <summary>
+        /// 에디터 테스트 및 런타임 초기화 시, SceneContext가 자신의 씬 정보를 다이렉트로 등록하기 위한 함수
+        /// </summary>
+        public static void RegisterCurrentScene(Scene newScene)
+        {
+            currentScene = newScene;
+            SceneManagementHelper.SetActiveScene(currentScene);
         }
 
         // 필요시 재정의

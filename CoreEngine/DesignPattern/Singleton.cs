@@ -52,6 +52,8 @@ namespace CoreEngine.DesignPattern.Singleton
                     // 내가 새로운 전역 싱글톤의 주인이 됨
                     _inst = asT;
                     return;
+
+                    // *******LoadingDirector는 로딩 도중 사라지면 큰 사고이니 sealed로 막아뒀음
                 }
                 // 반대로 이미 더 구체적인 확장 클래스가 자리를 잡고 있다면 나는 조용히 파괴
                 else if (currentType.IsSubclassOf(myType))

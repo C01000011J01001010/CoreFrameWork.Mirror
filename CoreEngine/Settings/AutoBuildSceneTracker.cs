@@ -16,6 +16,7 @@ namespace CoreEngine.Settings
     {
         public SceneReference globalScene;
         public SceneReference[] extensionSceneList;
+        public SceneReference firstScene;
 
 #if UNITY_EDITOR
         [SerializeField, HideInInspector]
@@ -51,6 +52,9 @@ namespace CoreEngine.Settings
                         currentGuids.Add(ext.SceneGUID);
                 }
             }
+
+            if (firstScene != null && !string.IsNullOrEmpty(firstScene.SceneGUID))
+                currentGuids.Add(firstScene.SceneGUID);
 
             bool isModified = false;
 
@@ -113,7 +117,19 @@ namespace CoreEngine.Settings
                 }
             }
 
-            // 4-3. 남은 씬들은 기존 '상대 순서'를 유지하며 뒤에 이어붙임
+            // 4-3. First Scene은 맨 마지막에 배치 (GlobalScene과 Extension Scenes 뒤)
+            if (firstScene != null && !string.IsNullOrEmpty(firstScene.SceneGUID))
+            {
+                // FindIndex를 사용하여 정확하게 도려내고 참조 에러 원천 차단
+                int idx = buildScenes.FindIndex(s => s.guid.ToString() == firstScene.SceneGUID);
+                if (idx >= 0)
+                {
+                    sortedScenes.Add(buildScenes[idx]);
+                    buildScenes.RemoveAt(idx);
+                }
+            }
+
+            // 남은 씬들은 기존 '상대 순서'를 유지하며 뒤에 이어붙임
             sortedScenes.AddRange(buildScenes);
 
             // 4-4. "순서" 변경 검증

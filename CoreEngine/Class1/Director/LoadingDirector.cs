@@ -7,8 +7,9 @@ using UnityEngine.InputSystem;
 namespace CoreEngine.Loading
 {
     // Ui를 직접 다루기에 Director로써 특수한 초기화순서
+    // Singleton 클래스의 IsSubclassOf 하이재킹을 방지하기 위해 sealed로 봉인함
     [DefaultExecutionOrder((int)ExecutionOrder.Loading)]
-    internal class LoadingDirector : BaseDirector<LoadingDirector>
+    internal sealed class LoadingDirector : BaseDirector<LoadingDirector>
     {
         [Header("UI Reference")]
         [SerializeField] private SystemLoadingScreen loadingScreen;
@@ -19,19 +20,21 @@ namespace CoreEngine.Loading
         [Tooltip("유저에게 게임 툴팁을 보이기 위해 의도적으로 로딩 시간을 지연하는 경우 사용")]
         public float delaySeconds = 0.0f;
 
-        // 플랫폼 확장에 따라 추가적인 입력 감지 로직이 필요할 수 있으므로
-        // AnyInput을 virtual로 선언하여 상속받은 클래스에서 오버라이드 가능하도록 함
-        protected virtual bool AnyInput
+        // 외부(플랫폼별 모듈)에서 입력 평가 로직을 덮어씌울 수 있는 델리게이트 통로
+        public static System.Func<bool> CustomInputEvaluator;
+        private bool AnyInput
         {
             get
             {
-                // 키보드 입력 감지 (Null 안전성 확보)
+                // 플랫폼 확장 패키지에서 찔러넣은 커스텀 입력 로직이 있다면 최우선 적용
+                if (CustomInputEvaluator != null)
+                {
+                    return CustomInputEvaluator.Invoke();
+                }
+
+                // 주입된 커스텀 로직이 없다면 기본 PC(키보드/마우스) 로직 수행
                 bool isKeyboardPressed = Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame;
-
-                // 마우스 클릭 감지 (좌클릭 등)
                 bool isMouseClicked = Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
-
-                // 터치스크린, 게임패드 등 다른 입력 장치 감지 로직을 추가할 수 있음
 
                 return isKeyboardPressed || isMouseClicked;
             }

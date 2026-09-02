@@ -167,6 +167,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5199857996612474363, guid: 2aea4fd40f9687647ba059931cf35373, type: 3}
+      propertyPath: myScope
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8892109106311357209, guid: 2aea4fd40f9687647ba059931cf35373, type: 3}
       propertyPath: m_Name
       value: NetworkPoolManager
