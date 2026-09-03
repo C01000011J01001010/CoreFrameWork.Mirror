@@ -19,10 +19,10 @@ namespace CoreEngine.SceneManagement
         [SerializeField] private SceneAsset sceneAsset;
 #endif
 
-        // 런타임용 씬 경로 및 이름
-        [SerializeField] private string scenePath = string.Empty;
-        [SerializeField] private string sceneName = string.Empty;
-        [SerializeField] private string sceneGUID = string.Empty;
+        // 런타임용, 불필요한 수정을 사전 예방
+        [SerializeField, HideInInspector] private string scenePath = string.Empty;
+        [SerializeField, HideInInspector] private string sceneName = string.Empty;
+        [SerializeField, HideInInspector] private string sceneGUID = string.Empty;
 
         public string SceneName => sceneName;
         public string ScenePath => scenePath;
