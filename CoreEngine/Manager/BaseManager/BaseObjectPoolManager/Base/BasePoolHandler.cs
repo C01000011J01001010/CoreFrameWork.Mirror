@@ -96,7 +96,7 @@ namespace CoreEngine.Manager.Pool
                 // 네트워크 객체의 경우 active 이후 위치와 회전을 바꾸면 무시 될 수 있으니
                 // 먼저 Transform을 적용 후 active함
                 pObj.gameObject.SetActive(true);
-                pObj.OnSpawn();
+                //pObj.OnSpawn(); // OnSpawn은 상세 Handler에 위임
             }
             return pObj;
         }
