@@ -20,25 +20,22 @@ public abstract class VirtualCameraController : BaseActor
     protected virtual void Awake()
     {
         _repeatEventConsumer = new RepeatEventConsumer<SetCameraTargetEvent>(OnSetTarget);
-        _repeatEventConsumer.Bind();
-    }
-
-    private void OnDestroy()
-    {
-        _repeatEventConsumer.Unbind();
+        
     }
 
     protected override void OnEnable()
     {
         base.OnEnable();
-        // CameraManager에게 나(VirtualCamera)를 등록
+
+        _repeatEventConsumer.Bind();
         EventBus<RegisterVirtualCameraEvent>.Publish(new RegisterVirtualCameraEvent(this, true));
     }
 
     protected override void OnDisable()
     {
         base.OnDisable();
-        // CameraManager에서 나를 해제
+
+        _repeatEventConsumer.Unbind();
         EventBus<RegisterVirtualCameraEvent>.Publish(new RegisterVirtualCameraEvent(this, false));
     }
 

@@ -1,6 +1,4 @@
-using CoreEngine;
 using CoreEngine.EventBus;
-using CoreEngine.Manager;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,8 +10,8 @@ namespace CoreEngine.Manager
     #region Camera Events
     public struct RegisterVirtualCameraEvent : IEvent
     {
-        public VirtualCameraController Camera;
-        public bool IsRegister;
+        public readonly VirtualCameraController Camera;
+        public readonly bool IsRegister;
 
         public RegisterVirtualCameraEvent(VirtualCameraController camera, bool isRegister)
         {
@@ -24,18 +22,20 @@ namespace CoreEngine.Manager
 
     public struct SwitchCameraEvent : IEvent
     {
-        public Type TargetCameraType;
+        public readonly Type TargetCameraType;
+        public readonly Func<VirtualCameraController, bool> Predicate; // 카메라 선별 조건
 
-        public SwitchCameraEvent(Type targetCameraType)
+        public SwitchCameraEvent(Type targetCameraType, Func<VirtualCameraController, bool> predicate = null)
         {
             TargetCameraType = targetCameraType;
+            Predicate = predicate;
         }
     }
 
     public struct SetCameraTargetEvent : IEvent
     {
-        public Transform target;
-        public Type targetCameraType; // null이면 모든 카메라, 특정 타입이 있으면 해당 카메라만 타겟 변경
+        public readonly Transform target;
+        public readonly Type targetCameraType; // null이면 모든 카메라, 특정 타입이 있으면 해당 카메라만 타겟 변경
 
         public SetCameraTargetEvent(Transform target, Type targetCameraType = null)
         {
@@ -47,9 +47,14 @@ namespace CoreEngine.Manager
 
     public class CameraManager : BaseManager, ILateTickable
     {
+
         protected MainCameraController _mainCamera;
 
-        protected List<VirtualCameraController> _virtualCameras = new();
+        protected Dictionary<Type, HashSet<VirtualCameraController>> _virtualCameras = new();
+
+        // 지각하는 카메라를 위한 예약 슬롯
+        private SwitchCameraEvent? _pendingRequest = null;
+
         protected VirtualCameraController _currentCamera;
 
         // 이벤트 발행자가 먼저 발행하는 경우를 대비해서 RepeatEventConsumer를 사용하여 이벤트를 구독함
@@ -65,7 +70,7 @@ namespace CoreEngine.Manager
             // 이벤트 구독 (등록, 전환, 옵션변경 등)
             EventBus<RegisterVirtualCameraEvent>.Subscribe(OnVirtualCameraRegistered);
 
-            _repeatEventConsumer = new RepeatEventConsumer<SwitchCameraEvent>(OnSwitchCameraRequested);
+            _repeatEventConsumer = new RepeatEventConsumer<SwitchCameraEvent>(SwitchCamera);
             _repeatEventConsumer.Bind();
 
             if (_mainCamera != null)
@@ -86,44 +91,77 @@ namespace CoreEngine.Manager
 
         private void OnVirtualCameraRegistered(RegisterVirtualCameraEvent evt)
         {
-            if (evt.IsRegister && !_virtualCameras.Contains(evt.Camera))
-            {
-                _virtualCameras.Add(evt.Camera);
-            }
-            else if (!evt.IsRegister)
-            {
-                _virtualCameras.Remove(evt.Camera);
-            }
-        }
+            Type camType = evt.Camera.GetType();
 
-        private void OnSwitchCameraRequested(SwitchCameraEvent evt)
-        {
-            SwitchCamera(evt.TargetCameraType);
+            if (evt.IsRegister)
+            {
+                // Type키가 없다면 생성
+                if (!_virtualCameras.ContainsKey(camType))
+                    _virtualCameras.Add(camType, new HashSet<VirtualCameraController>());
+
+                _virtualCameras[camType].Add(evt.Camera);
+
+                // 예약된 카메라가 뒤늦게 출근했다면 즉시 렌즈를 넘김
+                if (_pendingRequest.HasValue && 
+                    _pendingRequest.Value.TargetCameraType == camType)
+                {
+                    var predicate = _pendingRequest.Value.Predicate;
+
+                    // 조건이 없거나, 새 카메라가 조건을 만족한다면 즉시 렌즈 전환!
+                    if (predicate == null || predicate(evt.Camera))
+                    {
+                        SwitchCamera(_pendingRequest.Value);
+                        _pendingRequest = null; // 예약 처리 완료
+                    }
+                }
+            }
+            else
+            {
+                if (_virtualCameras.ContainsKey(camType))
+                {
+                    _virtualCameras[camType].Remove(evt.Camera);
+                }
+
+                // 사용하던 카메라가 사라졌으니 null 처리
+                if (_currentCamera == evt.Camera)
+                {
+                    _currentCamera = null;
+                }
+            }
         }
 
         /// <summary>
         /// 특정 타입의 가상 카메라를 활성화 (Type 기반)
         /// </summary>
-        public VirtualCameraController SwitchCamera(Type cameraType)
+        protected void SwitchCamera(SwitchCameraEvent evt)
         {
-            var target = _virtualCameras.FirstOrDefault(vcam => vcam.GetType() == cameraType);
-
-            if (target != null)
+            if (_virtualCameras.TryGetValue(evt.TargetCameraType, out var cameras) && cameras.Count > 0)
             {
-                SetActiveCamera(target);
-                return target;
+                VirtualCameraController targetCam = null;
+
+                if (evt.Predicate != null)
+                {
+                    // LINQ를 활용하여 조건에 맞는 첫 번째 카메라 선별
+                    targetCam = cameras.FirstOrDefault(evt.Predicate);
+                }
+
+                // 조건이 없거나 조건에 맞는 카메라를 못 찾았다면, 집합의 가장 첫 번째 객체 반환
+                if (targetCam == null)
+                {
+                    targetCam = cameras.First();
+                }
+
+                SetActiveCamera(targetCam);
+
+                // 현재 필요한 카메라 세팅에 성공했으니 낡은 예약은 취소됨
+                if (_pendingRequest.HasValue)
+                    _pendingRequest = null;
             }
-
-            Debug.LogWarning($"VirtualCamera of type {cameraType}가 존재하지 않습니다.");
-            return null;
-        }
-
-        /// <summary>
-        /// 특정 타입의 가상 카메라를 활성화 (제네릭 기반 편의성 메서드)
-        /// </summary>
-        public T SwitchCamera<T>() where T : VirtualCameraController
-        {
-            return SwitchCamera(typeof(T)) as T;
+            else
+            {
+                // 씬에 해당 타입의 카메라가 하나도 없다면 요청을 통째로 예약
+                _pendingRequest = evt;
+            }
         }
 
         public T GetCurrentCamera<T>() where T : VirtualCameraController
@@ -134,29 +172,18 @@ namespace CoreEngine.Manager
             return null;
         }
 
-        private void SetActiveCamera(VirtualCameraController target)
+        private void SetActiveCamera(VirtualCameraController newCamera)
         {
-            if (_currentCamera == target) return;
+            var oldCamera = _currentCamera;
+            if (oldCamera == newCamera) return;
 
             // 비활성화 (GameObject를 끄지 않고 Priority를 0으로)
-            if (_currentCamera != null)
-                _currentCamera.SetActive(false);
+            if (oldCamera != null)
+                oldCamera.SetActive(false);
 
             // 활성화 (Priority를 10으로 올려서 렌즈를 가져옴)
-            _currentCamera = target;
-            _currentCamera.SetActive(true);
+            newCamera.SetActive(true);
+            _currentCamera = newCamera;
         }
-
-        public void ResetCamera()
-        {
-            // OptionChanged(OptionManager.appliedGraphicOption);
-        }
-
-        /* 옵션 매니저 연동용 주석 처리
-        public void OptionChanged(GraphicOptionValues value)
-        {
-            _currentCamera?.SetVerticalFOV(value.fileldOfView);
-        }
-        */
     }
 }
