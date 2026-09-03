@@ -17,9 +17,8 @@ namespace CoreEngine.Helpers
                 return null;
             }
             receiver.Bind();
-            receiver.TryGet(out iObj);
+            if(receiver.TryGet(out iObj)) return iObj;
 
-            if (!SystemHelper.isUnityNull(iObj)) return iObj;
             LogHelper.Log($"[{nameof(InterfaceHelper)}.{nameof(GetInterface)}] is Failed On {typeof(T)}", LogColor.Red);
             return null;
         }
