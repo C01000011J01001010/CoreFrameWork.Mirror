@@ -9,6 +9,6 @@ namespace CoreEngine.Manager.Pool.Test
     public static class TestPoolTracker
     {
         // LIFO(후입선출) 구조를 사용하여 가장 마지막에 생성된 객체부터 반환
-        public static Stack<GameObject> SpawnedObjects = new Stack<GameObject>();
+        public static Stack<IPoolable> SpawnedObjects = new Stack<IPoolable>();
     }
 }

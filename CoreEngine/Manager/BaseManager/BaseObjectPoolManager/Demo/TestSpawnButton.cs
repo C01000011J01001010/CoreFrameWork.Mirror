@@ -30,7 +30,7 @@ namespace CoreEngine.Manager.Pool.Test
 
             // 구별하기 쉽도록 랜덤한 좌표에 스폰
             Vector3 randomPos = new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f), 0);
-            GameObject spawnedObj = poolManager.Spawn(targetPoolType, randomPos);
+            IPoolable spawnedObj = poolManager.Spawn(targetPoolType, randomPos);
 
             if (spawnedObj != null)
             {

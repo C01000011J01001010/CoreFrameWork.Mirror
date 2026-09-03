@@ -24,13 +24,13 @@ namespace CoreEngine.Manager.Pool.Test
             }
 
             // 스택에서 가장 마지막에 생성된 객체를 꺼냄
-            GameObject targetObj = TestPoolTracker.SpawnedObjects.Pop();
+            IPoolable targetObj = TestPoolTracker.SpawnedObjects.Pop();
 
             // 유니티 씬 전환 중 파괴(Fake Null)되지 않고 온전히 살아있는 경우에만 접근[cite: 13]
-            if (targetObj != null && targetObj.TryGetComponent(out IPoolable poolableItem))
+            if (targetObj != null && targetObj.gameObject != null)
             {
                 // Manager를 거치지 않고 IObjectPool 참조를 이용해 즉각 Release 처리!
-                poolableItem.Releaser.Release(targetObj);
+                targetObj.Releaser.Release(targetObj);
             }
             else
             {

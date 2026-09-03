@@ -84,7 +84,7 @@ namespace CoreEngine.Manager.Pool
             {
                 if (!_handlers.TryGetValue(setup.poolType, out var handler)) continue;
 
-                List<GameObject> prewarmCache = new List<GameObject>(setup.defaultAmount);
+                List<IPoolable> prewarmCache = new List<IPoolable>(setup.defaultAmount);
 
                 for (int i = 0; i < setup.defaultAmount; i++)
                 {
@@ -106,13 +106,13 @@ namespace CoreEngine.Manager.Pool
 
         #region 외부 노출 API : 실제 연산은 Handler에 위임
 
-        public GameObject Spawn(TPoolType type, Vector3 position)
+        public IPoolable Spawn(TPoolType type, Vector3 position)
         {
             if (!_handlers.TryGetValue(type, out var handler)) return null;
             return handler.Spawn(position);
         }
 
-        public GameObject Spawn2D(TPoolType type, Vector2 position2D)
+        public IPoolable Spawn2D(TPoolType type, Vector2 position2D)
         {
             return Spawn(type, new Vector3(position2D.x, position2D.y, 0));
         }
