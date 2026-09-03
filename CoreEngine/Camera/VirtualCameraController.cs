@@ -54,7 +54,7 @@ public abstract class VirtualCameraController : BaseActor
         }
     }
 
-    public void OnSetTarget(SetCameraTargetEvent evt)
+    public virtual void OnSetTarget(SetCameraTargetEvent evt)
     {
         // 이벤트에 특정 타겟 카메라가 지정되어 있는데, 내 타입이 아니라면 무시! (전체 카메라가 돌아가는 것 방지)
         if (evt.targetCameraType != null && evt.targetCameraType != this.GetType())
