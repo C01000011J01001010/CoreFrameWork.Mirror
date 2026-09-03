@@ -43,12 +43,12 @@ namespace CoreEngine.Network.Lobby.Ui
         // --- IPoolable 생명주기 구현 ---
         public void OnSpawn()
         {
-            // 꺼내질 때 필요한 초기화가 있다면 여기서 처리[cite: 1]
+            // 꺼내질 때 필요한 초기화가 있다면 여기서 처리
         }
 
         public void OnDespawn()
         {
-            // 반환될 때 텍스트나 색상을 초기화하여 메모리 찌꺼기를 지웁니다[cite: 1]
+            // 반환될 때 텍스트나 색상을 초기화하여 메모리 찌꺼기를 지웁니다
             idText.text = "";
             ipText.text = "";
             backgroundImage.color = _originalColor;
@@ -57,14 +57,10 @@ namespace CoreEngine.Network.Lobby.Ui
         // 외부(UI 컨트롤러)에서 파괴 대신 호출할 함수
         public void ReturnToPool()
         {
-            // 객체지향의 "묻지 말고 시켜라" 원칙: Manager를 거치지 않고 직접 반환[cite: 1]
+            // Manager를 거치지 않고 직접 반환
             if (Releaser != null)
             {
-                Releaser.Release(gameObject);
-            }
-            else
-            {
-                Destroy(gameObject); // 풀 없이 생성되었을 때의 방어 로직
+                Releaser.Release(this);
             }
         }
     }

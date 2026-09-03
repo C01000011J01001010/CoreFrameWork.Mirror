@@ -8,10 +8,10 @@ namespace CoreEngine.Manager.Pool
     public class ObjectPoolHandler<TPoolType> : BasePoolHandler<TPoolType>
         where TPoolType : Enum
     {
-        public override void Release(GameObject obj)
+        public override void Release(IPoolable pObj)
         {
-            if (obj == null) return;
-            base.Release(obj);
+            if (pObj == null) return;
+            base.Release(pObj);
         }
     }
 }
