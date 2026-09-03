@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
+using static UnityEditor.FilePathAttribute;
 
 namespace CoreEngine.Manager.Pool
 {
@@ -31,7 +32,7 @@ namespace CoreEngine.Manager.Pool
 
             _pool = new ObjectPool<IPoolable>(
                 createFunc: CreateItem,
-                actionOnGet: OnTakeFromPool,
+                actionOnGet: null,
                 actionOnRelease: OnReturnedToPool,
                 actionOnDestroy: OnDestroyPoolObject,
 #if UNITY_EDITOR
@@ -51,6 +52,7 @@ namespace CoreEngine.Manager.Pool
         protected IPoolable CreateItem()
         {
             GameObject obj = UnityEngine.Object.Instantiate(_setup.prefab.gameObject, _parent);
+            obj.SetActive(false);
             if (obj.TryGetComponent(out IPoolable pObj))
             {
                 pObj.Releaser = this;
@@ -59,11 +61,6 @@ namespace CoreEngine.Manager.Pool
             return null;
         }
 
-        protected void OnTakeFromPool(IPoolable pObj)
-        {
-            pObj.gameObject.SetActive(true);
-            pObj.OnSpawn();
-        }
 
         protected void OnReturnedToPool(IPoolable pObj)
         {
@@ -84,12 +81,23 @@ namespace CoreEngine.Manager.Pool
         #endregion
 
         #region 외부 API
-        public virtual IPoolable Spawn(Vector3 position)
+        /// <summary>
+        /// 스폰 이후 position과 rotation을 코드로 바꾸지 않도록 명시함
+        /// </summary>
+        public virtual IPoolable Spawn(Vector3 position, Quaternion rotation, Transform parent = null)
         {
             IPoolable pObj = _pool.Get();
-            if (pObj != null && pObj.transform != null)
+            if (pObj != null && pObj.gameObject != null)
+            {
+                pObj.transform.SetParent(parent); // null이면 root로 이동
                 pObj.transform.position = position;
+                pObj.transform.rotation = rotation;
 
+                // 네트워크 객체의 경우 active 이후 위치와 회전을 바꾸면 무시 될 수 있으니
+                // 먼저 Transform을 적용 후 active함
+                pObj.gameObject.SetActive(true);
+                pObj.OnSpawn();
+            }
             return pObj;
         }
 
@@ -117,8 +125,5 @@ namespace CoreEngine.Manager.Pool
             _pool.Release(pObj);
         }
         #endregion
-
-
-
     }
 }

@@ -106,15 +106,16 @@ namespace CoreEngine.Manager.Pool
 
         #region 외부 노출 API : 실제 연산은 Handler에 위임
 
-        public IPoolable Spawn(TPoolType type, Vector3 position)
+        public IPoolable Spawn(TPoolType type, Vector3 position, Quaternion rotation, Transform parent = null)
         {
             if (!_handlers.TryGetValue(type, out var handler)) return null;
-            return handler.Spawn(position);
+            return handler.Spawn(position, rotation, parent);
         }
 
-        public IPoolable Spawn2D(TPoolType type, Vector2 position2D)
+        // 2D는 rotation이 필요 없을 수 있지만 명시적 처리를 위해 열어둠
+        public IPoolable Spawn2D(TPoolType type, Vector2 position2D, Quaternion rotation, Transform parent = null)
         {
-            return Spawn(type, new Vector3(position2D.x, position2D.y, 0));
+            return Spawn(type, new Vector3(position2D.x, position2D.y, 0), rotation, parent);
         }
         #endregion
 
