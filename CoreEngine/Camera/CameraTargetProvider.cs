@@ -12,7 +12,7 @@ namespace CoreEngine.CameraSystem
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if(_targetTransform != null)
+            if(_targetTransform == null)
             {
                 _targetTransform = gameObject.transform;
             }
