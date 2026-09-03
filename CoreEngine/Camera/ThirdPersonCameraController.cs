@@ -26,26 +26,10 @@ namespace CoreEngine.CameraSystem
         private InterfaceReceiver<IScollDeltaInput> _ScrollDeltaReceiver = new();
 
         private ILookInput _lookInput;
-        private ILookInput LookInput
-        {
-            get
-            {
-                if (_lookInput != null) return _lookInput;
-                _lookReceiver?.TryGet(out _lookInput);
-                return _lookInput;
-            }
-        }
+        private ILookInput LookInput => InterfaceHelper.GetInterface(ref _lookInput, _lookReceiver);
 
         private IScollDeltaInput _scollDeltaInput;
-        private IScollDeltaInput ScollDeltaInput
-        {
-            get
-            {
-                if (_scollDeltaInput != null) return _scollDeltaInput;
-                _ScrollDeltaReceiver?.TryGet(out _scollDeltaInput);
-                return _scollDeltaInput;
-            }
-        }
+        private IScollDeltaInput ScollDeltaInput => InterfaceHelper.GetInterface(ref _scollDeltaInput, _ScrollDeltaReceiver);
 
         private bool isMouseLock = true;
 
