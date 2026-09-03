@@ -11,6 +11,9 @@ namespace CoreEngine.EventBus
         bool DebugLogEnabled { get; set; }
         int SubscriberCount { get; }
         void ClearBus();
+
+        // 구독 중인 함수(Action) 목록을 배열로 반환하는 기능
+        Delegate[] GetSubscribers();
     }
 
     public static class EventBusRegistry
@@ -18,7 +21,7 @@ namespace CoreEngine.EventBus
         public static readonly List<IEventBusControl> ActiveBuses = new();
         public static bool MasterDebugLog = false;
 
-        // 💡 팁: 유니티 에디터에서 Play 버튼을 누를 때마다 리스트를 초기화해줍니다.
+        // 유니티 에디터에서 Play 버튼을 누를 때마다 리스트를 초기화해줍니다.
         // (에디터 환경에서 플레이/정지를 반복할 때 리스트가 무한 증식하는 것을 방지)
         [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ClearRegistry()
@@ -27,7 +30,7 @@ namespace CoreEngine.EventBus
         }
     }
 
-    // 💡 EventBus.cs의 나머지 절반을 여기서 구현합니다.
+    // EventBus.cs의 나머지 절반을 여기서 구현합니다.
     public static partial class EventBus<T>
     {
         private static bool _enableDebugLog = false;
@@ -48,13 +51,24 @@ namespace CoreEngine.EventBus
         {
             public string EventTypeName => typeof(T).Name;
             public bool DebugLogEnabled { get => _enableDebugLog; set => _enableDebugLog = value; }
-            public int SubscriberCount => OnEvent?.GetInvocationList().Length ?? 0;
+
+            public int SubscriberCount => OnEventSet.Count;
             public void ClearBus() => Clear();
+
+            // HashSet 순회 후 델리게이트 배열로 반환
+            public Delegate[] GetSubscribers()
+            {
+                Delegate[] delegates = new Delegate[OnEventSet.Count];
+                int idx = 0;
+                foreach (var action in OnEventSet)
+                {
+                    delegates[idx++] = action;
+                }
+                return delegates;
+            }
         }
 
-        // =================================================================
-        // 실제 로그를 출력하는 Conditional 메서드들 (이전 코드에서 누락된 부분)
-        // =================================================================
+        #region 실제 로그를 출력하는 Conditional 메서드들
         [Conditional("UNITY_EDITOR")]
         private static void LogPublish()
         {
@@ -77,6 +91,8 @@ namespace CoreEngine.EventBus
             if (!EnableDebugLog) return;
             UnityEngine.Debug.Log($"<color=#00FF00>[EventBus]</color> Unsubscribe: <b>{typeof(T).Name}</b> (by {handler.Target?.GetType().Name})");
         }
+        #endregion
     }
 }
+
 #endif
