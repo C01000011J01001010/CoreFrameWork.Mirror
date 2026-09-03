@@ -2,7 +2,7 @@
 
 namespace CoreEngine.Manager.Input
 {
-    internal interface IMoveInput
+    public interface IMoveInput
     {
         /// <summary>
         /// wasd 입력

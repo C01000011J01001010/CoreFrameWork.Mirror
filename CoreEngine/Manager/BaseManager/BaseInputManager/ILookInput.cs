@@ -2,7 +2,7 @@
 
 namespace CoreEngine.Manager.Input
 {
-    internal interface ILookInput
+    public interface ILookInput
     {
         /// <summary>
         /// 마우스 이동 입력

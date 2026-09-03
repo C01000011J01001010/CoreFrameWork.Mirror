@@ -1,7 +1,7 @@
 ﻿
 namespace CoreEngine.Manager.Input
 {
-    internal interface IScollDeltaInput
+    public interface IScollDeltaInput
     {
         /// <summary>
         /// 마우스 y축 휠 입력
