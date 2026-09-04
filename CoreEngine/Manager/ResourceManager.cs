@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections;
+﻿using CoreEngine.EventBus;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -12,27 +12,21 @@ namespace CoreEngine.Manager
     /// </summary>
     public class ResourceManager : BaseManager, IPriority
     {
-        // 싱글톤 캐싱 (유저님의 Hub/Facade 환경에 맞춰 접근 방식을 변형하셔도 좋습니다)
-        public static ResourceManager Inst { get; private set; }
-
         public int Priority => (int)ManagerPriority.Infrastructure;
 
-        // 🌟 핵심: 제네릭 타입을 섞어서 보관하기 위해 비제네릭 AsyncOperationHandle 사용
-        // 1. 공용 저장소 (게임 종료 시까지 유지)
-        private Dictionary<string, AsyncOperationHandle> _globalHandles = new();
+        private readonly Dictionary<string, AsyncOperationHandle> _globalHandles = new();
+        private readonly Dictionary<string, AsyncOperationHandle> _sceneHandles = new();
 
-        // 2. 씬 전용 저장소 (씬 전환 시 비워짐)
-        private Dictionary<string, AsyncOperationHandle> _sceneHandles = new();
-
-        protected override void Awake()
+        protected override void OnEnable()
         {
-            base.Awake();
-            Inst = this;
+            base.OnEnable();
+            EventBus<SceneLoadRequestEvent>.Subscribe(OnLoadSceneRequset);
         }
 
-        public override IEnumerator Initialize()
+        protected override void OnDisable()
         {
-            yield break;
+            base.OnDisable();
+            EventBus<SceneLoadRequestEvent>.Unsubscribe(OnLoadSceneRequset);
         }
 
         public override void Exit()
@@ -42,97 +36,144 @@ namespace CoreEngine.Manager
         }
 
         // =========================================================
-        // [비동기 로드 시스템] : 어떤 타입(T)이든 로드 가능
+        // [Public API]
+        // =========================================================
+
+        public void LoadSceneAssetAsync<T>(string address, Action<T> onComplete) where T : UnityEngine.Object
+        {
+            string cacheKey = $"Addr_{address}";
+            ProcessHandleLoad(
+                cacheKey,
+                _sceneHandles,
+                () => Addressables.LoadAssetAsync<T>(address),
+                (handle) => InvokeCallbackSafely(handle, onComplete),
+                address
+            );
+        }
+
+        public void LoadGlobalAssetAsync<T>(string address, Action<T> onComplete) where T : UnityEngine.Object
+        {
+            string cacheKey = $"Addr_{address}";
+            ProcessHandleLoad(
+                cacheKey,
+                _globalHandles,
+                () => Addressables.LoadAssetAsync<T>(address),
+                (handle) => InvokeCallbackSafely(handle, onComplete),
+                address
+            );
+        }
+
+        public void LoadSceneAssetsByLabelAsync<T>(string label, Action<IList<T>> onComplete) where T : UnityEngine.Object
+        {
+            string cacheKey = $"Label_{label}";
+            ProcessHandleLoad(
+                cacheKey,
+                _sceneHandles,
+                () => Addressables.LoadAssetsAsync<T>(label, null),
+                (handle) => InvokeLabelCallbackSafely(handle, onComplete),
+                label
+            );
+        }
+
+        public void LoadGlobalAssetsByLabelAsync<T>(string label, Action<IList<T>> onComplete) where T : UnityEngine.Object
+        {
+            string cacheKey = $"Label_{label}";
+            ProcessHandleLoad(
+                cacheKey,
+                _globalHandles,
+                () => Addressables.LoadAssetsAsync<T>(label, null),
+                (handle) => InvokeLabelCallbackSafely(handle, onComplete),
+                label
+            );
+        }
+
+        // =========================================================
+        // [통합 비동기 생명주기 제어 코어]
         // =========================================================
 
         /// <summary>
-        /// 씬 전환 시 자동으로 해제될 에셋을 비동기로 로드합니다. (지도 타일, 씬 전용 UI 등)
+        /// 단일/다중 로드 방식에 관계없이 캐시 검사 및 비동기 콜백 처리를 전담하는 공통 함수
         /// </summary>
-        public void LoadSceneAssetAsync<T>(string address, Action<T> onComplete) where T : UnityEngine.Object
+        private void ProcessHandleLoad(
+            string cacheKey,
+            Dictionary<string, AsyncOperationHandle> handleDict,
+            Func<AsyncOperationHandle> loadFunc,
+            Action<AsyncOperationHandle> onResult,
+            string logIdentifier)
         {
-            LoadAssetInternal(address, _sceneHandles, onComplete);
-        }
-
-        /// <summary>
-        /// 게임 종료 시까지 유지될 에셋을 비동기로 로드합니다. (공용 UI, 시스템 사운드 등)
-        /// </summary>
-        public void LoadGlobalAssetAsync<T>(string address, Action<T> onComplete) where T : UnityEngine.Object
-        {
-            LoadAssetInternal(address, _globalHandles, onComplete);
-        }
-
-        private void LoadAssetInternal<T>(string address, Dictionary<string, AsyncOperationHandle> handleDict, Action<T> onComplete) where T : UnityEngine.Object
-        {
-            // 1. 이미 캐시에 존재하는지 검사 (중복 로드 방지)
-            if (handleDict.TryGetValue(address, out AsyncOperationHandle existingHandle))
+            // 이미 캐시에 존재하는지 검사 (중복 로드 방지)
+            if (handleDict.TryGetValue(cacheKey, out AsyncOperationHandle existingHandle))
             {
                 if (existingHandle.IsDone)
                 {
-                    // 로드가 끝난 상태면 즉시 콜백 반환
-                    onComplete?.Invoke(existingHandle.Result as T);
+                    onResult?.Invoke(existingHandle);
                 }
                 else
                 {
-                    // 아직 로드 중이면 완료 이벤트에 대기열(콜백)만 추가
-                    existingHandle.Completed += (op) => onComplete?.Invoke(op.Result as T);
+                    existingHandle.Completed += (op) =>
+                    {
+                        if (handleDict.ContainsKey(cacheKey))
+                        {
+                            onResult?.Invoke(op);
+                        }
+                    };
                 }
                 return;
             }
 
-            // 2. 캐시에 없다면 새로 로드 요청
-            var newHandle = Addressables.LoadAssetAsync<T>(address);
-            handleDict.Add(address, newHandle);
+            // 전달받은 팩토리 함수(loadFunc)로 비동기 작업 시작
+            var newHandle = loadFunc.Invoke();
+            handleDict.Add(cacheKey, newHandle);
 
             newHandle.Completed += (op) =>
             {
+                // 로드 대기 중 Release가 발생했는지 검사
+                if (!handleDict.ContainsKey(cacheKey))
+                {
+                    Debug.LogWarning($"[ResourceManager] 로드 완료 전 해제되었습니다: {logIdentifier}");
+                    return;
+                }
+
                 if (op.Status == AsyncOperationStatus.Succeeded)
                 {
-                    onComplete?.Invoke(op.Result);
+                    onResult?.Invoke(op);
                 }
                 else
                 {
-                    Debug.LogError($"[ResourceManager] 에셋 로드 실패: {address}");
-                    handleDict.Remove(address); // 실패 시 딕셔너리에서 지워 재시도 가능하게 함
+                    Debug.LogError($"[ResourceManager] 에셋 로드 실패: {logIdentifier}");
+                    handleDict.Remove(cacheKey);
                 }
             };
         }
 
-        /// <summary>
-        /// 라벨(Label)을 통해 다수의 공용 에셋을 한 번에 비동기 로드합니다.
-        /// </summary>
-        public void LoadGlobalAssetsByLabelAsync<T>(string label, Action<IList<T>> onComplete) where T : UnityEngine.Object
+        // =========================================================
+        // [안전한 콜백 파싱 헬퍼]
+        // =========================================================
+
+        private void InvokeCallbackSafely<T>(AsyncOperationHandle handle, Action<T> onComplete) where T : UnityEngine.Object
         {
-            // 1. 이미 캐시에 라벨 로드 기록이 있는지 검사
-            if (_globalHandles.TryGetValue(label, out AsyncOperationHandle existingHandle))
+            if (handle.Result is T resultAsset)
             {
-                if (existingHandle.IsDone)
-                {
-                    onComplete?.Invoke(existingHandle.Result as IList<T>);
-                }
-                else
-                {
-                    existingHandle.Completed += (op) => onComplete?.Invoke(op.Result as IList<T>);
-                }
-                return;
+                onComplete?.Invoke(resultAsset);
             }
-
-            // 2. 캐시에 없다면 라벨로 다중 로드 요청
-            // 두 번째 인자(callback)를 null로 주면, 개별 콜백 대신 최종 완성된 IList<T>만 반환받습니다.
-            var newHandle = Addressables.LoadAssetsAsync<T>(label, null);
-            _globalHandles.Add(label, newHandle);
-
-            newHandle.Completed += (op) =>
+            else
             {
-                if (op.Status == AsyncOperationStatus.Succeeded)
-                {
-                    onComplete?.Invoke(op.Result);
-                }
-                else
-                {
-                    Debug.LogError($"[ResourceManager] 라벨 기반 에셋 로드 실패: {label}");
-                    _globalHandles.Remove(label);
-                }
-            };
+                Debug.LogError($"[ResourceManager] 타입 불일치! 요청 타입: {typeof(T).Name}, 실제 타입: {handle.Result?.GetType().Name ?? "null"}");
+                onComplete?.Invoke(null);
+            }
+        }
+
+        private void InvokeLabelCallbackSafely<T>(AsyncOperationHandle handle, Action<IList<T>> onComplete) where T : UnityEngine.Object
+        {
+            if (handle.Result is IList<T> resultList)
+            {
+                onComplete?.Invoke(resultList);
+            }
+            else
+            {
+                Debug.LogError($"[ResourceManager] 라벨 리스트 타입 불일치! 요청 타입: {typeof(T).Name}");
+                onComplete?.Invoke(null);
+            }
         }
 
         // =========================================================
@@ -157,6 +198,12 @@ namespace CoreEngine.Manager
             }
             _globalHandles.Clear();
             Debug.Log("[ResourceManager] 공용 에셋 메모리 해제 완료");
+        }
+
+        // 새로운 씬 로드시 이전 씬은 필요없음
+        private void OnLoadSceneRequset(SceneLoadRequestEvent evt)
+        {
+            ReleaseSceneAssets();
         }
     }
 }

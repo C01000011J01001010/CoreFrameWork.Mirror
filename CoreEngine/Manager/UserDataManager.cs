@@ -7,7 +7,7 @@ using CoreEngine.Helpers; // JsonSerializer (및 Binary) 사용
 
 namespace CoreEngine.Manager
 {
-    public class DataManager : BaseManager, IPriority
+    public class UserDataManager : BaseManager, IPriority
     {
         public int Priority => (int)ManagerPriority.Infrastructure;
 

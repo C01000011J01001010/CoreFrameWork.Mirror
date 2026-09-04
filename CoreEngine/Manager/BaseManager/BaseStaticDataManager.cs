@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using CoreEngine.Data;
+using CoreEngine.Facades;
 
 namespace CoreEngine.Manager
 {
@@ -27,7 +28,8 @@ namespace CoreEngine.Manager
 
             // 1. 방금 구축한 순수 리소스 매니저를 통해 정적 DB 에셋 비동기 로드
             // (게임 종료 시까지 유지되어야 하므로 GlobalAsset으로 로드)
-            ResourceManager.Inst.LoadGlobalAssetAsync<ScriptableObject>(CatalogAddress, (loadedAsset) =>
+            ResourceManager resouce = CoreFacade.GetManager<ResourceManager>();
+            resouce.LoadGlobalAssetAsync<ScriptableObject>(CatalogAddress, (loadedAsset) =>
             {
                 OnLoadedDataBase(loadedAsset);
                 isLoadComplete = true;

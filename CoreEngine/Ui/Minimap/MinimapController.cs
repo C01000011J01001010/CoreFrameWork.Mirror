@@ -4,6 +4,7 @@ using CoreEngine.LevelDesign;
 using CoreEngine.Manager; // 범용 프레임워크인 ResourceManager 호출용
 using UnityEngine;
 using UnityEngine.UI;
+using CoreEngine.Facades;
 
 namespace CoreEngine.UI
 {
@@ -38,6 +39,17 @@ namespace CoreEngine.UI
         private string[] _currentTileAddresses = new string[9];
 
         public LateTickGroup LateTickGroup => LateTickGroup.Ui;
+
+        private ResourceManager _resourceManager;
+        private ResourceManager ResourceManager
+        {
+            get
+            {
+                if (_resourceManager != null) return _resourceManager;
+                _resourceManager = CoreFacade.GetManager<ResourceManager>();
+                return _resourceManager;
+            }
+        }
 
         protected override void OnEnable()
         {
@@ -150,7 +162,7 @@ namespace CoreEngine.UI
 
                             // 3. ✨ 범용 프레임워크인 ResourceManager에게 로드 및 캐싱 위임
                             // 컨트롤러는 내부가 Addressables인지, 로컬 파일인지 몰라도 됨!
-                            ResourceManager.Inst.LoadSceneAssetAsync<Texture2D>(targetAddress, (loadedTex) =>
+                            ResourceManager.LoadSceneAssetAsync<Texture2D>(targetAddress, (loadedTex) =>
                             {
                                 // 🌟 Race Condition 방어 🌟
                                 // 로딩에 0.5초가 걸렸는데, 그 사이 플레이어가 엄청 빨리 이동해서
