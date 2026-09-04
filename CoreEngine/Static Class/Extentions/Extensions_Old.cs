@@ -10,7 +10,7 @@ using UnityEditor.VersionControl;
 using UnityEngine;
 using CoreEngine.Helpers;
 
-namespace CoreEngine.Extentions
+namespace CoreEngine.Extensions
 {
     public static class Extensions_Old
     {

@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEditor.Presets;
 using UnityEngine;
 
-namespace CoreEngine.EditorTools
+namespace CoreEditor.EditorTools
 {
     [CreateAssetMenu(fileName = "TextureOverrideRule", menuName = "CoreEngine/Tools/Rules/Texture Import Rule")]
     public class TexturePresetRuleSO : PresetOverrideRuleSO

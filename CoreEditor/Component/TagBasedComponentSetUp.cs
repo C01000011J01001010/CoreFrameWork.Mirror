@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CustomTools.Editor
+namespace CoreEditor.EditorTools
 {
-    public class TagComponentSetupTool : EditorWindow
+    public class TagBasedComponentSetUp : EditorWindow
     {
         private enum TransactionState
         {
@@ -38,10 +38,10 @@ namespace CustomTools.Editor
         // ✨ 개선점: 내부 리스트별 스크롤 변수들을 모두 제거하고, 창 전체를 관장하는 메인 스크롤 변수 하나만 사용합니다.
         private Vector2 _mainWindowScrollPosition;
 
-        [MenuItem("Tools/Tag Component Setup Tool")]
+        [MenuItem(Constants.ToolRootComponent+ "Tag Based Component SetUp")]
         public static void ShowWindow()
         {
-            var window = GetWindow<TagComponentSetupTool>("Tag Component Setup");
+            var window = GetWindow<TagBasedComponentSetUp>("Tag Based Component SetUp");
             window.minSize = new Vector2(450, 650);
             window.Show();
         }

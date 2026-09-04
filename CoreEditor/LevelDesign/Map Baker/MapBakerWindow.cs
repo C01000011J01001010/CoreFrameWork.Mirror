@@ -13,7 +13,7 @@ namespace CoreEditor.LevelDesign
         private SerializedObject _profileSO;
         private Vector2 _scrollPos;
 
-        [MenuItem("Tools/Core System/Map Baker")]
+        [MenuItem(Constants.ToolRootLevelDesgin+"Map Baker")]
         public static void ShowWindow() => GetWindow<MapBakerWindow>("Map Baker");
 
         private void OnEnable()

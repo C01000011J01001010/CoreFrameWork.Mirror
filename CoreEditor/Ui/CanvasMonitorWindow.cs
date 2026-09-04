@@ -2,9 +2,9 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
-namespace CustomTools.Editor
+namespace CoreEditor.EditorTools
 {
-    public class CanvasMonitorTool : EditorWindow
+    public class CanvasMonitorWindow : EditorWindow
     {
         // 캔버스 데이터를 저장할 리스트
         private List<Canvas> _activeCanvases = new List<Canvas>();
@@ -18,10 +18,10 @@ namespace CustomTools.Editor
         private GUIStyle _headerStyle;
         private GUIStyle _itemStyle;
 
-        [MenuItem("Tools/Core System/Canvas Monitor")]
+        [MenuItem(Constants.ToolRootUi+"Canvas Monitor")]
         public static void ShowWindow()
         {
-            var window = GetWindow<CanvasMonitorTool>("Canvas Monitor");
+            var window = GetWindow<CanvasMonitorWindow>("Canvas Monitor");
             window.minSize = new Vector2(300, 400);
             window.Show();
         }

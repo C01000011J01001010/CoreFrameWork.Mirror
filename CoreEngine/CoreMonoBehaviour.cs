@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using CoreEngine.Extentions;
+using CoreEngine.Extensions;
 
 namespace CoreEngine
 {

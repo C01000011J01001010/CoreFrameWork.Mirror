@@ -4,7 +4,7 @@ using UnityEditorInternal;
 using System;
 using System.Collections.Generic;
 
-namespace CustomTools.Editor
+namespace CoreEditor.EditorTools
 {
     public class PrefabComponentInjectorTool : BaseTransactionToolWindow
     {
@@ -22,7 +22,7 @@ namespace CustomTools.Editor
         // 임시 추가된 컴포넌트 추적 리스트
         private List<InjectedData> _injectedDataTracker = new List<InjectedData>();
 
-        [MenuItem("Tools/Core System/Prefab Component Injector")]
+        [MenuItem(Constants.ToolRootComponentPrefab + "Prefab Component Injector")]
         public static void ShowWindow()
         {
             var window = GetWindow<PrefabComponentInjectorTool>("Prefab Injector");

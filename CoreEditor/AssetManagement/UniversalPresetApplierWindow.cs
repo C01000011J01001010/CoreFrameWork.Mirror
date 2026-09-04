@@ -1,10 +1,11 @@
+using CoreEditor;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Presets;
 using UnityEngine;
 
-namespace CoreEngine.EditorTools
+namespace CoreEditor.EditorTools
 {
     public class UniversalPresetApplierWindow : EditorWindow
     {
@@ -15,7 +16,7 @@ namespace CoreEngine.EditorTools
         private SerializedObject _so;
         private SerializedProperty _foldersProp;
 
-        [MenuItem("Tools/Core System/Universal Preset Applier")]
+        [MenuItem(Constants.ToolRootAsset + "Universal Preset Applier")]
         public static void ShowWindow()
         {
             var window = GetWindow<UniversalPresetApplierWindow>("Preset Applier");
@@ -52,7 +53,7 @@ namespace CoreEngine.EditorTools
 
             EditorGUILayout.Space(10);
 
-            // 🌟 실시간 타입 검증 피드백 UI
+            // 실시간 타입 검증 피드백 UI
             DrawTypeCompatibilityFeedback();
 
             EditorGUILayout.Space(10);
@@ -87,7 +88,7 @@ namespace CoreEngine.EditorTools
         private void ApplyPresetToFolders()
         {
             // ==========================================
-            // 🛡️ 3대 필수 조건 검증 (Guard Clauses)
+            // 3대 필수 조건 검증 (Guard Clauses)
             // ==========================================
 
             // [조건 1] 최소 1개 이상의 유효한 폴더가 포함되어 있는가?

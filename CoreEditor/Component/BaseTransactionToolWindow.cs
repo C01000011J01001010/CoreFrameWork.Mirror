@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
-namespace CustomTools.Editor
+namespace CoreEditor.EditorTools
 {
     public abstract class BaseTransactionToolWindow : EditorWindow
     {

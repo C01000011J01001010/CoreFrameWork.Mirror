@@ -3,7 +3,7 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-namespace CustomTools.Editor
+namespace CoreEditor.EditorTools
 {
     public class PrefabComponentRemoverTool : BaseTransactionToolWindow
     {
@@ -11,7 +11,7 @@ namespace CustomTools.Editor
         private GameObject _targetParent;
         private GameObject _presetObject;
 
-        [MenuItem("Tools/Core System/Prefab Component Remover")]
+        [MenuItem(Constants.ToolRootComponentPrefab + "Prefab Component Remover")]
         public static void ShowWindow()
         {
             var window = GetWindow<PrefabComponentRemoverTool>("Prefab Remover");

@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using CoreEngine.Settings;
 
-namespace CoreEngine.Extentions
+namespace CoreEngine.Extensions
 {
     public static class ScopeValidationExtensions
     {

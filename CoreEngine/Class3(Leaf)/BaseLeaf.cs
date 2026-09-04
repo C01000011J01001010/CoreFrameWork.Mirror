@@ -1,6 +1,6 @@
 ﻿using CoreEngine;
 using CoreEngine.EventBus;
-using CoreEngine.Extentions;
+using CoreEngine.Extensions;
 using UnityEngine;
 
 namespace CoreEngine

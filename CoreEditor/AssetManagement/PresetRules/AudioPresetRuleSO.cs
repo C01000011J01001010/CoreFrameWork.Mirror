@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEditor.Presets;
 using UnityEngine;
 
-namespace CoreEngine.EditorTools
+namespace CoreEditor.EditorTools
 {
     [CreateAssetMenu(fileName = "AudioOverrideRule", menuName = "CoreEngine/Tools/Rules/Audio Import Rule")]
     public class AudioPresetRuleSO : PresetOverrideRuleSO

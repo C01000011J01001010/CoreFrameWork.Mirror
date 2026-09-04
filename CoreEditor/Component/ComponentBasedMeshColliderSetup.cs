@@ -2,9 +2,9 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
-namespace CustomTools.Editor
+namespace CoreEditor.EditorTools
 {
-    public class MeshColliderSetupTool : EditorWindow
+    public class ComponentBasedMeshColliderSetup : EditorWindow
     {
         private enum TransactionState
         {
@@ -27,10 +27,10 @@ namespace CustomTools.Editor
         private Vector2 _scrollPositionProcessed;
         private Vector2 _scrollPositionOther;
 
-        [MenuItem("Tools/MeshCollider Setup Tool")]
+        [MenuItem(Constants.ToolRootComponent+ "Component Based MeshCollider Setup")]
         public static void ShowWindow()
         {
-            var window = GetWindow<MeshColliderSetupTool>("MeshCollider Setup");
+            var window = GetWindow<ComponentBasedMeshColliderSetup>("Component Based MeshCollider Setup");
             window.minSize = new Vector2(400, 520);
             window.Show();
         }

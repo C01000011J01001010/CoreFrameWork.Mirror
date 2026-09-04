@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace CoreEngine.Extentions
+namespace CoreEngine.Extensions
 {
     // Extentions.UiAnchor
 

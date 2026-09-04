@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CustomTools.Editor
+namespace CoreEditor.EditorTools
 {
-    public class GenericComponentBuilderTool : EditorWindow
+    public class ComponentBasedComponentSetUp : EditorWindow
     {
         private enum TransactionState { Idle, Staged, Committed }
 
@@ -33,10 +33,10 @@ namespace CustomTools.Editor
         private Vector2 _scrollTarget;
         private Vector2 _scrollProcessed;
 
-        [MenuItem("Tools/Generic Component Builder Tool")]
+        [MenuItem(Constants.ToolRootComponent+ "Component Based Component SetUp")]
         public static void ShowWindow()
         {
-            var window = GetWindow<GenericComponentBuilderTool>("Component Builder");
+            var window = GetWindow<ComponentBasedComponentSetUp>("Component Based Component SetUp");
             window.minSize = new Vector2(550, 600);
             window.Show();
         }
