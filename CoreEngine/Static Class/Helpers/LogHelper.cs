@@ -95,6 +95,26 @@ namespace CoreEngine.Helpers
             UnityEngine.Debug.Log(message);
 #endif
         }
+
+        [Conditional("UNITY_EDITOR")]
+        [Conditional("DEVELOPMENT_BUILD")]
+        public static void LogWarning(string message, string color = LogColor.Default)
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (color != LogColor.Default) message = $"<color={color}>{message}</color>";
+            UnityEngine.Debug.LogWarning(message);
+#endif
+        }
+
+        [Conditional("UNITY_EDITOR")]
+        [Conditional("DEVELOPMENT_BUILD")]
+        public static void LogError(string message, string color = LogColor.Default)
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (color != LogColor.Default) message = $"<color={color}>{message}</color>";
+            UnityEngine.Debug.LogError(message);
+#endif
+        }
     }
 
     // 전역에서 아주 예쁘고 직관적으로 쓸 수 있는 최고의 구조입니다!

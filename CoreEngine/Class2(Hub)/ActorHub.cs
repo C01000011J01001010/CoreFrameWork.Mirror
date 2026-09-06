@@ -80,6 +80,15 @@ namespace CoreEngine.Hub
                 }
             }
         }
+        private void AddToRegistry(Type type, IActor actor)
+        {
+            if (!_actorRegistry.TryGetValue(type, out var set))
+            {
+                set = new HashSet<IActor>();
+                _actorRegistry[type] = set;
+            }
+            set.Add(actor);
+        }
 
         protected override void UnregisterLeaf(ActorRegistrationEvent evt)
         {
@@ -98,16 +107,6 @@ namespace CoreEngine.Hub
             }
         }
 
-        private void AddToRegistry(Type type, IActor actor)
-        {
-            if (!_actorRegistry.TryGetValue(type, out var set))
-            {
-                set = new HashSet<IActor>();
-                _actorRegistry[type] = set;
-            }
-            set.Add(actor);
-        }
-
         private void RemoveFromRegistry(Type type, IActor actor)
         {
             if (_actorRegistry.TryGetValue(type, out var set))
@@ -118,7 +117,7 @@ namespace CoreEngine.Hub
         }
 
         // ==========================================
-        //  외부에서 다른 객체들이 액터를 조회하는 초간단 쿼리 API
+        //  외부에서 다른 객체들이 액터를 조회하는 쿼리 API
         // ==========================================
 
         /// <summary>

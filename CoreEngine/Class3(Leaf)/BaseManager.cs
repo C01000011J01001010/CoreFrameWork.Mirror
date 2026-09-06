@@ -1,11 +1,8 @@
-﻿using CoreEngine.EventBus;
-using System.Collections;
-using UnityEngine.SceneManagement;
+﻿using UnityEngine;
+using CoreEngine;
+using System;
 
 namespace CoreEngine
 {
-    public abstract class BaseManager : BaseModule, IManager
-    {
-
-    }
+    public abstract class BaseManager : BaseModule, IManager { }
 }

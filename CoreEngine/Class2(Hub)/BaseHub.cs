@@ -10,7 +10,7 @@ namespace CoreEngine.Hub
         public ContextScope scope { get;}
     }
 
-    public abstract class BaseHub<TRegistrationEvent> : MonoBehaviour//, IInitialize, ILateInitialize
+    public abstract class BaseHub<TRegistrationEvent> : MonoBehaviour
         where TRegistrationEvent : struct, IEvent, IRegistration
     {
         public ContextScope myScope { get; private set; }

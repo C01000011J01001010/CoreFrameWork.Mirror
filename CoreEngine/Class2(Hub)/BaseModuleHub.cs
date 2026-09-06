@@ -150,16 +150,16 @@ namespace CoreEngine.Hub
 
         private IEnumerator CatchUpRoutine(TModule tardyModule)
         {
-            // 1. Initialize가 완전히 끝날 때까지 대기
+            // Initialize가 완전히 끝날 때까지 대기
             yield return tardyModule.Initialize();
 
-            // 2. 이어서 LateInitialize 대기
+            // 이어서 LateInitialize 대기
             if (tardyModule is ILateInitialize lateModule)
             {
                 yield return lateModule.LateInitialize();
             }
 
-            // 3. 모든 초기화가 끝난 후 안전하게 Active 상태 세팅
+            // 모든 초기화가 끝난 후 안전하게 Active 상태 세팅
             // (hardcoded true 대신 Hub의 정책인 moduleEnabled를 따르도록 수정!)
             tardyModule.SetActive(moduleEnabled);
         }
@@ -167,14 +167,14 @@ namespace CoreEngine.Hub
         // [수정된 부분] 
         // 1. T에 class 제약 조건을 추가하여 'as T' 캐스팅이 가능하게 만듭니다.
         // 2. 딕셔너리에 없을 경우를 대비한 return default(또는 null) 구문을 추가합니다.
-        public virtual T GetModule<T>() where T : class, IModule // 또는 TModule
+        public virtual T GetModule<T>() where T : class, IModule
         {
             if (moduleDict.TryGetValue(typeof(T), out var module))
             {
                 return module as T;
             }
             // 모듈을 찾지 못했을 때의 안전장치 및 경고
-            Debug.LogWarning($"{gameObject.name}의 {GetType().Name}에 {typeof(T).Name} 모듈이 등록되어 있지 않습니다.");
+            LogHelper.LogWarning($"{gameObject.name}의 {GetType().Name}에 {typeof(T).Name} 모듈이 등록되어 있지 않습니다.");
             return null;
         }
 
