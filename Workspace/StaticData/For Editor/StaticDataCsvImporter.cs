@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using CoreEngine.StaticData;
 
-namespace CoreEngine.StaticData.Editor
+namespace CoreEditor.StaticData
 {
     public interface IStaticDataCsvRowFactory<TRow> where TRow : class, IStaticDataRow
     {

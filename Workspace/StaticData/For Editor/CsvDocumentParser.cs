@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CoreEngine.StaticData.Editor
+namespace CoreEditor.StaticData
 {
     /// <summary>Small RFC-4180-style parser supporting commas, quotes, escaped quotes, and CRLF/LF lines.</summary>
     public static class CsvDocumentParser
