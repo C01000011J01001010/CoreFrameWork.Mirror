@@ -1,7 +1,7 @@
 ﻿using CoreEngine.EventBus;
 using CoreEngine.Hub;
 using CoreEngine.Facades;
-using CoreEngine.Manager.Culling;
+using CoreEngine.Culling;
 using System;
 using System.Collections.Generic;
 using System.Text;

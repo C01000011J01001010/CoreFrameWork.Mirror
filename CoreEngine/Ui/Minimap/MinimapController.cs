@@ -1,7 +1,7 @@
 using CoreEngine.Interface;
 using CoreEngine.Helpers;
 using CoreEngine.LevelDesign;
-using CoreEngine.Manager; // 범용 프레임워크인 ResourceManager 호출용
+using CoreEngine.Resource; // 범용 프레임워크인 ResourceManager 호출용
 using UnityEngine;
 using UnityEngine.UI;
 using CoreEngine.Facades;

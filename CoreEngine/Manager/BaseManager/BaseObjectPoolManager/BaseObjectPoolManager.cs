@@ -1,8 +1,7 @@
-﻿using CoreEngine.Manager.Pool;
-using System;
+﻿using System;
 using UnityEngine;
 
-namespace CoreEngine.Manager
+namespace CoreEngine.Pool
 {
     /// <summary>
     /// 로컬 풀링 시스템을 관리하는 매니저

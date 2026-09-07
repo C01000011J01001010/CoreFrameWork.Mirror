@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace CoreEngine.Manager
+namespace CoreEngine.CameraSystem
 {
     #region Camera Events
     public struct RegisterVirtualCameraEvent : IEvent

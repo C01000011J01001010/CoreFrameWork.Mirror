@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CoreEngine.Manager.Pool
+namespace CoreEngine.Pool
 {
     /// <summary>
     /// BaseObjectPoolManager 또는 NetworkObjectPoolManager 사용 권장

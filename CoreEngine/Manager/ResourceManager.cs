@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using CoreEngine.Manager;
 
-namespace CoreEngine.Manager
+namespace CoreEngine.Resource
 {
     /// <summary>
     /// Addressable 에셋 로드 및 메모리 관리를 전담하는 순수 범용 프레임워크 매니저

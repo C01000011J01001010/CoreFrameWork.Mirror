@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Pool;
-using CoreEngine.Manager.Pool;
+using CoreEngine.Pool;
 
 namespace CoreEngine.Network.Lobby.Ui
 {

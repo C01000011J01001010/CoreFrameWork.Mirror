@@ -1,6 +1,6 @@
 ﻿using CoreEngine.EventBus;
 using CoreEngine.Facades;
-using CoreEngine.Manager.Culling;
+using CoreEngine.Culling;
 using UnityEngine;
 
 namespace CoreEngine

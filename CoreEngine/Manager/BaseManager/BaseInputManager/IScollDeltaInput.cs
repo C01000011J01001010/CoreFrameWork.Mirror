@@ -1,5 +1,5 @@
 ﻿
-namespace CoreEngine.Manager.Input
+namespace CoreEngine.Input
 {
     public interface IScollDeltaInput
     {

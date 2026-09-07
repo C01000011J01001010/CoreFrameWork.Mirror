@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 
 //public delegate Vector2 MovementDelegate(float x, float y);
 //public delegate 
-namespace CoreEngine.Manager
+namespace CoreEngine.Input
 {
     public abstract class BaseInputManager<TInputAction> : BaseManager, IManager
         where TInputAction : class, IInputActionCollection2, IDisposable, new()

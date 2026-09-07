@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace CoreEngine.Manager
+namespace CoreEngine.Option
 {
     // 옵션 규약: 프레임워크가 시스템 제어에 반드시 필요로 하는 최소한의 공통 데이터
     public interface ICoreGraphicOption

@@ -1,4 +1,4 @@
-using CoreEngine.Manager;
+using CoreEngine.Pool;
 
 namespace CoreEngine.Network.Pool
 {

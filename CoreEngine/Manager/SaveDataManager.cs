@@ -4,10 +4,11 @@ using System.Collections;
 using UnityEngine;
 using CoreEngine.Data; // PathManager 사용
 using CoreEngine.Helpers; // JsonSerializer (및 Binary) 사용
+using CoreEngine.Manager;
 
-namespace CoreEngine.Manager
+namespace CoreEngine.SaveData
 {
-    public class UserDataManager : BaseManager, IPriority
+    public class SaveDataManager : BaseManager, IPriority
     {
         public int Priority => (int)ManagerPriority.Infrastructure;
 

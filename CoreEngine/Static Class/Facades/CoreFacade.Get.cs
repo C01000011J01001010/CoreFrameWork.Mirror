@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CoreEngine.Hub;
-using CoreEngine.Manager.Culling;
+using CoreEngine.Culling;
 using UnityEngine;
 
 namespace CoreEngine.Facades

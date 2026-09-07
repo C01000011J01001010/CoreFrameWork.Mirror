@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using CoreEngine.Helpers;
 
-namespace CoreEngine.Manager.Pool.Test
+namespace CoreEngine.Pool.Test
 {
     [RequireComponent(typeof(Button))]
     public class TestDespawnButton : MonoBehaviour

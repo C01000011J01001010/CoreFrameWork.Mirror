@@ -1,7 +1,7 @@
 using UnityEngine;
 using CoreEngine.Helpers;
 
-namespace CoreEngine.Manager.Pool.Test
+namespace CoreEngine.Pool.Test
 {
     public class TestPoolObject : MonoBehaviour, IPoolable
     {

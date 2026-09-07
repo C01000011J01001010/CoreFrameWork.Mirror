@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using CoreEngine.Data;
 using CoreEngine.Facades;
+using CoreEngine.Resource;
 
-namespace CoreEngine.Manager
+namespace CoreEngine.StaticData
 {
     /// <summary>
     /// 하나의 정적 데이터(Table)를 관리하는 매니저의 기반구조

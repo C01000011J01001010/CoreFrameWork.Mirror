@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using CoreEngine.Facades;
 using CoreEngine.Helpers;
 
-namespace CoreEngine.Manager.Pool.Test
+namespace CoreEngine.Pool.Test
 {
     [RequireComponent(typeof(Button))]
     public class TestSpawnButton : MonoBehaviour

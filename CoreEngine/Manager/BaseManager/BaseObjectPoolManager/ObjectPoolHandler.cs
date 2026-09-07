@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace CoreEngine.Manager.Pool
+namespace CoreEngine.Pool
 {
     public class ObjectPoolHandler<TPoolType> : BasePoolHandler<TPoolType>
         where TPoolType : Enum

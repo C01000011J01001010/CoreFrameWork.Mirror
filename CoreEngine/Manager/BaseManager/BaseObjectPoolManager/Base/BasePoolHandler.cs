@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Pool;
 using static UnityEditor.FilePathAttribute;
 
-namespace CoreEngine.Manager.Pool
+namespace CoreEngine.Pool
 {
     public interface IPoolReleaser
     {

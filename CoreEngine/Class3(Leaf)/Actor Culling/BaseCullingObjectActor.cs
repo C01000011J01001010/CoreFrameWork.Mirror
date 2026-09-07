@@ -1,5 +1,5 @@
 ﻿using CoreEngine.EventBus;
-using CoreEngine.Manager.Culling;
+using CoreEngine.Culling;
 using System.Diagnostics;
 using UnityEngine;
 

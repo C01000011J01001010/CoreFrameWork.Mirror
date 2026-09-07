@@ -3,8 +3,8 @@ using CoreEngine.Interface;
 using Unity.Cinemachine;
 using UnityEngine;
 using CoreEngine.Helpers;
-using CoreEngine.Manager.Input;
-using CoreEngine.Manager;
+using CoreEngine.Input;
+using CoreEngine;
 
 namespace CoreEngine.CameraSystem
 {

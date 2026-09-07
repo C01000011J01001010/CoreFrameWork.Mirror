@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CoreEngine.EventBus;
 
-namespace CoreEngine.Manager.Culling
+namespace CoreEngine.Culling
 {
     #region Culling Object
     public enum CullingType

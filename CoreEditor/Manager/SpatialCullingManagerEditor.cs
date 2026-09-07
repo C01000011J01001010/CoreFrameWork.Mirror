@@ -1,6 +1,6 @@
 using UnityEditor;
 using UnityEngine;
-using CoreEngine.Manager.Culling; // 매니저가 있는 네임스페이스
+using CoreEngine.Culling; // 매니저가 있는 네임스페이스
 
 [CustomEditor(typeof(SpatialCullingManager))]
 public class SpatialCullingManagerEditor : Editor
