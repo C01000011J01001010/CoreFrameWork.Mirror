@@ -23,7 +23,6 @@ namespace CoreEngine.EventBus
         public void Bind()
         {
             // 응답을 들을 귀를 먼저 열고
-            EventBus<TEvent>.Unsubscribe(_onEventPublished); // 중복구독 방지
             EventBus<TEvent>.Subscribe(_onEventPublished);
 
             // 대상이 있는지 이벤트 요청 발송

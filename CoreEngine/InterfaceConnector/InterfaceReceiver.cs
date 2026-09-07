@@ -18,7 +18,9 @@ namespace CoreEngine.Interface
         // 수신기 켜기 (주인의 OnEnable 등에서 호출)
         public void Bind()
         {
+            // 일단 이벤트를 구독하고
             EventBus<SetProviderEvent<TInterface>>.Subscribe(OnTargetSetInternal);
+
             // 켜지자마자 "제공자 있나요?" 하고 핑을 날림
             EventBus<RequestProviderEvent<TInterface>>.Publish(new RequestProviderEvent<TInterface>());
         }

@@ -27,7 +27,6 @@ namespace CoreEngine.EventBus
             EventBus<TEvent>.Publish(_evnetCreatFunc());
 
             // 나중에 필요한 경우를 위해 반복 발행 요청(Ping)을 들을 귀를 열어둠
-            EventBus<Repeat<TEvent>>.Unsubscribe(OnRequestRepeat); // 중복 구독 방지
             EventBus<Repeat<TEvent>>.Subscribe(OnRequestRepeat);
         }
 
