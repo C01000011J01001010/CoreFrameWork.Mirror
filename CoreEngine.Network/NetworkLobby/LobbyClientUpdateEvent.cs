@@ -10,6 +10,7 @@ namespace CoreEngine.Network.Lobby
     public struct LobbyClientUpdateEvent : IEvent
     {
         public int ClientId;
+        public int EntryOrder;
         public string IpAddress;
         public ClientUpdate clientUpdate;
     }
