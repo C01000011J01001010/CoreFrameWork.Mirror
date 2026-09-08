@@ -198,7 +198,7 @@ namespace CoreEngine.Director
         }
         #endregion
 
-        // 💡 핵심 2: Dictionary 대신 Enum을 정수(int)로 변환해 배열 인덱스로 사용 (압도적인 성능)
+        // Dictionary 대신 Enum을 정수(int)로 변환해 배열 인덱스로 사용
         private TickRunner[] _tickRunners;
         private LateTickRunner[] _lateTickRunners;
         private FixedTickRunner[] _fixedTickRunners;
