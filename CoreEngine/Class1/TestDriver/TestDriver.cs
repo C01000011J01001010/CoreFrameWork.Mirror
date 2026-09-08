@@ -49,7 +49,7 @@ namespace CoreEngine.Test
                 GameObject[] rootObjects = TestScene.GetRootGameObjects();
                 foreach (var root in rootObjects)
                 {
-                    // 1. (부모객체인 SceneContext를 포함하여) SceneTester 자신 제외
+                    // (부모객체인 SceneContext를 포함하여) SceneTester 자신 제외
                     if (root == transform.root.gameObject) continue;
 
                     if (root.activeSelf)

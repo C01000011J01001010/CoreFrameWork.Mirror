@@ -26,7 +26,7 @@ namespace CoreEngine.Settings
                 if (_instance != null) return _instance;
 
 #if UNITY_EDITOR
-                // 1. 에셋 데이터베이스에서 기존 설정 에셋 검색
+                // 에셋 데이터베이스에서 기존 설정 에셋 검색
                 string[] guids = AssetDatabase.FindAssets("t:CoreEngineSettingsSO");
                 if (guids.Length > 0)
                 {

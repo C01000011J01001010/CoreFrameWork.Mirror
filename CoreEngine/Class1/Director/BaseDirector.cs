@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
-using CoreEngine.DesignPattern.Singleton;
+﻿using CoreEngine.DesignPattern.Singleton;
 
 namespace CoreEngine.Director
 {
