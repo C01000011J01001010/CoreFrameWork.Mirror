@@ -14,7 +14,8 @@ namespace CoreEngine
         // 플레이어 컨트롤러 또는 위치 추적 스크립트 내부
         private Vector3Int _lastGridKey;
 
-        public TickGroup TickGroup => TickGroup.Object;
+        // 상속받은 쪽에서 바꿀 수 있도록함
+        public virtual TickGroup TickGroup => TickGroup.Character;
 
         // 플레이어가 씬에 로드/스폰되는 즉시 이벤트 발생
         protected override void OnEnable()

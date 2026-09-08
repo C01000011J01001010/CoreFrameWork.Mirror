@@ -7,6 +7,8 @@ namespace CoreEngine
     {
         public override CullingType cullingType => CullingType.ActiveDynamic;
 
+        public override TickGroup TickGroup => TickGroup.Character;
+
         public override void SetVisualActive(bool isActive)
         {
             SetFlagVisualActive(isActive);
