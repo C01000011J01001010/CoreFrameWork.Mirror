@@ -697,7 +697,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 433759299826732024, guid: 8f209fa52a3f2ed43b9bcc2ca164cb1c, type: 3}
       propertyPath: a
-      value: 3
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 433759299826732024, guid: 8f209fa52a3f2ed43b9bcc2ca164cb1c, type: 3}
+      propertyPath: b
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 433759299826732024, guid: 8f209fa52a3f2ed43b9bcc2ca164cb1c, type: 3}
       propertyPath: cellSize

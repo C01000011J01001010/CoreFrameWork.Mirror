@@ -27,7 +27,7 @@ namespace CoreEngine
         protected Rigidbody[] _rigidbodies;
 
         #region 디버깅 속성, 메서드
-        // 🌟 기즈모 디버깅을 위한 상태 캐싱 (기본값 true)
+        // 기즈모 디버깅을 위한 상태 캐싱 (기본값 true)
 
         [Conditional("UNITY_EDITOR")]
         protected void SetFlagVisualActive(bool isVisualActive)
@@ -69,7 +69,7 @@ namespace CoreEngine
         #endregion
 
 #if UNITY_EDITOR
-        // 🎨 Editor 전용 시각화 디버깅
+        // Editor 전용 시각화 디버깅
         protected virtual void OnDrawGizmos()
         {
             if (!Application.isPlaying) return;

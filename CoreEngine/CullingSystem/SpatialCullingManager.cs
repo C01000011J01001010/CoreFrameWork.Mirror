@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using CoreEngine.EventBus;
+//using System;
 
 namespace CoreEngine.Culling
 {
@@ -96,10 +97,10 @@ namespace CoreEngine.Culling
         [Header("Culling Thresholds")]
 
         [Tooltip("GameObject 렌더링 한계 격자 개수")]
-        [SerializeField] private int a = 3;
+        [SerializeField] private int rendererAreaFromPlayer = 3;
 
         [Tooltip("Collider 물리 연산 한계 격자 개수")]
-        [SerializeField] private int b = 1;
+        [SerializeField] private int colliderAreaFromPlayer = 1;
 
         // 통합 격자 딕셔너리 (이제 완벽하게 CullingReference만 담습니다)
         protected Dictionary<Vector3Int, List<CullingReference>> gridDictionary = new();
@@ -186,7 +187,7 @@ namespace CoreEngine.Culling
 
             // 캐싱
             _currentPlayerGrid = evt.PlayerGrid;
-            int maxRadius = a + 2;
+            int maxRadius = rendererAreaFromPlayer + 2;
 
             foreach (Vector3Int checkGrid in GetSurroundingGrids(_currentPlayerGrid, maxRadius))
             {
@@ -250,11 +251,11 @@ namespace CoreEngine.Culling
 
         private void ProcessCulling(List<CullingReference> objects, int d)
         {
-            if (d <= b) SetCollidersActive(objects, true);
-            else if (d > b + 1) SetCollidersActive(objects, false);
+            if (d <= colliderAreaFromPlayer) SetCollidersActive(objects, true);
+            else if (d > colliderAreaFromPlayer + 1) SetCollidersActive(objects, false);
 
-            if (d <= a) SetVisualsActive(objects, true);
-            else if (d > a + 1) SetVisualsActive(objects, false);
+            if (d <= rendererAreaFromPlayer) SetVisualsActive(objects, true);
+            else if (d > rendererAreaFromPlayer + 1) SetVisualsActive(objects, false);
         }
 
         private void SetVisualsActive(List<CullingReference> objects, bool isActive)
@@ -289,20 +290,27 @@ namespace CoreEngine.Culling
         }
 
 #if UNITY_EDITOR
-        
-        [Header("Debug Visualization")]
-        [SerializeField] private bool showDebugGrid = true;
-        [SerializeField] private bool IsDrawSelected = false;
-        [SerializeField] private float debugPlaneHeight = 0f;
 
-        private void OnDrawGizmos() { if (!IsDrawSelected) DrawGrid(); }
-        private void OnDrawGizmosSelected() { if (IsDrawSelected) DrawGrid(); }
+        [System.Serializable]
+        class DebugVisualSetting
+        {
+            public bool ShowDebugGrid = true;
+            public bool IsDrawSelected = false;
+            public float Depth = 0f;
+            public float Thickness = 0f;
+        }
+        [Space(10), SerializeField, Tooltip("Editor Debug를 위한 변수")]
+        DebugVisualSetting _debugVisualSetting = new();
+        DebugVisualSetting DebugSet => _debugVisualSetting;
+
+        private void OnDrawGizmos() { if (!DebugSet.IsDrawSelected) DrawGrid(); }
+        private void OnDrawGizmosSelected() { if (DebugSet.IsDrawSelected) DrawGrid(); }
 
         private void DrawGrid()
         {
-            if (!showDebugGrid || !Application.isPlaying) return;
+            if (!DebugSet.ShowDebugGrid || !Application.isPlaying) return;
 
-            int maxRadius = a + 2;
+            int maxRadius = rendererAreaFromPlayer + 2;
             foreach (Vector3Int checkGrid in GetSurroundingGrids(_currentPlayerGrid, maxRadius))
             {
                 int d = Mathf.Max(Mathf.Abs(_currentPlayerGrid.x - checkGrid.x),
@@ -310,9 +318,9 @@ namespace CoreEngine.Culling
                                   Mathf.Abs(_currentPlayerGrid.z - checkGrid.z));
 
                 if (d == 0) Gizmos.color = Color.cyan;
-                else if (d <= b) Gizmos.color = Color.green;
-                else if (d <= a) Gizmos.color = Color.yellow;
-                else if (d == a + 1 || d == a + 2) Gizmos.color = Color.red;
+                else if (d <= colliderAreaFromPlayer) Gizmos.color = Color.green;
+                else if (d <= rendererAreaFromPlayer) Gizmos.color = Color.yellow;
+                else if (d == rendererAreaFromPlayer + 1 || d == rendererAreaFromPlayer + 2) Gizmos.color = Color.red;
 
                 DrawGridCellGizmo(checkGrid);
             }
@@ -326,11 +334,11 @@ namespace CoreEngine.Culling
 
             switch (cullingAxis)
             {
-                case CullingAxis.OneD_X: center.y = debugPlaneHeight; center.z = debugPlaneHeight; size.y = 1000f; size.z = 0f; break;
-                case CullingAxis.OneD_Y: center.x = debugPlaneHeight; center.z = debugPlaneHeight; size.x = 1000f; size.z = 0f; break;
-                case CullingAxis.OneD_Z: center.x = debugPlaneHeight; center.y = debugPlaneHeight; size.x = 1000f; size.y = 0f; break;
-                case CullingAxis.TwoD_XY: center.z = debugPlaneHeight; size.z = 0f; break;
-                case CullingAxis.TwoD_XZ: center.y = debugPlaneHeight; size.y = 0f; break;
+                case CullingAxis.OneD_X: center.y = 0; center.z = DebugSet.Depth; size.y = DebugSet.Thickness; size.z = 0f; break;
+                case CullingAxis.OneD_Y: center.x = 0; center.z = DebugSet.Depth; size.x = DebugSet.Thickness; size.z = 0f; break;
+                case CullingAxis.OneD_Z: center.x = 0; center.y = -DebugSet.Depth; size.x = DebugSet.Thickness; size.y = 0f; break;
+                case CullingAxis.TwoD_XY: center.z = DebugSet.Depth; size.z = DebugSet.Thickness; break;
+                case CullingAxis.TwoD_XZ: center.y = -DebugSet.Depth; size.y = DebugSet.Thickness; break;
             }
 
             Gizmos.DrawWireCube(center, size);
@@ -349,7 +357,7 @@ namespace CoreEngine.Culling
             cellSize = Mathf.Max(1, cellSize);
 
             // 1. b는 무조건 1 이상이어야 함 (물리 연산 최소 반경)
-            b = Mathf.Max(1, b);
+            colliderAreaFromPlayer = Mathf.Max(1, colliderAreaFromPlayer);
 
             // 2. 최하옵 PC를 위한 극한의 최적화 한도 (CPU Cache Miss 방지)
             int maxAllowedA = 7; // 기본값 2D 기준
@@ -376,13 +384,13 @@ namespace CoreEngine.Culling
             }
 
             // 3. a는 'b + 1' 보다 크거나 같아야 하고, 기기 한계치(maxAllowedA)를 넘을 수 없음
-            a = Mathf.Clamp(a, b + 1, maxAllowedA);
+            rendererAreaFromPlayer = Mathf.Clamp(rendererAreaFromPlayer, colliderAreaFromPlayer + 1, maxAllowedA);
 
             // 4. 기획자가 억지로 b를 너무 높여서 a의 공간을 침범하는 경우 강제 교정
-            if (b >= maxAllowedA)
+            if (colliderAreaFromPlayer >= maxAllowedA)
             {
-                b = maxAllowedA - 1;
-                a = maxAllowedA;
+                colliderAreaFromPlayer = maxAllowedA - 1;
+                rendererAreaFromPlayer = maxAllowedA;
             }
         }
 #endif
