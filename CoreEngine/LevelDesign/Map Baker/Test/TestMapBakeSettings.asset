@@ -1,0 +1,358 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9820fc452122c44da972077f473c995, type: 3}
+  m_Name: TestMapBakeSettings
+  m_EditorClassIdentifier: CoreEngine::CoreEngine.LevelDesign.MapBakeSettingsSO
+  saveDirectory: Assets/CoreFramework/CoreEngine/LevelDesign/Map Baker/Test/Baked
+    Map Images
+  showInteractiveGizmo: 0
+  showCameraGizmo: 0
+  projectionPlane: 0
+  centerPosition: {x: 185.52917, y: 54.8, z: 73.3}
+  totalMapSize: {x: 468.85834, y: 256}
+  tileSize: {x: 48, y: 32}
+  captureOffset: 5.7526093
+  maxDepth: 220.9526
+  resolution: 512
+  renderMask:
+    serializedVersion: 2
+    m_Bits: 208
+  backgroundColor: {r: 0.47058818, g: 0.99215686, b: 0.5961044, a: 1}
+  mapTintColor: {r: 1, g: 1, b: 1, a: 1}
+  useLayerColor: 1
+  depthSteps: 32
+  finalDepthBrightness: 0
+  ignoreDepthQuantizationMask:
+    serializedVersion: 2
+    m_Bits: 16
+  layerColors:
+  - layerName: Default
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: TransparentFX
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: Ignore Raycast
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: Water
+    color: {r: 0.3679244, g: 0.81582075, b: 1, a: 1}
+  - layerName: UI
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: Block
+    color: {r: 0.8588236, g: 0.4392157, b: 0.5764706, a: 1}
+  - layerName: Dome
+    color: {r: 0.627451, g: 0.1254902, b: 0.9411765, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  - layerName: 
+    color: {r: 1, g: 1, b: 1, a: 1}
+  outlineSettings:
+  - layerName: Default
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: TransparentFX
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: Ignore Raycast
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: Water
+    isUse: 1
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 5
+    depthThreshold: 0
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: UI
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: Block
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 128
+  - layerName: Dome
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
+  - layerName: 
+    isUse: 0
+    outlineColor: {r: 0, g: 0, b: 0, a: 1}
+    outlineThickness: 2
+    depthThreshold: 0.001
+    forceEdgeMask:
+      serializedVersion: 2
+      m_Bits: 0
