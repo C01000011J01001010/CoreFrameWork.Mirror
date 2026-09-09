@@ -48,7 +48,6 @@ namespace CoreEditor.LevelDesign
         {
             if (settingsProfile == null) return;
 
-            // 🌟 윈도우는 반드시 Handles API 버전을 호출합니다.
             MapBakeGizmoDrawer.DrawWithHandles(settingsProfile);
 
             sceneView.Repaint();

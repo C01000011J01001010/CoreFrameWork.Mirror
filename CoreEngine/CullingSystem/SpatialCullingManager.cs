@@ -91,7 +91,7 @@ namespace CoreEngine.Culling
         [Tooltip("차원에 따라 연산속도가 달라짐을 참고하시오")]
         [SerializeField] private CullingAxis cullingAxis = CullingAxis.TwoD_XZ;
 
-        [Tooltip("a값의 한계에 도달했다면 저를 늘려보세요 ^^")]
+        [Tooltip("격자 개수를 무한히 늘리지 말고 CellSize를 늘려보자!")]
         [SerializeField] private float cellSize = 10f;
 
         [Header("Culling Thresholds")]

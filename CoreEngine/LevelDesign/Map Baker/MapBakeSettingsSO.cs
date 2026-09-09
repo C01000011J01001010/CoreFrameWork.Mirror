@@ -68,8 +68,6 @@ namespace CoreEngine.LevelDesign
         // ---------------------------------------------------------
         // 카메라 설정
         // ---------------------------------------------------------
-        // [SerializeField, HideInInspector] private MapDimension _lastMapDimension; // 굳이 필요없는듯
-        // public MapDimension mapDimension = MapDimension._3D; // 굳이 필요없는듯
         public MapProjectionPlane projectionPlane = MapProjectionPlane.XZ;
         public Vector3 centerPosition;
         public Vector2 totalMapSize = new Vector2(1024, 1024);
@@ -95,7 +93,7 @@ namespace CoreEngine.LevelDesign
         public LayerMask ignoreDepthQuantizationMask = 0;
 
         // ---------------------------------------------------------
-        // 4. 고정 길이 데이터 (32 Layers) - 에디터 자동 동기화 -> 지금의 ui 유지
+        // 고정 길이 데이터 (32 Layers) - 에디터 자동 동기화 -> 지금의 ui 유지
         // ---------------------------------------------------------
         [HideInInspector] public List<LayerColorPair> layerColors = new List<LayerColorPair>();
         [HideInInspector] public List<LayerOutlineSetting> outlineSettings = new List<LayerOutlineSetting>();
@@ -104,10 +102,6 @@ namespace CoreEngine.LevelDesign
         public int Cols => tileSize.x > 0 ? Mathf.CeilToInt(totalMapSize.x / tileSize.x) : 1;
         public int Rows => tileSize.y > 0 ? Mathf.CeilToInt(totalMapSize.y / tileSize.y) : 1;
 
-        //private void Awake()
-        //{
-        //    _lastMapDimension = mapDimension;
-        //}
 
 #if UNITY_EDITOR
         private void OnValidate()
@@ -115,26 +109,6 @@ namespace CoreEngine.LevelDesign
             //ApplyDimensionPreset();
             PreventAlphaZeroInOutlines();
         }
-
-        //private void ApplyDimensionPreset()
-        //{
-        //    if (mapDimension != _lastMapDimension)
-        //    {
-        //        _lastMapDimension = mapDimension;
-        //        if (mapDimension == MapDimension._2D)
-        //        {
-        //            projectionPlane = MapProjectionPlane.XY;
-        //            depthSteps = MapDepthSteps.None;
-        //            useLayerColor = false;
-        //        }
-        //        else if (mapDimension == MapDimension._3D)
-        //        {
-        //            projectionPlane = MapProjectionPlane.XZ;
-        //            depthSteps = MapDepthSteps.Step_8;
-        //            useLayerColor = true;
-        //        }
-        //    }
-        //}
 
         private void PreventAlphaZeroInOutlines()
         {
