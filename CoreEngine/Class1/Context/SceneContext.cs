@@ -9,7 +9,7 @@ using CoreEngine.EventBus;
 
 namespace CoreEngine
 {
-    public struct SceneReadyEvent : IEvent { }
+    //public struct SceneReadyEvent : IEvent { }
 
     /// <summary>
     /// Additive로 로드되는 개별 씬마다 존재하는 컨텍스트
@@ -20,16 +20,9 @@ namespace CoreEngine
     {
         protected override ContextScope myScope => ContextScope.Scene;
 
-        
-
         [Tooltip("Scene이 완전히 초기화 된 후 ActiveScene으로 설정할지 결정")]
         [SerializeField]
         private bool isActiveScene = true;
-
-        // Start()를 구현하지 않습니다! 
-        // 자기 멋대로 초기화를 시작하면 SceneLoadManager의 통제를 벗어나기 때문입니다.
-
-        // SceneContext의 Initialize()는 SceneLoadManager.LoadingScene() 완료 직전에 호출됩니다.
 
         protected override void Awake()
         {
@@ -56,11 +49,15 @@ namespace CoreEngine
             // 1프레임 쉬어주고
             yield return null;
 
-            // 모든 씬 객체의 세팅이 끝난 타이밍에 SceneReadyEvent 발행
-            EventBus<SceneReadyEvent>.Publish(new SceneReadyEvent());
+            // Scene의 초기화가 종료되었음을 알림
+            _isInit = true;
 
+            // 모니터링 하는 객체에서 지연 초기화가 가능하도록 제어를 넘김
+            yield return null; 
+            
             // 모든 씬 객체의 세팅이 끝난 타이밍에 Update 가동
             UpdateDirector.StartTicking();
+
         }
 
         protected override void OnDestroy()

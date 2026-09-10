@@ -28,8 +28,8 @@ namespace CoreEngine
         //protected static T _instance;
         //public static T Inst => _instance;
 
-        private bool _isInit;
-        public static bool IsInit => Inst._isInit;
+        protected bool _isInit;
+        public bool IsInit => Inst._isInit;
 
         protected abstract ContextScope myScope { get; }
 
@@ -93,7 +93,7 @@ namespace CoreEngine
 
         protected virtual IEnumerator InitializeHubsSequence()
         {
-            // 0. 로딩 시작 알림
+            // 로딩 시작 알림
             EventBus<SystemLoadingEvent>.Publish(new SystemLoadingEvent(SystemLoadingEvent.State.Start, "시스템 초기화 준비...", 0f));
 
             if (gameObject.name == "SceneContext")
@@ -101,16 +101,16 @@ namespace CoreEngine
                 Debug.Log("SceneContext 허브 초기화");
             }
 
-            // 1. ManagerHub 초기화 (1:1 시스템 매니저들 서비스 세팅)
+            // ManagerHub 초기화 (1:1 시스템 매니저들 서비스 세팅)
             EventBus<SystemLoadingEvent>.Publish(new SystemLoadingEvent(SystemLoadingEvent.State.Progress, "매니저 시스템 로드 중...", 0.33f));
             yield return managerHub.Initialize();
 
-            // 2. 단일 ActorHub 초기화 
+            // 단일 ActorHub 초기화 
             // 💡 더 이상 List 루프를 돌지 않고, 단일 객체만 가볍게 초기화합니다.
             EventBus<SystemLoadingEvent>.Publish(new SystemLoadingEvent(SystemLoadingEvent.State.Progress, "인게임 엔티티(Actor) 시스템 세팅 중...", 0.66f));
             yield return actorHub.Initialize();
 
-            // 3. UiHub 초기화 (안전하게 모든 데이터가 완비된 시점에 뷰 로드)
+            // UiHub 초기화 (안전하게 모든 데이터가 완비된 시점에 뷰 로드)
             EventBus<SystemLoadingEvent>.Publish(new SystemLoadingEvent(SystemLoadingEvent.State.Progress, "UI 시스템 로드 중...", 0.9f));
             yield return uiHub.Initialize();
 
@@ -121,10 +121,9 @@ namespace CoreEngine
             yield return uiHub.LateInitialize();
             #endregion
 
-            // 4. 로딩 완료 알림
+            // 로딩 완료 알림
             EventBus<SystemLoadingEvent>.Publish(new SystemLoadingEvent(SystemLoadingEvent.State.Complete, "초기화 완료!", 1.0f));
 
-            _isInit = true;
         }
     }
 }

@@ -6,6 +6,7 @@ using CoreEngine.SceneManagement;
 using CoreEngine.DesignPattern.Singleton;
 using CoreEngine.Settings;
 using CoreEngine.Helpers;
+using CoreEngine.Facades;
 
 namespace CoreEngine.Test
 {
@@ -79,13 +80,7 @@ namespace CoreEngine.Test
             SceneManager.LoadSceneAsync(GlobalScene, LoadSceneMode.Additive);
 
             // SceneContext가 초기화 될때까지 대기
-            if (SceneContext.Inst != null)
-            {
-                while(!SceneContext.IsInit)
-                {
-                    yield return null;
-                }
-            }
+            if (!CoreFacadeState.SceneInit) yield return null;
 
             // [재부팅] 전역 코어 세팅이 완료되었으므로, 동면했던 객체들을 깨움
             LogHelper.Log($"[SceneTester] 전역 코어 세팅 완료! 동면 중이던 {targetRoots.Count}개의 루트 객체를 깨웁니다.");
