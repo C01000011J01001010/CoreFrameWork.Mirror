@@ -21,6 +21,16 @@ namespace CoreEngine.Pool
         protected Func<bool> _isShuttingDown; // Host로부터 씬 종료 상태를 묻는 델리게이트
         protected IObjectPool<IPoolable> _pool;
 
+        public int TotalAllocatedCount
+        {
+            get
+            {
+                // IObjectPool을 구체 클래스인 ObjectPool로 캐스팅하여 CountAll 접근
+                // Spawn된 객체와 Pool에 있는 객체의 개수 합
+                return _pool is ObjectPool<IPoolable> concretePool ? concretePool.CountAll : 0;
+            }
+        }
+
         private bool _isInit = false;
         public void Initialize (PoolSetup<TPoolType> setup, Transform parent, Func<bool> isShuttingDown)
         {

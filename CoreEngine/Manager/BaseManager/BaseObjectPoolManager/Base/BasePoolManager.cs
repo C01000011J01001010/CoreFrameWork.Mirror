@@ -22,6 +22,11 @@ namespace CoreEngine.Pool
 
         //protected abstract TPoolHandlerType GenerateHandler(PoolSetup<TPoolType> setup, Transform parent, Func<bool> isShuttingDown);
 
+        protected override void Awake()
+        {
+            base.Awake();
+        }
+
         public override IEnumerator Initialize()
         {
             yield return base.Initialize();
@@ -84,9 +89,15 @@ namespace CoreEngine.Pool
             {
                 if (!_handlers.TryGetValue(setup.poolType, out var handler)) continue;
 
-                List<IPoolable> prewarmCache = new List<IPoolable>(setup.defaultAmount);
+                // 목표량(defaultAmount)에서 이미 스폰(생성)된 숫자를 빼서 남은 생성량 계산
+                int amountToCreate = setup.defaultAmount - handler.TotalAllocatedCount;
 
-                for (int i = 0; i < setup.defaultAmount; i++)
+                // 이미 목표량을 채웠다면 이번 풀의 프리워밍은 건너뜀
+                if (amountToCreate <= 0) continue;
+
+                List<IPoolable> prewarmCache = new List<IPoolable>(amountToCreate);
+
+                for (int i = 0; i < amountToCreate; i++)
                 {
                     handler.PrewarmStep(prewarmCache);
 
@@ -116,6 +127,14 @@ namespace CoreEngine.Pool
         public IPoolable Spawn2D(TPoolType type, Vector2 position2D, Quaternion rotation, Transform parent = null)
         {
             return Spawn(type, new Vector3(position2D.x, position2D.y, 0), rotation, parent);
+        }
+
+        public void Release(TPoolType type, IPoolable pObj)
+        {
+            if (_handlers.TryGetValue(type, out var handler))
+            {
+                handler.Release(pObj);
+            }
         }
         #endregion
 
