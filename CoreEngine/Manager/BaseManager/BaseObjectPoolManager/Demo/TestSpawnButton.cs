@@ -6,18 +6,9 @@ using CoreEngine.Helpers;
 namespace CoreEngine.Pool.Test
 {
     [RequireComponent(typeof(Button))]
-    public class TestSpawnButton : MonoBehaviour
+    public class TestSpawnButton : BaseTestSpawnButton<TestPoolType>
     {
-        public TestPoolType targetPoolType = TestPoolType.Poolable;
-        private Button _button;
-
-        private void Awake()
-        {
-            _button = GetComponent<Button>();
-            _button.onClick.AddListener(OnClickSpawn);
-        }
-
-        private void OnClickSpawn()
+        protected override void OnClickSpawn()
         {
             // 3계층 규칙에 따라 인터페이스가 아닌 구체 클래스 타입으로 호출[cite: 1]
             var poolManager = CoreFacade.GetManager<TestObjectPoolManager>();

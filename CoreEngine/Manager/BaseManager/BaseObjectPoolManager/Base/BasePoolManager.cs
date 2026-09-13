@@ -10,7 +10,7 @@ namespace CoreEngine.Pool
     /// </summary>
     public abstract class BasePoolManager<TPoolType, TPoolHandlerType> : BaseManager
         where TPoolType : Enum
-        where TPoolHandlerType : BasePoolHandler<TPoolType>, new()
+        where TPoolHandlerType : ObjectPoolHandler<TPoolType>, new()
     {
         public List<PoolSetup<TPoolType>> poolSetups = new();
 
@@ -148,11 +148,25 @@ namespace CoreEngine.Pool
             {
                 setup.ValidateValues();
 
-                if (setup.prefab == null)
-                    Debug.LogWarning($"[{this.GetType().Name}] {setup.poolType}의 프리팹이 비어있음");
-
                 if (!___typeCheckSet.Add(setup.poolType))
+                {
                     Debug.LogError($"[{this.GetType().Name}] 인스펙터에 {setup.poolType} 풀이 중복해서 등록되어 있음");
+                    continue;
+                }
+                    
+
+                if (setup.prefab == null)
+                {
+                    Debug.LogWarning($"[{this.GetType().Name}] {setup.poolType}의 프리팹이 비어있음");
+                    continue;
+                }
+
+                if (!setup.prefab.TryGetComponent(out IPoolable _))
+                {
+                    Debug.LogError($"[{setup.prefab.name}]은(는) {nameof(IPoolable)}를 구현하지 않았음");
+                    setup.prefab = null;
+                    continue;
+                }
             }
             ___typeCheckSet.Clear();
         }

@@ -1,3 +1,4 @@
+using CoreEngine.Helpers;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace CoreEngine.Pool
     /// <summary>
     /// 순수 C#으로 분리된 풀링 논리 처리기 (부품)
     /// </summary>
-    public abstract class BasePoolHandler<TPoolType> : IPoolReleaser
+    public class ObjectPoolHandler<TPoolType> : IPoolReleaser
         where TPoolType : Enum
     {
         protected PoolSetup<TPoolType> _setup;
@@ -32,7 +33,7 @@ namespace CoreEngine.Pool
         }
 
         private bool _isInit = false;
-        public void Initialize (PoolSetup<TPoolType> setup, Transform parent, Func<bool> isShuttingDown)
+        public virtual void Initialize (PoolSetup<TPoolType> setup, Transform parent, Func<bool> isShuttingDown)
         {
             if (_isInit) return;
 
@@ -41,9 +42,9 @@ namespace CoreEngine.Pool
             _isShuttingDown = isShuttingDown;
 
             _pool = new ObjectPool<IPoolable>(
-                createFunc: CreateItem,
+                createFunc: Create,
                 actionOnGet: null,
-                actionOnRelease: OnReturnedToPool,
+                actionOnRelease: null,//OnReturnedToPool,
                 actionOnDestroy: OnDestroyPoolObject,
 #if UNITY_EDITOR
                 collectionCheck: true,
@@ -59,7 +60,7 @@ namespace CoreEngine.Pool
 
         #region Pool Callbacks
 
-        protected IPoolable CreateItem()
+        protected IPoolable Create()
         {
             GameObject obj = UnityEngine.Object.Instantiate(_setup.prefab.gameObject, _parent);
             obj.SetActive(false);
@@ -71,16 +72,14 @@ namespace CoreEngine.Pool
             return null;
         }
 
+        //protected void OnReturnedToPool(IPoolable pObj)
+        //{
+        //    if (_isShuttingDown() || pObj == null || pObj.gameObject == null) return;
 
-        protected void OnReturnedToPool(IPoolable pObj)
-        {
-            if (_isShuttingDown() || pObj == null || pObj.gameObject == null) return;
-
-            // 비활성화 및 풀 반환 전 상태 초기화
-            pObj.OnDespawn();
-            pObj.gameObject.SetActive(false);
-            pObj.transform.SetParent(_parent);
-        }
+        //    // 비활성화 및 풀 반환 전 상태 초기화
+        //    pObj.gameObject.SetActive(false);
+        //    pObj.transform.SetParent(_parent);
+        //}
 
         protected void OnDestroyPoolObject(IPoolable pObj)
         {
@@ -91,6 +90,21 @@ namespace CoreEngine.Pool
         #endregion
 
         #region 외부 API
+
+        public void PrewarmStep(List<IPoolable> prewarmCache)
+        {
+            prewarmCache.Add(_pool.Get());
+        }
+
+        public void ReturnPrewarm(List<IPoolable> prewarmCache)
+        {
+            foreach (var pObj in prewarmCache)
+            {
+                _pool.Release(pObj);
+            }
+        }
+
+
         /// <summary>
         /// 스폰 이후 position과 rotation을 코드로 바꾸지 않도록 명시함
         /// </summary>
@@ -106,23 +120,21 @@ namespace CoreEngine.Pool
                 // 네트워크 객체의 경우 active 이후 위치와 회전을 바꾸면 무시 될 수 있으니
                 // 먼저 Transform을 적용 후 active함
                 pObj.gameObject.SetActive(true);
-                //pObj.OnSpawn(); // OnSpawn은 상세 Handler에 위임
+                pObj.OnSpawn();
             }
             return pObj;
         }
 
-        // Host의 코루틴에서 호출될 1스텝 프리워밍 로직
-        public void PrewarmStep(List<IPoolable> prewarmCache)
+        public virtual void Release(IPoolable pObj)
         {
-            prewarmCache.Add(_pool.Get());
-        }
+            // 제대로 집어넣기
+            if (_isShuttingDown() || pObj == null || pObj.gameObject == null) return;
 
-        public void ReturnPrewarm(List<IPoolable> prewarmCache)
-        {
-            foreach (var pObj in prewarmCache)
-            {
-                _pool.Release(pObj);
-            }
+            // 비활성화 및 풀 반환 전 상태 초기화
+            pObj.gameObject.SetActive(false);
+            pObj.transform.SetParent(_parent);
+            pObj.OnDespawn();
+            _pool.Release(pObj);
         }
 
         public void Clear()
@@ -130,10 +142,6 @@ namespace CoreEngine.Pool
             _pool.Clear();
         }
 
-        public virtual void Release(IPoolable pObj)
-        {
-            _pool.Release(pObj);
-        }
         #endregion
     }
 }

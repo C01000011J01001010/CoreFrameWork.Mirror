@@ -1,9 +1,12 @@
-﻿using System;
+﻿using CoreEngine.Culling;
+using CoreEngine.Helpers;
+using CoreEngine.Hub;
+using CoreEngine.Settings;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using CoreEngine.Hub;
-using CoreEngine.Culling;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace CoreEngine.Facades
 {
@@ -23,14 +26,14 @@ namespace CoreEngine.Facades
         /// </summary>
         public static T GetManager<T>() where T : class, IModule
         {
-            // 1. 현재 콘텐츠 씬(SceneContext)의 매니저 허브에서 검색 (우선순위 높음)
+            // 현재 콘텐츠 씬(SceneContext)의 매니저 허브에서 검색 (우선순위 높음)
             if (Scene != null && Scene.managerHub != null)
             {
                 T manager = Scene.managerHub.GetModule<T>();
                 if (manager != null) return manager;
             }
 
-            // 2. 씬에 없다면 전역 환경(ProjectContext)의 매니저 허브에서 검색 (우선순위 낮음)
+            // 씬에 없다면 전역 환경(ProjectContext)의 매니저 허브에서 검색 (우선순위 낮음)
             if (Project != null && Project.managerHub != null)
             {
                 T manager = Project.managerHub.GetModule<T>();
@@ -136,6 +139,20 @@ namespace CoreEngine.Facades
         public static Vector3Int GetGridKey(Vector3 worldPos)
         {
             return spatialCullingManager?.GetGridKey(worldPos) ?? Vector3Int.zero;
+        }
+
+        public static Scene GetCurrentScene()
+        {
+            if (SceneContext.Inst == null)
+            {
+                return SceneManager.GetActiveScene();
+            }
+            return SceneContext.Inst.gameObject.scene;
+        }
+
+        public static Scene GetGlobalScene()
+        {
+            return SceneManager.GetSceneByName(CoreEngineSettingsSO.Instance.GlobalScene);
         }
     }
 }
