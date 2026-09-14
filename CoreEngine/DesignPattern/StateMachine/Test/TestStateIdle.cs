@@ -4,16 +4,20 @@ using UnityEngine;
 
 namespace CoreEngine.DesignPattern.StateMachine.Test
 {
-    public class TestStateIdle : BaseState<TestAnimalStateKey, TestAnimalStateController>
+    public class TestStateIdle : BaseState<TestAnimalStateKey>
     {
-        public override void Enter(TestAnimalStateController controller)
+        public override void Enter(CoreEngine.Actor.IActorHost host)
         {
             LogHelper.Log("동물이 가만히 서 있습니다. (Idle Enter)");
-            controller.AnimalBlackboard.stateTimer = 0f;
+            if (host.TryGetFeature<TestAnimalStateController>(out var controller))
+            {
+                controller.AnimalBlackboard.stateTimer = 0f;
+            }
         }
 
-        public override TestAnimalStateKey? CheckTransitions(TestAnimalStateController controller)
+        public override TestAnimalStateKey? CheckTransitions(CoreEngine.Actor.IActorHost host)
         {
+            if (!host.TryGetFeature<TestAnimalStateController>(out var controller)) return null;
             var board = controller.AnimalBlackboard;
 
             if (board.stats.hunger >= board.stats.maxHunger)
@@ -29,30 +33,35 @@ namespace CoreEngine.DesignPattern.StateMachine.Test
             return null;
         }
 
-        public override void Update(TestAnimalStateController controller, float deltaTime)
+        public override void Update(CoreEngine.Actor.IActorHost host, float deltaTime)
         {
+            if (!host.TryGetFeature<TestAnimalStateController>(out var controller)) return;
             var board = controller.AnimalBlackboard;
 
             board.stateTimer += deltaTime;
             board.stats.hunger += deltaTime * board.stats.hungerIncreaseRate;
         }
 
-        public override void Exit(TestAnimalStateController controller, TestAnimalStateKey? nextState)
+        public override void Exit(CoreEngine.Actor.IActorHost host, TestAnimalStateKey? nextState)
         {
             LogHelper.Log($"동물이 대기를 끝냅니다. 다음 상태: {nextState}");
         }
     }
 
-    public class TestStateWander : BaseState<TestAnimalStateKey, TestAnimalStateController>
+    public class TestStateWander : BaseState<TestAnimalStateKey>
     {
-        public override void Enter(TestAnimalStateController controller)
+        public override void Enter(CoreEngine.Actor.IActorHost host)
         {
             LogHelper.Log("동물이 맵을 돌아다니기 시작합니다. (Wander Enter)", LogColor.Cyan);
-            controller.AnimalBlackboard.stateTimer = 0f;
+            if (host.TryGetFeature<TestAnimalStateController>(out var controller))
+            {
+                controller.AnimalBlackboard.stateTimer = 0f;
+            }
         }
 
-        public override TestAnimalStateKey? CheckTransitions(TestAnimalStateController controller)
+        public override TestAnimalStateKey? CheckTransitions(CoreEngine.Actor.IActorHost host)
         {
+            if (!host.TryGetFeature<TestAnimalStateController>(out var controller)) return null;
             var board = controller.AnimalBlackboard;
 
             if (board.stats.hunger >= board.stats.maxHunger)
@@ -69,8 +78,9 @@ namespace CoreEngine.DesignPattern.StateMachine.Test
             return null;
         }
 
-        public override void Update(TestAnimalStateController controller, float deltaTime)
+        public override void Update(CoreEngine.Actor.IActorHost host, float deltaTime)
         {
+            if (!host.TryGetFeature<TestAnimalStateController>(out var controller)) return;
             var board = controller.AnimalBlackboard;
 
             board.stateTimer += deltaTime;
@@ -78,18 +88,19 @@ namespace CoreEngine.DesignPattern.StateMachine.Test
             board.stats.hunger += deltaTime * 10f;
         }
 
-        public override void Exit(TestAnimalStateController controller, TestAnimalStateKey? nextState) { }
+        public override void Exit(CoreEngine.Actor.IActorHost host, TestAnimalStateKey? nextState) { }
     }
 
-    public class TestStateEat : BaseState<TestAnimalStateKey, TestAnimalStateController>
+    public class TestStateEat : BaseState<TestAnimalStateKey>
     {
-        public override void Enter(TestAnimalStateController controller)
+        public override void Enter(CoreEngine.Actor.IActorHost host)
         {
             LogHelper.Log("동물이 먹이를 먹기 시작합니다. (Eat Enter)", LogColor.Green);
         }
 
-        public override TestAnimalStateKey? CheckTransitions(TestAnimalStateController controller)
+        public override TestAnimalStateKey? CheckTransitions(CoreEngine.Actor.IActorHost host)
         {
+            if (!host.TryGetFeature<TestAnimalStateController>(out var controller)) return null;
             var board = controller.AnimalBlackboard;
 
             // 배부름에 도달하면 대기 상태로 복귀
@@ -101,15 +112,16 @@ namespace CoreEngine.DesignPattern.StateMachine.Test
             return null;
         }
 
-        public override void Update(TestAnimalStateController controller, float deltaTime)
+        public override void Update(CoreEngine.Actor.IActorHost host, float deltaTime)
         {
+            if (!host.TryGetFeature<TestAnimalStateController>(out var controller)) return;
             var stats = controller.AnimalBlackboard.stats;
 
             stats.hunger -= deltaTime * stats.hungerDecreaseRate;
             if (stats.hunger < 0f) stats.hunger = 0f;
         }
 
-        public override void Exit(TestAnimalStateController controller, TestAnimalStateKey? nextState)
+        public override void Exit(CoreEngine.Actor.IActorHost host, TestAnimalStateKey? nextState)
         {
             LogHelper.Log("식사를 마쳤습니다.", LogColor.Green);
         }

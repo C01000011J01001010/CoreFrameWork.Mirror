@@ -7,11 +7,10 @@ using UnityEngine;
 
 namespace CoreEngine.DesignPattern.StateMachine
 {
-    public abstract class BaseStateManager<TState, TController> : BaseManager
+    public abstract class BaseStateManager<TState> : BaseManager
         where TState : struct, Enum
-        where TController : class
     {
-        private readonly Dictionary<TState, IState<TState, TController>> stateDict = new();
+        private readonly Dictionary<TState, IState<TState>> stateDict = new();
 
         protected override void Awake()
         {
@@ -23,7 +22,7 @@ namespace CoreEngine.DesignPattern.StateMachine
         protected abstract void SetUpStates();
 
         // 자식 클래스에서 상태를 등록할 때 사용할 안전한 메서드
-        protected void AddState(TState key, IState<TState, TController> state)
+        protected void AddState(TState key, IState<TState> state)
         {
             // TryAdd는 중복 키가 있으면 false를 반환하고 Exception을 내지 않음
             if (!stateDict.TryAdd(key, state))
@@ -32,7 +31,7 @@ namespace CoreEngine.DesignPattern.StateMachine
             }
         }
 
-        public IState<TState, TController> GetState(TState wantState)
+        public IState<TState> GetState(TState wantState)
         {
             if (stateDict.TryGetValue(wantState, out var state))
             {

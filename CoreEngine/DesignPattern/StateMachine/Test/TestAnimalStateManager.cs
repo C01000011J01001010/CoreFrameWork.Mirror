@@ -3,7 +3,7 @@ using CoreEngine.DesignPattern.StateMachine;
 namespace CoreEngine.DesignPattern.StateMachine.Test
 {
     // 3. Manager 구현체 (상태 객체 생성 및 캐싱 담당)
-    public class TestAnimalStateManager : BaseStateManager<TestAnimalStateKey, TestAnimalStateController>
+    public class TestAnimalStateManager : BaseStateManager<TestAnimalStateKey>
     {
         protected override void SetUpStates()
         {

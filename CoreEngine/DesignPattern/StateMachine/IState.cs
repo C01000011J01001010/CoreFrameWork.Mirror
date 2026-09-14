@@ -1,16 +1,16 @@
 using System;
+using CoreEngine.Actor;
 
 namespace CoreEngine.DesignPattern.StateMachine
 {
-    // TController를 받아 해당 컨트롤러와 Blackboard를 조작
-    public interface IState<TState, TController>
+    // IState는 이제 IActorHost를 통해 Host(Actor)와 상호작용합니다.
+    public interface IState<TState>
         where TState : struct, Enum
-        where TController : class
     {
-        void Enter(TController controller);
-        TState? CheckTransitions(TController controller);
-        void Update(TController controller, float deltaTime);
-        void FixedUpdate(TController controller, float fixedDeltaTime);
-        void Exit(TController controller, TState? nextState);
+        void Enter(IActorHost host);
+        TState? CheckTransitions(IActorHost host);
+        void Update(IActorHost host, float deltaTime);
+        void FixedUpdate(IActorHost host, float fixedDeltaTime);
+        void Exit(IActorHost host, TState? nextState);
     }
 }

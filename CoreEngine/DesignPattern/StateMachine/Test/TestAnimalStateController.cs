@@ -37,7 +37,7 @@ namespace CoreEngine.DesignPattern.StateMachine.Test
 
     // Controller 구현체 (데이터와 흐름 제어 담당)
     [Serializable]
-    public class TestAnimalStateController : BaseStateController<TestAnimalStateKey, TestAnimalStateManager, TestAnimalStateController>
+    public class TestAnimalStateController : BaseStateController<TestAnimalStateKey, TestAnimalStateManager>
     {
         [SerializeField]
         public AnimalBlackboard _animalBlackboard = new();

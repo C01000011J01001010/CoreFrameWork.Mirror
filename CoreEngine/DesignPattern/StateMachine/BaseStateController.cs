@@ -7,11 +7,10 @@ using UnityEngine;
 
 namespace CoreEngine.DesignPattern.StateMachine
 {
-    // CRTP 패턴 적용: 자식 컨트롤러의 타입을 TController로 스스로 넘겨줌
-    public abstract class BaseStateController<TState, TManager, TController> : BaseActorFeature
+    // BaseStateController는 이제 IActorHost(Host)를 사용하여 상태와 상호작용합니다.
+    public abstract class BaseStateController<TState, TManager> : BaseActorFeature
         where TState : struct, Enum
-        where TManager : BaseStateManager<TState, TController>
-        where TController : BaseStateController<TState, TManager, TController>
+        where TManager : BaseStateManager<TState>
     {
         [SerializeField] 
         protected TState defaultStateType;
@@ -19,7 +18,7 @@ namespace CoreEngine.DesignPattern.StateMachine
         protected TState currentStateType;
 
         // 매니저에서 받아올 현재 상태 로직 (Stateless)
-        protected IState<TState, TController> CurrentState;
+        protected IState<TState> CurrentState;
 
         // 매니저 캐싱
         protected TManager _stateManager;
@@ -42,46 +41,46 @@ namespace CoreEngine.DesignPattern.StateMachine
             currentStateType = defaultStateType;
             CurrentState = _stateManager.GetState(defaultStateType);
 
-            CurrentState?.Enter((TController)this);
+            // 상태 진입 시 Host(Actor)를 전달
+            CurrentState?.Enter(Host);
         }
 
         public virtual void StopState()
         {
-            CurrentState?.Exit((TController)this, null);
+            CurrentState?.Exit(Host, null);
             CurrentState = null;
         }
 
         public virtual void Tick(float deltaTime)
         {
             if (CurrentState == null) return;
-
-            TState? nextState = CurrentState.CheckTransitions((TController)this);
+            TState? nextState = CurrentState.CheckTransitions(Host);
 
             if (nextState.HasValue)
             {
                 TransitionTo(nextState.Value);
                 return;
             }
-            CurrentState.Update((TController)this, deltaTime);
+            CurrentState.Update(Host, deltaTime);
         }
 
         public virtual void FixedTick(float fixedDeltaTime)
         {
-            CurrentState?.FixedUpdate((TController)this, fixedDeltaTime);
+            CurrentState?.FixedUpdate(Host, fixedDeltaTime);
         }
 
         protected virtual void TransitionTo(TState nextState)
         {
             if (Comparer.Equals(currentStateType, nextState)) return;
 
-            CurrentState?.Exit((TController)this, nextState);
+            CurrentState?.Exit(Host, nextState);
 
             currentStateType = nextState;
 
             // 캐싱된 매니저에게 상태 객체를 요청 (new 할당 없음)
             CurrentState = _stateManager.GetState(nextState);
 
-            CurrentState?.Enter((TController)this);
+            CurrentState?.Enter(Host);
         }
     }
 }
