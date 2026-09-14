@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace CoreEngine.Data
+namespace CoreEngine.GameData
 {
     /// <summary>
     /// View 역할의 객체에 사용 (ui를 포함, 게임에 등장하는 오브젝트도 가능)

@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
-namespace CoreEngine.StaticData
+
+namespace CoreEngine.GameData
 {
     public class AssetId<TRegistry, TAsset>
         where TRegistry : AssetRegistry<TRegistry, TAsset>

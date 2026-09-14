@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace CoreEngine.StaticData
+namespace CoreEngine.GameData
 {
     public interface IAssetRegistry<TRegistry, TAsset>
         where TRegistry : IAssetRegistry<TRegistry, TAsset>

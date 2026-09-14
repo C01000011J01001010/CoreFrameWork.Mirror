@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CoreEngine.StaticData
+namespace CoreEngine.GameData
 {
     /// <summary>A concrete non-generic subclass (for example ItemTable) is the Unity asset.</summary>
     public abstract class StaticDataTable<TRow> : ScriptableObject, ISerializationCallbackReceiver

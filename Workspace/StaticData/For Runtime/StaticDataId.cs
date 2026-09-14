@@ -1,5 +1,5 @@
 using System;
-namespace CoreEngine.StaticData
+namespace CoreEngine.GameData
 {
     public static class StaticDataId
     {

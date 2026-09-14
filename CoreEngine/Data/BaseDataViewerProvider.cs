@@ -3,7 +3,7 @@ using UnityEditor.EditorTools;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace CoreEngine.Data
+namespace CoreEngine.GameData
 {
     /// <summary>
     /// Viewer를 리스트로 관리해주는 객체

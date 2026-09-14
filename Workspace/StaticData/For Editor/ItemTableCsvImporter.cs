@@ -1,10 +1,10 @@
 using System.Globalization;
-using CoreEngine.StaticData.Samples;
+using CoreEngine.GameData;
+using CoreEngine.GameData.Samples;
 using UnityEditor;
 using UnityEngine;
-using CoreEngine.StaticData;
 
-namespace CoreEditor.StaticData
+namespace CoreEditor.GameData
 {
     /// <summary>Reference importer. Required CSV headers: Id, DisplayName, Price.</summary>
     public static class ItemTableCsvImporter

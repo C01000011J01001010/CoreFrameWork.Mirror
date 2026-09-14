@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace CoreEngine.Data
+namespace CoreEngine.GameData
 {
     /// <summary>
     /// 

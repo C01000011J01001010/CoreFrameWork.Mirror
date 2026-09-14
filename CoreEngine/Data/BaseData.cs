@@ -1,7 +1,8 @@
 using UnityEngine;
 using CoreEngine.Extensions;
+using CoreEngine.GameData;
 
-namespace CoreEngine.Data
+namespace CoreEngine.GameData
 {
     public interface IBaseData
     {

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace CoreEngine.Data
+namespace CoreEngine.GameData
 {
     public class BaseObjectContainer<TObject>
     {

@@ -1,7 +1,7 @@
 using UnityEngine;
 using CoreEngine.Extensions;
 
-namespace CoreEngine.Data
+namespace CoreEngine.GameData
 {
     // 게임 내에서 혼자서 형태를 갖지 않는 정보객체
     public abstract class BaseData_ForUi : BaseData

@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using UnityEngine;
 
-namespace CoreEngine.Data
+namespace CoreEngine.GameData
 {
     /// <summary>
     /// 게임 내 모든 저장/로드 경로를 전역적으로 제공하는 순수 유틸리티

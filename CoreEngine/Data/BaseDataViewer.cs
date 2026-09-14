@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Networking.PlayerConnection;
 using UnityEngine.UI;
 
-namespace CoreEngine.Data
+namespace CoreEngine.GameData
 {
     /// <summary>
     /// DataContainer(Model)객체의 View역할을 하는 객체의 기본 클래스

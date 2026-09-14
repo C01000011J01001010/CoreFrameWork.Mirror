@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace CoreEditor.StaticData
+namespace CoreEditor.GameData
 {
     /// <summary>One validated CSV record addressed by its header names.</summary>
     public sealed class CsvRow

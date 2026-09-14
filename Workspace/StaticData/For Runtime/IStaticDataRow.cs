@@ -1,4 +1,4 @@
-namespace CoreEngine.StaticData
+namespace CoreEngine.GameData
 {
     public interface IStaticDataRow { int Id { get; } }
 }

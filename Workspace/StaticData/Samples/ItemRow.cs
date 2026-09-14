@@ -1,6 +1,6 @@
 using System;
-using CoreEngine.StaticData;
-namespace CoreEngine.StaticData.Samples
+using CoreEngine.GameData;
+namespace CoreEngine.GameData.Samples
 {
     [Serializable]
     public sealed class ItemRow : IStaticDataRow

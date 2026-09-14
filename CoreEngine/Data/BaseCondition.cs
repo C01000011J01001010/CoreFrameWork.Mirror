@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using CoreEngine.Actor;
 
-namespace CoreEngine.Data
+namespace CoreEngine.GameData
 {
     public abstract class BaseCondition : ScriptableObject
     {

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace CoreEngine.Data
+namespace CoreEngine.GameData
 {
     public abstract class BaseDataContainer<Data> : BaseObjectContainer<Data>
         where Data : BaseData
