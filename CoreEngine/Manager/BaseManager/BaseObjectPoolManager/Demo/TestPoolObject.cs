@@ -7,14 +7,27 @@ namespace CoreEngine.Pool.Test
     {
         public IPoolReleaser Releaser { get; set; }
 
-        public void OnDespawn()
+        int id;
+
+        private void Start()
         {
-            LogHelper.Log($"[TestPoolObject] OnDespawn() called for {gameObject.name}");
+            id = gameObject.GetInstanceID();
         }
 
         public void OnSpawn()
         {
-            LogHelper.Log($"[TestPoolObject] OnSpawn() called for {gameObject.name}");
+            LogHelper.Log($"({gameObject.name}.{id}) 등장", LogColor.Green);
+            TestPoolTracker.SpawnedObjects.Add(this);
         }
+
+        public void OnDespawn()
+        {
+            if (TestPoolTracker.SpawnedObjects.Remove(this))
+            {
+                LogHelper.Log($"({gameObject.name}.{id}) 퇴장", LogColor.Blue);
+            }
+        }
+
+        
     }
 }

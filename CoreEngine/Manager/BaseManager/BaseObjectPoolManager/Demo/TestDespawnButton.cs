@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using CoreEngine.Helpers;
+using System.Linq;
 
 namespace CoreEngine.Pool.Test
 {
@@ -23,8 +24,8 @@ namespace CoreEngine.Pool.Test
                 return;
             }
 
-            // 스택에서 가장 마지막에 생성된 객체를 꺼냄
-            IPoolable targetObj = TestPoolTracker.SpawnedObjects.Pop();
+            // 가장 마지막에 생성된 객체를 꺼냄
+            IPoolable targetObj = TestPoolTracker.SpawnedObjects.Last();
 
             // 유니티 씬 전환 중 파괴(Fake Null)되지 않고 온전히 살아있는 경우에만 접근[cite: 13]
             if (targetObj != null && targetObj.gameObject != null)

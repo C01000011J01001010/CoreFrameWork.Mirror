@@ -23,11 +23,6 @@ namespace CoreEngine.Pool.Test
             Vector3 randomPos = new Vector3(Random.Range(-3f, 3f), Random.Range(-3f, 3f), 0);
             Quaternion randomRot = new Quaternion(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360),1);
             IPoolable spawnedObj = poolManager.Spawn(targetPoolType, randomPos, randomRot);
-
-            if (spawnedObj != null)
-            {
-                TestPoolTracker.SpawnedObjects.Push(spawnedObj);
-            }
         }
     }
 }
