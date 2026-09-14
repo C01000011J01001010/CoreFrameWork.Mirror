@@ -3,15 +3,15 @@ using UnityEngine;
 
 namespace CoreEngine.Pool
 {
-    public interface IPoolable
+    public interface IPoolable : ISpawnable
     {
         /// <summary>
         /// 풀링 객체가 돌아갈 곳을 정해주는 객체 (PoolHandler)
         /// </summary>
         public IPoolReleaser Releaser { get; set; }
 
-        public void OnSpawn();
-        public void OnDespawn();
+        //public void OnSpawn(); // ISpawnable에서 선언
+        //public void OnDespawn(); // ISpawnable에서 선언
 
         // 캐싱 시간 또는 GetComponent 시간을 줄이기 위해 PoolHandler에서 GameObject가 아닌 인터페이스로 관리
         // gameObject와 transform은 Monobehaviour에서 제공하는 속성이므로
