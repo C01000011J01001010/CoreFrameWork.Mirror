@@ -98,7 +98,7 @@ namespace CoreEngine.Helpers
 
         [Conditional("UNITY_EDITOR")]
         [Conditional("DEVELOPMENT_BUILD")]
-        public static void LogWarning(string message, string color = LogColor.Default)
+        public static void LogWarning(string message, string color = LogColor.Yellow)
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (color != LogColor.Default) message = $"<color={color}>{message}</color>";
@@ -108,7 +108,7 @@ namespace CoreEngine.Helpers
 
         [Conditional("UNITY_EDITOR")]
         [Conditional("DEVELOPMENT_BUILD")]
-        public static void LogError(string message, string color = LogColor.Default)
+        public static void LogError(string message, string color = LogColor.Red)
         {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (color != LogColor.Default) message = $"<color={color}>{message}</color>";
