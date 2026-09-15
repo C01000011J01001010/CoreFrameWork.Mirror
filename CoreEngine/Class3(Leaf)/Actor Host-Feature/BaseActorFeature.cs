@@ -10,10 +10,14 @@
         // 외부(인터페이스)에서는 읽기만 가능하도록 제한
         public IActorHost Host => _host;
 
+        public bool IsInit { get; private set; } = false;
+
         public void Initialize(IActorHost host)
         {
+            if (IsInit) return;
             _host = host;
             OnInitialized(); // 자식 클래스에서 필요한 추가 초기화 진행
+            IsInit = true;
         }
 
         // Feature가 조립된 직후 실행될 커스텀 초기화 로직

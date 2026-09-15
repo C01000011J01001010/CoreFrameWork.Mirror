@@ -5,6 +5,7 @@ namespace CoreEngine.Actor
     /// </summary>
     public interface IActorFeature
     {
+        bool IsInit { get; }
         IActorHost Host { get; }
         // 생성 될 때 자신을 담고 있는 host를 주입받는 유일한 통로
         void Initialize(IActorHost host);
