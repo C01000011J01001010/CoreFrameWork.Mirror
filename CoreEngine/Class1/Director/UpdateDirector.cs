@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using CoreEngine.Helpers;
+using CoreEngine.Director;
 
 namespace CoreEngine
 {
@@ -33,22 +34,52 @@ namespace CoreEngine
     #endregion
 
     #region Tick 인터페이스
-    public interface ITickable
+    /// <summary>
+    /// 순수C# 객체의 Tick
+    /// </summary>
+    public interface ITick
     {
-        TickGroup TickGroup { get; }
         void Tick(float deltaTime);
     }
-
-    public interface ILateTickable
+    /// <summary>
+    /// 순수C# 객체의 LateTick
+    /// </summary>
+    public interface ILateTick
     {
-        LateTickGroup LateTickGroup { get; }
-        void LateTick(float dt);
+        void LateTick(float deltaTime);
+    }
+    /// <summary>
+    /// 순수C# 객체의 FixedTick
+    /// </summary>
+    public interface IFixedTick
+    {
+        void FixedTick(float fixedDeltaTime);
+    }
+    #endregion
+
+    #region Tickable 인터페이스
+    /// <summary>
+    /// <see cref="CoreMonoBehaviour"/>의 Tick, 구현시 <see cref="UpdateDirector"/>  자동 등록
+    /// </summary>
+    public interface ITickable : ITick
+    {
+        TickGroup TickGroup { get; }
     }
 
-    public interface IFixedTickable
+    /// <summary>
+    /// <see cref="CoreMonoBehaviour"/>의 LateTick, 구현시 <see cref="UpdateDirector"/>  자동 등록
+    /// </summary>
+    public interface ILateTickable : ILateTick
+    {
+        LateTickGroup LateTickGroup { get; }
+    }
+
+    /// <summary>
+    /// <see cref="CoreMonoBehaviour"/>의 FixedTick, 구현시 <see cref="UpdateDirector"/>  자동 등록
+    /// </summary>
+    public interface IFixedTickable : IFixedTick
     {
         FixedTickGroup FixedTickGroup { get; }
-        void FixedTick(float fixedDeltaTime);
     }
     #endregion
 
