@@ -1,11 +1,8 @@
-﻿using CoreEngine;
-using CoreEngine.Helpers;
+﻿using CoreEngine.Helpers;
 using System.Collections;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using CoreEngine.Director;
-using CoreEngine.EventBus;
 
 namespace CoreEngine
 {
@@ -28,7 +25,7 @@ namespace CoreEngine
         {
             base.Awake();
 
-            // 💡 유저님의 아이디어: 내 게임오브젝트가 속한 씬 프로퍼티를 그대로 디렉터에게 패스!
+            // 내 게임오브젝트가 속한 씬 프로퍼티를 그대로 디렉터에게 패스
             Scene currentSceneDomain = gameObject.scene;
 
             if (isActiveScene)

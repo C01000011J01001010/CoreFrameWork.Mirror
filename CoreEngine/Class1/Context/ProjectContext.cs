@@ -59,12 +59,12 @@ namespace CoreEngine
             // 모니터링 하는 객체에서 지연 초기화가 가능하도록 제어를 넘김
             yield return null;
 
-            if (TestDriver.IsSceneTest)
+            if (SceneTestDriver.IsSceneTest)
             {
                 Debug.Log($"[ProjectContext] 단독 씬 테스트 환경 시스템 빌드업을 시작합니다.");
 
                 // 전용 이벤트를 발행하여 디렉터의 공통 파이프라인(하단부)을 태움
-                EventBus<SceneTestBootstrapRequestEvent>.Publish(new SceneTestBootstrapRequestEvent(TestDriver.TestScene));
+                EventBus<SceneTestBootstrapRequestEvent>.Publish(new SceneTestBootstrapRequestEvent(SceneTestDriver.TestScene));
             }
             else
             {

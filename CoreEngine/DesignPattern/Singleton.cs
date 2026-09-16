@@ -19,7 +19,7 @@ namespace CoreEngine.DesignPattern.Singleton
                 if (_inst != null) return _inst;
 
                 // 아직 Awake로 등록되지 않았을 경우, 씬에서 강제로 찾음 (Lazy Init)
-                _inst = FindFirstObjectByType<T>();
+                _inst = FindFirstObjectByType<T>(FindObjectsInactive.Include);
 
                 // 씬을 다 뒤졌는데도 없으면 그때 경고 발생
                 if (_inst == null)

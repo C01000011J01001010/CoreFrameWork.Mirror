@@ -25,7 +25,7 @@ namespace CoreEngine
                 }
 
                 // 자식 객체로 SceneTester를 잘 넣어놨는지 검사 -> 존재해야됨
-                var tester = gameObject.GetComponentInChildren<CoreEngine.Test.TestDriver>(true);
+                var tester = gameObject.GetComponentInChildren<CoreEngine.Test.SceneTestDriver>(true);
                 if (tester == null)
                 {
                     string messgae = //$"<color=red>[Hierarchy Error]</color>" +
