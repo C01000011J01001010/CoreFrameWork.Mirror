@@ -9,6 +9,31 @@ using UnityEngine.InputSystem;
 //public delegate 
 namespace CoreEngine.Input
 {
+    #region input interface
+    public interface IBaseInput<T> { T Value { get; } }
+
+    /// <summary>
+    /// wasd 입력
+    /// <para>조이스틱L 입력</para>
+    /// </summary>
+    public interface IMoveInput : IBaseInput<Vector2> { }
+
+    /// <summary>
+    /// 마우스 이동 입력
+    /// <para>조이스틱 R 입력</para>
+    /// </summary>
+    public interface ILookInput : IBaseInput<Vector2> { }
+
+    public interface ISprintInput : IBaseInput<bool> { }
+
+    /// <summary>
+    /// 마우스 y축 휠 입력
+    /// <para>조이스틱 조합입력  ex) B + 조이스틱R 위아래</para>
+    /// </summary>
+    public interface IScrollDeltaInput : IBaseInput<float> { }
+
+    #endregion
+
     public abstract class BaseInputManager<TInputAction> : BaseManager, IManager
         where TInputAction : class, IInputActionCollection2, IDisposable, new()
     {

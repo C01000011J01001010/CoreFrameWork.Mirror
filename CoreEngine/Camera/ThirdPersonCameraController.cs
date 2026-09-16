@@ -23,13 +23,13 @@ namespace CoreEngine.CameraSystem
         private CinemachineThirdPersonFollow _thirdPersonFollow;
 
         private InterfaceReceiver<ILookInput> _lookReceiver = new();
-        private InterfaceReceiver<IScollDeltaInput> _ScrollDeltaReceiver = new();
+        private InterfaceReceiver<IScrollDeltaInput> _ScrollDeltaReceiver = new();
 
         private ILookInput _lookInput;
         private ILookInput LookInput => InterfaceHelper.GetInterface(ref _lookInput, _lookReceiver);
 
-        private IScollDeltaInput _scollDeltaInput;
-        private IScollDeltaInput ScollDeltaInput => InterfaceHelper.GetInterface(ref _scollDeltaInput, _ScrollDeltaReceiver);
+        private IScrollDeltaInput _scollDeltaInput;
+        private IScrollDeltaInput ScrollDeltaInput => InterfaceHelper.GetInterface(ref _scollDeltaInput, _ScrollDeltaReceiver);
 
         private bool isMouseLock = true;
 
@@ -83,19 +83,19 @@ namespace CoreEngine.CameraSystem
         /// </summary>
         public override void CameraTick(float deltaTime)
         {
-            if (LookInput == null || ScollDeltaInput == null) return;
+            if (LookInput == null || ScrollDeltaInput == null) return;
 
             // 1. 입력 가져오기 (Model -> Controller)
 
             // 2. 줌(Zoom) Worker에게 역할 위임
-            _zoomHandler.OnZoomInput(ScollDeltaInput.value);
+            _zoomHandler.OnZoomInput(ScrollDeltaInput.Value);
             _zoomHandler.ProcessZoom(_thirdPersonFollow, deltaTime);
 
             // 3. 회전(Rotation) Worker에게 역할 위임 및 결과 적용
             if (isMouseLock && !SystemHelper.isUnityNull(TrackingTarget))
             {
                 // 핸들러는 순수하게 '계산된 회전값'만 반환합니다. (Side-Effect 없음)
-                Quaternion newRotation = _rotationHandler.ProcessRotation(LookInput.value, deltaTime);
+                Quaternion newRotation = _rotationHandler.ProcessRotation(LookInput.Value, deltaTime);
 
                 // 지휘관(Controller)이 직접 투명한 카메라 짐벌(TrackingTarget)에 회전값을 덮어씌웁니다.
                 // 주의: 물리 타겟(항아리)이 아닌 카메라 전용 짐벌이어야 합니다!
