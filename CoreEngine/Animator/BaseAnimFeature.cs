@@ -6,6 +6,7 @@ namespace CoreEngine.Animation
 {
     public abstract class BaseAnimFeature : BaseActorFeature
     {
+        [SerializeField, Tooltip("데이터를 할당하지 않으면 BaseAnimFeature.OnValidate호출시 자신 포함 자식 객체에서 자동추적")]
         private Animator _animator;
 
         protected override void OnInitialized()
@@ -24,6 +25,14 @@ namespace CoreEngine.Animation
         protected void SetParam(int ParamHash, float value) => _animator.SetFloat(ParamHash, value);
         protected void SetParam(int ParamHash, int value) => _animator.SetInteger(ParamHash, value);
         protected void SetParam(int ParamHash) => _animator.SetTrigger(ParamHash);
+
+        public void OnValidate()
+        {
+            if(_animator == null)
+            {
+                _animator = Host.GetComponentInChildren<Animator>();
+            }
+        }
     }
 }
 
