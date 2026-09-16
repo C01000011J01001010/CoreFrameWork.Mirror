@@ -1,6 +1,7 @@
 ﻿using CoreEngine.Helpers;
 using System;
 using System.Collections.Generic;
+using CoreEngine.Pool;
 
 namespace CoreEngine.Actor
 {
@@ -11,6 +12,7 @@ namespace CoreEngine.Actor
         /// </summary>
         protected readonly Dictionary<Type, IActorFeature> _featureMap = new();
         protected readonly List<IActorFeature> _featureList = new();
+        protected readonly List<ISpawnable> _spawnableList = new();
         protected readonly List<ITick> _tickableFeatures = new();
         protected readonly List<ILateTick> _lateTickableFeatures = new();
         protected readonly List<IFixedTick> _fixedTickableFeatures = new();
@@ -112,14 +114,15 @@ namespace CoreEngine.Actor
 
             // 초기화 후 틱 리스트에 넣기
             feature.Initialize(_host);
+            if (feature is ISpawnable asSpawnable) _spawnableList.Add(asSpawnable);
             if (feature is ITick asTick) _tickableFeatures.Add(asTick);
             if (feature is ILateTick asLateTick) _lateTickableFeatures.Add(asLateTick);
             if (feature is IFixedTick asFixedTick) _fixedTickableFeatures.Add(asFixedTick);
         }
 
         /// <summary>
-        /// <para>등록된 전체 Feature의 리소스를 정리</para>
-        /// <para><see cref="RegisterFeature"/>를 통한 등록 순서 역순 사용</para>
+        /// <see cref="RegisterFeature"/>등록 순서 역순의 
+        /// <see cref="IDisposable.Dispose"/>Feature를 실행
         /// </summary>
         public void Dispose_RegisteredFeatures()
         {
@@ -138,7 +141,32 @@ namespace CoreEngine.Actor
         }
 
         /// <summary>
-        /// <see cref="Initialize_RegisteredFeature"/>초기화 순서의 <see cref="ITick"/> Feature를 실행
+        /// <see cref="Initialize_RegisteredFeature"/>초기화 순서의 
+        /// <see cref="ISpawnable.OnSpawn"/>Feature를 실행
+        /// </summary>
+        public void OnSpawn_InitializedFeatures()
+        {
+            for(int i = 0; i < _spawnableList.Count; i++)
+            {
+                _spawnableList[i].OnSpawn();
+            }
+        }
+
+        /// <summary>
+        /// <see cref="Initialize_RegisteredFeature"/>초기화 순서의 
+        /// <see cref="ISpawnable.OnDespawn"/>Feature를 실행
+        /// </summary>
+        public void OnDespawn_InitializedFeatures()
+        {
+            for (int i = 0; i < _spawnableList.Count; i++)
+            {
+                _spawnableList[i].OnDespawn();
+            }
+        }
+
+        /// <summary>
+        /// <see cref="Initialize_RegisteredFeature"/>초기화 순서의 
+        /// <see cref="ITick.Tick(float)"/>Feature를 실행
         /// </summary>
         public void Tick_InitializedFeatures(float deltaTime)
         {
@@ -149,7 +177,8 @@ namespace CoreEngine.Actor
         }
 
         /// <summary>
-        /// <see cref="Initialize_RegisteredFeature"/>초기화 순서의 <see cref="ILateTick"/> Feature를 실행
+        /// <see cref="Initialize_RegisteredFeature"/>초기화 순서의 
+        /// <see cref="ILateTick.LateTick(float)"/> Feature를 실행
         /// </summary>
         public void LateTick_InitializedFeatures(float deltaTime)
         {
@@ -160,7 +189,8 @@ namespace CoreEngine.Actor
         }
 
         /// <summary>
-        /// <see cref="Initialize_RegisteredFeature"/>초기화 후 초기화 순서의 <see cref="IFixedTick"/> Feature를 실행
+        /// <see cref="Initialize_RegisteredFeature"/>초기화 후 초기화 순서의 
+        /// <see cref="IFixedTick.FixedTick(float)"/> Feature를 실행
         /// </summary>
         public void FixedTick_InitializedFeatures(float fixedDeltaTime)
         {
