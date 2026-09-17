@@ -134,6 +134,7 @@ namespace CoreEngine.Actor
 
             _featureMap.Clear();
             _featureList.Clear();
+            _spawnableList.Clear();
             _tickableFeatures.Clear();
             _lateTickableFeatures.Clear();
             _fixedTickableFeatures.Clear();
@@ -153,12 +154,12 @@ namespace CoreEngine.Actor
         }
 
         /// <summary>
-        /// <see cref="Initialize_RegisteredFeature"/>초기화 순서의 
+        /// <see cref="Initialize_RegisteredFeature"/>초기화 순서의 역순 
         /// <see cref="ISpawnable.OnDespawn"/>Feature를 실행
         /// </summary>
         public void OnDespawn_InitializedFeatures()
         {
-            for (int i = 0; i < _spawnableList.Count; i++)
+            for (int i = _spawnableList.Count-1; i >= 0 ; i--)
             {
                 _spawnableList[i].OnDespawn();
             }

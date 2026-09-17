@@ -16,7 +16,7 @@ namespace CoreEngine.Actor
 
         public virtual void OnSpawn()
         {
-            FeatureHandler.OnDespawn_InitializedFeatures();
+            FeatureHandler.OnSpawn_InitializedFeatures();
         }
         public virtual void OnDespawn()
         {
