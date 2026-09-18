@@ -1,10 +1,11 @@
 ﻿using CoreEngine.EventBus;
+using CoreEngine.Manager;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using CoreEngine.Manager;
 
 namespace CoreEngine.Resource
 {
@@ -86,6 +87,17 @@ namespace CoreEngine.Resource
                 (handle) => InvokeLabelCallbackSafely(handle, onComplete),
                 label
             );
+        }
+
+        public Task<T> LoadSceneAssetAsync<T>(string address) where T : UnityEngine.Object
+        {
+            var tcs = new TaskCompletionSource<T>();
+
+            LoadSceneAssetAsync<T>(
+                address,
+                result => tcs.TrySetResult(result));
+
+            return tcs.Task;
         }
 
         // =========================================================
@@ -199,6 +211,19 @@ namespace CoreEngine.Resource
             }
             _globalHandles.Clear();
             Debug.Log("[ResourceManager] 공용 에셋 메모리 해제 완료");
+        }
+
+        public bool ReleaseSceneAsset(string address)
+        {
+            string cacheKey = $"Addr_{address}";
+
+            if (!_sceneHandles.Remove(cacheKey, out AsyncOperationHandle handle))
+                return false;
+
+            if (handle.IsValid())
+                Addressables.Release(handle);
+
+            return true;
         }
 
         // 새로운 씬 로드시 이전 씬은 필요없음

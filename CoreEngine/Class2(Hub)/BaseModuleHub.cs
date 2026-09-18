@@ -176,6 +176,15 @@ namespace CoreEngine.Hub
             return null;
         }
 
+        public virtual IModule GetModule(Type key)
+        {
+            if (moduleDict.TryGetValue(key, out var module))
+            {
+                return module;
+            }
+            return null;
+        }
+
     }
 }
 

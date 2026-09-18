@@ -44,27 +44,30 @@ namespace CoreEngine.Facades
             return null;
         }
 
-        /// <summary>
-        /// 화면 연출 및 뷰를 담당하는 UI 모듈을 조회합니다.
-        /// SceneContext의 UiHub를 먼저 검색하고, 없으면 ProjectContext의 UiHub를 검색합니다.
-        /// </summary>
-        public static T GetUi<T>() where T : class, IModule
+        public static T GetUi<T>() where T : class, IUi
         {
-            // 1. 현재 콘텐츠 씬(SceneContext)의 UI 허브에서 검색 (우선순위 높음)
+            return GetUi(typeof(T)) as T;
+        }
+
+        public static IModule GetUi(Type type)
+        {
+            // 현재 콘텐츠 씬
             if (Scene != null && Scene.uiHub != null)
             {
-                T ui = Scene.uiHub.GetModule<T>();
+                IModule ui = Scene.uiHub.GetModule(type);
                 if (ui != null) return ui;
             }
 
-            // 2. 씬에 없다면 전역 환경(ProjectContext)의 UI 허브에서 검색 (우선순위 낮음)
+            // 전역 환경
             if (Project != null && Project.uiHub != null)
             {
-                T ui = Project.uiHub.GetModule<T>();
+                IModule ui = Project.uiHub.GetModule(type);
                 if (ui != null) return ui;
             }
 
-            Debug.LogWarning($"[CoreFacade] 요청하신 UI 모듈 '{typeof(T).Name}'를 Scene과 Project 어디에서도 찾을 수 없습니다.");
+            Debug.LogWarning(
+                $"[CoreFacade] 요청하신 UI 모듈 '{type.Name}'를 Scene과 Project 어디에서도 찾을 수 없습니다.");
+
             return null;
         }
 
