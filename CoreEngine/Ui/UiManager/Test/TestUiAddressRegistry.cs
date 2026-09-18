@@ -6,7 +6,7 @@ namespace CoreEngine.UI.Test
     {
         private void Awake()
         {
-            //Add
+            Add<TestAddressableUi>("TestAddressableUi");
         }
     }
 }

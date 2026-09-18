@@ -66,7 +66,7 @@ namespace CoreEngine.UI
             // 같은 Address를 이미 로드 중이면 해당 Task 공유
             if (_loadingUis.TryGetValue(address, out var loadingTask))
             {
-                return await loadingTask;
+                return await GetLoadResult(loadingTask);
             }
 
             loadingTask = LoadInternal(uiType, address);
@@ -74,12 +74,18 @@ namespace CoreEngine.UI
 
             try
             {
-                return await loadingTask;
+                return await GetLoadResult(loadingTask);
             }
             finally
             {
                 _loadingUis.Remove(address);
             }
+        }
+        private async Task<IAddressableUi> GetLoadResult(Task<IAddressableUi> loadingTask)
+        {
+            // 이미 메모리가 해제됐는데 로드됐다면 실패를 반환하도록
+            var result = await loadingTask;
+            return _isReleased ? null : result;
         }
 
         private async Task<IAddressableUi> LoadInternal(Type uiType, string address)
@@ -137,15 +143,15 @@ namespace CoreEngine.UI
             // 예약된 Release가 있다면 취소
             CancelRelease(uiType);
 
-            if (!_managedUis.Remove(uiType, out var managedUi))
+            if (!_managedUis.TryGetValue(uiType, out var managedUi))
                 return false;
 
             string address = _uiAddressRegistry.GetAddress(managedUi);
+            if (string.IsNullOrEmpty(address))
+                return false;
 
-            if (!string.IsNullOrEmpty(address))
-            {
-                _resourceManager.ReleaseSceneAsset(address);
-            }
+            _managedUis.Remove(uiType);
+            _resourceManager.ReleaseSceneAsset(address);
 
             return true;
         }

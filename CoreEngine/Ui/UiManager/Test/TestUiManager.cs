@@ -1,18 +1,23 @@
 using System;
-using UnityEngine;
 
 namespace CoreEngine.UI.Test
 {
     public enum TestUiType
     {
-
+        Preloaded,
+        Addressable,
     }
+
     public class TestUiManager : BaseUiManager<TestUiType>
     {
-        protected override Type GetConcreteUiType(TestUiType uiType)
+        protected override Type GetConcreteUiType(TestUiType uiEnum)
         {
-            throw new NotImplementedException();
+            return uiEnum switch
+            {
+                TestUiType.Preloaded => typeof(TestPreloadedUi),
+                TestUiType.Addressable => typeof(TestAddressableUi),
+                _ => null
+            };
         }
     }
 }
-

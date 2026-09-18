@@ -8,14 +8,15 @@ namespace CoreEngine.UI
     {
         protected readonly Dictionary<Type, string/*Address*/> UiAddressMap;
 
-        protected void Add<T>(string Address) where T : IUi
-            => Add(typeof(T), Address);
-        protected void Add(Type uiType, string Address)
+        /// <summary>
+        /// Awake에서 실행
+        /// </summary>
+        protected void Add<T>(string Address) where T : IAddressableUi
         {
-            UiAddressMap[uiType] = Address;
+            UiAddressMap[typeof(T)] = Address;
         }
 
-        public string GetAddress<T>() where T : IUi
+        public string GetAddress<T>() where T : IAddressableUi
             => GetAddress(typeof(T));
 
         public string GetAddress(IAddressableUi addressableUi)
@@ -33,8 +34,6 @@ namespace CoreEngine.UI
                 return null;
             }
         }
-
-        
     }
 }
 
