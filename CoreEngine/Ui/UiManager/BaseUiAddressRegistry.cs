@@ -6,7 +6,7 @@ namespace CoreEngine.UI
 {
     public abstract class BaseUiAddressRegistry : BaseActor, IUiAddressRegistry
     {
-        protected readonly Dictionary<Type, string/*Address*/> UiAddressMap;
+        protected readonly Dictionary<Type, string/*Address*/> UiAddressMap = new();
 
         /// <summary>
         /// Awake에서 실행
