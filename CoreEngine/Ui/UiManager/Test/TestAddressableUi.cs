@@ -4,9 +4,9 @@ namespace CoreEngine.UI.Test
 {
     public class TestAddressableUi : BaseUi, IAddressableUi
     {
-        [SerializeField] 
-        private float _releaseDelay = 3;
-        public float ReleaseDelay => _releaseDelay;
+        [Header("Addressable 정책 결정"), SerializeField] 
+        private UiReleasePolicy _releasePolicy = UiReleasePolicy.AfterSecond05;
+        public float ReleaseDelay => (float)_releasePolicy;
 
         protected override void OnShow()
         {

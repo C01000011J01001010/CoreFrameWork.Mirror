@@ -2,6 +2,7 @@
 using CoreEngine.Resource;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -64,29 +65,28 @@ namespace CoreEngine.UI
                 return null;
 
             // 같은 Address를 이미 로드 중이면 해당 Task 공유
-            if (_loadingUis.TryGetValue(address, out var loadingTask))
+            if (_loadingUis.TryGetValue(address, out var OldLoadingTask))
             {
-                return await GetLoadResult(loadingTask);
+                return await OldLoadingTask;
             }
 
-            loadingTask = LoadInternal(uiType, address);
-            _loadingUis.Add(address, loadingTask);
+            var newLoadingTask = LoadInternal(uiType, address);
+            _loadingUis.Add(address, newLoadingTask);
 
             try
             {
-                return await GetLoadResult(loadingTask);
+                return await newLoadingTask;
             }
             finally
             {
                 _loadingUis.Remove(address);
             }
         }
-        private async Task<IAddressableUi> GetLoadResult(Task<IAddressableUi> loadingTask)
-        {
-            // 이미 메모리가 해제됐는데 로드됐다면 실패를 반환하도록
-            var result = await loadingTask;
-            return _isReleased ? null : result;
-        }
+        //private async Task<IAddressableUi> GetLoadResult(Task<IAddressableUi> loadingTask, string address)
+        //{
+        //    var result = await loadingTask;
+        //    return _isReleased ? null : result;
+        //}
 
         private async Task<IAddressableUi> LoadInternal(Type uiType, string address)
         {
@@ -96,15 +96,12 @@ namespace CoreEngine.UI
             // Exit 이후 Load가 완료된 경우
             if (_isReleased)
             {
-                if (loadedUiObj != null)
-                    _resourceManager.ReleaseSceneAsset(address);
-
+                if (loadedUiObj != null) _resourceManager.ReleaseSceneAsset(address);
                 return null;
             }
 
             // Load 실패
-            if (loadedUiObj == null)
-                return null;
+            if (loadedUiObj == null) return null;
 
             // Addressable UI가 아니면 Asset Release
             if (!loadedUiObj.TryGetComponent(out IAddressableUi loadedUi))
@@ -113,9 +110,21 @@ namespace CoreEngine.UI
                 return null;
             }
 
-            _managedUis[uiType] = loadedUi;
+            GameObject instance = UnityEngine.Object.Instantiate(loadedUi.gameObject);
 
-            return loadedUi;
+            // 원본 Prefab Asset은 더 이상 필요하지 않음
+            _resourceManager.ReleaseSceneAsset(address);
+
+            // Instance에서 UI Component 획득
+            if (!instance.TryGetComponent<IAddressableUi>(out var UiInst))
+            {
+                UnityEngine.Object.Destroy(instance);
+                return null;
+            }
+
+            _managedUis[uiType] = UiInst;
+
+            return UiInst;
         }
 
         /// <summary>
@@ -151,7 +160,8 @@ namespace CoreEngine.UI
                 return false;
 
             _managedUis.Remove(uiType);
-            _resourceManager.ReleaseSceneAsset(address);
+            UnityEngine.Object.Destroy(managedUi.gameObject);
+            //_resourceManager.ReleaseSceneAsset(address);
 
             return true;
         }

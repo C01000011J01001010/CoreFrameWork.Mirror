@@ -1,4 +1,6 @@
 ﻿
+using UnityEngine;
+
 namespace CoreEngine.UI
 {
     /// <summary>
@@ -6,11 +8,12 @@ namespace CoreEngine.UI
     /// </summary>
     public interface IAddressableUi: IUi
     {
-        const string UiAddressPrefix = "Ui/";
         /// <summary>
         /// <para>-1이면 로드 후 계속유지, </para>
         /// <para>Hide시 0이면 즉시 Release, n이면 n초동안 메모리 유지 후 Release</para>
         /// </summary>
         float ReleaseDelay { get; }
+
+        public GameObject gameObject { get; }
     }
 }

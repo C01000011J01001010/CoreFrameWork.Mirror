@@ -6,6 +6,10 @@ namespace CoreEngine
 {
     public abstract class BaseUi : BaseModule, IUi
     {
+        private void Start()
+        {
+            Hide();
+        }
         public void Show()
         {
             ShowInternal();

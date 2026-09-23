@@ -1,4 +1,5 @@
 using CoreEngine.Facades;
+using CoreEngine.Helpers;
 using System;
 using System.Collections;
 using System.Threading.Tasks;
@@ -14,9 +15,8 @@ namespace CoreEngine.UI
 
         private readonly AddressableUiHandler _addressableUiHandler = new();
 
-        public override IEnumerator Initialize()
+        protected override IEnumerator OnInitialize()
         {
-            yield return base.Initialize();
             _addressableUiHandler.Initialize();
             foreach (var uiType in OpenUiOnSceneLoaded)
             {
@@ -25,10 +25,10 @@ namespace CoreEngine.UI
             }
         }
 
-        public override void Exit()
+        public override void OnExit()
         {
             _addressableUiHandler.ReleaseAll();
-            base.Exit();
+            base.OnExit();
         }
 
         /// <summary>
@@ -48,6 +48,9 @@ namespace CoreEngine.UI
 
                 if (ui == null) return false;
             }
+
+            // 초기화되지 않았다면 대기
+            await TaskHelper.WaitUntil(ui.GetIsInit);
 
             // UI 표시
             ui.Show();

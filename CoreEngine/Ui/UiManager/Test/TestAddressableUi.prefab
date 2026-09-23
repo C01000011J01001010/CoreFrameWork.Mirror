@@ -254,7 +254,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: CoreEngine::CoreEngine.UI.Test.TestAddressableUi
   myScope: 2
-  _releaseDelay: 3
+  _releasePolicy: 5
 --- !u!1 &7835262728345969254
 GameObject:
   m_ObjectHideFlags: 0
