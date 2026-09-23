@@ -14,7 +14,7 @@ namespace CoreEngine.UserData
 
         //public GraphicOptionValues SavedGraphicOption { get; private set; }
 
-        public override IEnumerator Initialize()
+        protected override IEnumerator OnInitialize()
         {
             LoadLocalOption();
             yield break;

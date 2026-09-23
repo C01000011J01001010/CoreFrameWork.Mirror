@@ -31,10 +31,11 @@ namespace CoreEngine.Resource
             EventBus<SceneLoadRequestEvent>.Unsubscribe(OnLoadSceneRequset);
         }
 
-        public override void Exit()
+        public override void OnExit()
         {
             ReleaseSceneAssets();
             ReleaseGlobalAssets();
+            base.OnExit();
         }
 
         // =========================================================

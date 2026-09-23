@@ -20,14 +20,11 @@ namespace CoreEngine.GameData
         // 아이템 ID를 키(Key)로 사용하여 빠르게 검색하기 위한 딕셔너리
         protected Dictionary<int, TDataObject> database = new Dictionary<int, TDataObject>();
 
-        public override IEnumerator Initialize()
+        protected override IEnumerator OnInitialize()
         {
-            // 상향식 자동 등록 및 부모 초기화
-            yield return base.Initialize();
-
             bool isLoadComplete = false;
 
-            // 1. 방금 구축한 순수 리소스 매니저를 통해 정적 DB 에셋 비동기 로드
+            // 순수 리소스 매니저를 통해 정적 DB 에셋 비동기 로드
             // (게임 종료 시까지 유지되어야 하므로 GlobalAsset으로 로드)
             ResourceManager resouce = CoreFacade.GetManager<ResourceManager>();
             resouce.LoadGlobalAssetAsync<ScriptableObject>(CatalogAddress, (loadedAsset) =>
@@ -36,18 +33,18 @@ namespace CoreEngine.GameData
                 isLoadComplete = true;
             });
 
-            // 2. 비동기 로딩이 완전히 끝날 때까지 다음 초기화 단계를 안전하게 블로킹(대기)
+            // 비동기 로딩이 완전히 끝날 때까지 다음 초기화 단계를 안전하게 블로킹(대기)
             yield return new WaitUntil(() => isLoadComplete);
-            
+
             Debug.Log($"[{this.GetType().Name}] 데이터베이스 초기화 완료. 총 {database.Count}개 레코드.");
         }
 
-        public override void Exit()
+        public override void OnExit()
         {
             // 실제 에셋의 메모리 해제는 ResourceManager가 전담하므로 (ReleaseGlobalAssets),
             // 여기서는 자료구조(전화번호부)만 깔끔하게 비워줍니다.
             database.Clear();
-            base.Exit();
+            base.OnExit();
         }
 
         /// <summary>

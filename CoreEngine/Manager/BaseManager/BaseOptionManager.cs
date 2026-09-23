@@ -27,16 +27,14 @@ namespace CoreEngine.Option
     {
         public TOption AppliedOption { get; private set; }
 
-        public override IEnumerator Initialize()
+        protected override IEnumerator OnInitialize()
         {
-            // BaseManager의 상향식 등록 (EventBus 자동 구독)[cite: 14]
-            yield return base.Initialize();
-
             // 자식 클래스에서 세이브 데이터를 읽어오도록 위임
             TOption savedOption = LoadSavedOption();
             ApplyGraphicSetting(savedOption);
 
             Debug.Log($"[{this.GetType().Name}] 그래픽 옵션 매니저 초기화 완료");
+            yield return null;
         }
 
         public void ApplyGraphicSetting(TOption newOption)

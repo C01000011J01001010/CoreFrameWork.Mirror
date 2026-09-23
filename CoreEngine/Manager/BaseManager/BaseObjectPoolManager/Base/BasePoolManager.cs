@@ -27,10 +27,8 @@ namespace CoreEngine.Pool
             base.Awake();
         }
 
-        public override IEnumerator Initialize()
+        protected override IEnumerator OnInitialize()
         {
-            yield return base.Initialize();
-
             _isShuttingDown = false;
             InitializeHandlers();
 
@@ -40,7 +38,7 @@ namespace CoreEngine.Pool
             Debug.Log($"[{this.GetType().Name}] 풀링 매니저 초기화 및 프리워밍 완료");
         }
 
-        public override void Exit()
+        public override void OnExit()
         {
             // 씬 전환 시 널 레퍼런스(가짜 널) 대참사 방지용 차단벽 가동
             _isShuttingDown = true;
@@ -51,7 +49,7 @@ namespace CoreEngine.Pool
             }
             _handlers.Clear();
 
-            base.Exit();
+            base.OnExit();
         }
 
         protected override void OnDestroy()

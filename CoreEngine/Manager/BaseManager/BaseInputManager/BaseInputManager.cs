@@ -63,9 +63,9 @@ namespace CoreEngine.Input
             inputAction?.Disable();
         }
 
-        public override void Exit()
+        public override void OnExit()
         {
-            base.Exit();
+            base.OnExit();
             if (inputAction != null)
             {
                 inputAction.Disable();
@@ -74,9 +74,9 @@ namespace CoreEngine.Input
             InputSystem.onDeviceChange -= OnDeviceChange;
         }
 
-        public override IEnumerator Initialize()
+        protected override IEnumerator OnInitialize()
         {
-            yield return base.Initialize();
+            yield return base.OnInitialize();
             inputAction ??= new TInputAction();
 
             if (inputAction != null)

@@ -5,21 +5,21 @@ namespace CoreEngine
 {
     public interface IModule
     {
-        // 모듈 활성화 여부
+        // 일반적인 상태 조회용
+        bool IsInit {get;}
         bool IsActive { get; }
+
+        // Func<bool> 등에 메서드 그룹으로 전달하기 위한 상태 조회용
+        bool GetIsInit();
+        bool GetIsActive();
+
+        // 활성화를 메서드로 제어
         void SetActive(bool active);
 
-        #region 모듈 생명주기
-
+        // 모듈 초기화
         IEnumerator Initialize();
-
-        //필요에 따라 인터페이스로 추가
-        //IEnumerator LateInitialize();
 
         // 종료 및 메모리 정리
         void Exit();
-
-
-        #endregion
     }
 }

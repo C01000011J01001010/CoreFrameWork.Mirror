@@ -11,7 +11,7 @@ namespace CoreEngine
             ShowInternal();
             OnShow();
         }
-        protected virtual void ShowInternal() { SetActive(true); }
+        protected virtual void ShowInternal() { (this as IUi).SetActive(true); }
         protected virtual void OnShow() { }
 
         public virtual void Hide()
@@ -19,7 +19,7 @@ namespace CoreEngine
             HideInternal();
             OnHide();
         }
-        protected virtual void HideInternal() { SetActive(false); }
+        protected virtual void HideInternal() { (this as IUi).SetActive(false); }
         protected virtual void OnHide() { }
     }
 }

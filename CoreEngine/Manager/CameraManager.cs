@@ -63,7 +63,7 @@ namespace CoreEngine.CameraSystem
         // ILateTickable 구현 (UpdateManager의 통제를 받음)
         public LateTickGroup LateTickGroup => LateTickGroup.Camera;
 
-        public override IEnumerator Initialize()
+        protected override IEnumerator OnInitialize()
         {
             _mainCamera = GetComponentInChildren<MainCameraController>();
 
@@ -77,10 +77,11 @@ namespace CoreEngine.CameraSystem
                 yield return _mainCamera.Initialize();
         }
 
-        public override void Exit()
+        public override void OnExit()
         {
             EventBus<RegisterVirtualCameraEvent>.Unsubscribe(OnVirtualCameraRegistered);
             _repeatEventConsumer.Unbind();
+            base.OnExit();
         }
 
         public void LateTick(float dt)
