@@ -180,6 +180,9 @@ namespace CoreEngine.Hub
 
         private IEnumerator CatchUpRoutine(TModule tardyModule)
         {
+            // 같은 프레임에 등록되는 다른 객체를 기다림
+            yield return null;
+
             // Initialize가 완전히 끝날 때까지 대기
             yield return tardyModule.Initialize();
 

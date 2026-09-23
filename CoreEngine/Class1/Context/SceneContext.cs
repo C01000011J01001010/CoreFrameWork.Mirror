@@ -1,8 +1,9 @@
-﻿using CoreEngine.Helpers;
+﻿using CoreEngine.Director;
+using CoreEngine.EventBus;
+using CoreEngine.Helpers;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using CoreEngine.Director;
 
 namespace CoreEngine
 {
@@ -46,8 +47,11 @@ namespace CoreEngine
             _isInit = true;
 
             // 모니터링 하는 객체에서 지연 초기화가 가능하도록 제어를 넘김
-            yield return null; 
-            
+            yield return null;
+
+            // 로딩 종료 알림
+            EventBus<SystemLoadingEvent>.Publish(new SystemLoadingEvent(SystemLoadingEvent.State.Complete, "초기화 완료!", 1.0f));
+
             // 모든 씬 객체의 세팅이 끝난 타이밍에 Update 가동
             UpdateDirector.StartTicking();
 

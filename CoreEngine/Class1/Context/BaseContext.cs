@@ -63,33 +63,6 @@ namespace CoreEngine
             uiHub.SetScope(myScope);
         }
 
-        //protected virtual void OnEnable()
-        //{
-        //    OnEnableToss();
-        //}
-
-        //protected virtual void OnDisable()
-        //{
-        //    OnDisableToss();
-        //}
-
-        //public void OnEnableToss()
-        //{
-        //    // 가장 처음 시작하는 Context가 책임지고 Hub를 Awake (구독 시작)
-        //    // Manager -> Actor -> UI 순서 명확화
-        //    managerHub?.OnEnableFromContext();
-        //    actorHub?.OnEnableFromContext();
-        //    uiHub?.OnEnableFromContext();
-        //}
-
-        //public void OnDisableToss()
-        //{
-        //    // 초기화의 반대 순서로 정리될수 있도록 보장
-        //    uiHub?.OnDisableFromContext();
-        //    actorHub?.OnDisableFromContext();
-        //    managerHub?.OnDisableFromContext();
-        //}
-
         public IEnumerator Exit()
         {
             yield return uiHub?.Exit();
@@ -132,9 +105,6 @@ namespace CoreEngine
             yield return actorHub.LateInitialize();
             yield return uiHub.LateInitialize();
             #endregion
-
-            // 로딩 완료 알림
-            EventBus<SystemLoadingEvent>.Publish(new SystemLoadingEvent(SystemLoadingEvent.State.Complete, "초기화 완료!", 1.0f));
 
         }
     }
