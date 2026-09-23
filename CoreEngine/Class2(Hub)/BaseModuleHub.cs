@@ -38,18 +38,48 @@ namespace CoreEngine.Hub
         private TModule[] _startInitModules;
 
 
-        internal override void OnDisableFromContext()
-        {
-            base.OnDisableFromContext();
+        ////internal override void OnDisableFromContext()
+        ////{
+        ////    base.OnDisableFromContext();
 
+        ////    var modules = moduleDict.Values.ToArray();
+        ////    foreach (var module in modules)
+        ////    {
+        ////        if (!SystemHelper.isUnityNull(module)) module.Exit();
+        ////    }
+
+        ////    // 게임이 종료 중이면 나머지 객체는 알아서 정리됨
+        ////    if (SystemHelper.IsAppQuitting) return;
+
+        ////    foreach (var module in modules)
+        ////    {
+        ////        // 허브와 다른씬에 남아서 살아남을 수도 있으니
+        ////        if (!SystemHelper.isUnityNull(module) && module is MonoBehaviour)
+        ////        {
+        ////            MonoBehaviour asMono = module as MonoBehaviour;
+        ////            Debug.Log($"Hub에서 module {asMono.name}을 수동 삭제함");
+        ////            Destroy(asMono.gameObject);
+        ////        }
+        ////    }
+        //}
+
+        public override IEnumerator Exit()
+        {
             var modules = moduleDict.Values.ToArray();
             foreach (var module in modules)
             {
-                if (!SystemHelper.isUnityNull(module)) module.Exit();
+                if (!SystemHelper.isUnityNull(module))
+                {
+                    yield return new WaitUntil(module.GetIsInit);
+                    module.Exit();
+                }
             }
 
-            // 게임이 종료 중이면 나머지 객체는 알아서 정리됨
-            if (SystemHelper.IsAppQuitting) return;
+            // 게임이 종료 중이면 알아서 정리됨
+            if (SystemHelper.IsAppQuitting)
+            {
+                yield break;
+            }
 
             foreach (var module in modules)
             {

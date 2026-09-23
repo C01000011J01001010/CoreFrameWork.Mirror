@@ -8,14 +8,14 @@ using UnityEngine;
 
 namespace CoreEngine.Hub
 {
-    // 1. 아주 가벼운 마커 인터페이스. 모든 Leaf Actor는 이를 구현합니다.
+    // 마커 인터페이스. 모든 Leaf Actor는 이를 구현
     public interface IActor { }
 
-    public interface IActorSpawn : IActor
-    {
-        void OnSpawn();
-        void OnDespawn();
-    }
+    //public interface IActorSpawn : IActor
+    //{
+    //    void OnSpawn();
+    //    void OnDespawn();
+    //}
 
     // 2. 클래스 제네릭을 제거한 통합 등록 이벤트
     public struct ActorRegistrationEvent : IEvent, IRegistration
@@ -32,13 +32,11 @@ namespace CoreEngine.Hub
         }
     }
 
-    // 3. 단 하나만 존재하며, 서브 클래스가 필요 없는 통합 ActorHub
-    public sealed class ActorHub : BaseHub<ActorRegistrationEvent>
+    [DefaultExecutionOrder((int)ExecutionOrder.Hub)]
+    internal sealed class ActorHub : BaseHub<ActorRegistrationEvent>
     {
-        // 씬Context 시퀀스 보장용 우선순위 (이제 액터는 단 하나이므로 기본값 고정)
-        //public int Priority => 200; 
 
-        // [핵심] 클래스 타입 및 인터페이스 타입별로 액터를 자동 분류하는 전화번호부
+        // 클래스 타입 및 인터페이스 타입별로 액터를 자동 분류하는 전화번호부
         private readonly Dictionary<Type, HashSet<IActor>> _actorRegistry = new();
 
         public override IEnumerator Initialize()
@@ -53,11 +51,17 @@ namespace CoreEngine.Hub
             return base.LateInitialize();
         }
 
-        internal override void OnDisableFromContext()
+        public override IEnumerator Exit()
         {
-            base.OnDisableFromContext();
+            yield return Exit();
             _actorRegistry.Clear();
         }
+
+        //internal override void OnDisableFromContext()
+        //{
+        //    base.OnDisableFromContext();
+            
+        //}
 
         protected override void RegisterLeaf(ActorRegistrationEvent evt)
         {

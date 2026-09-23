@@ -35,13 +35,9 @@ namespace CoreEngine
             }
         }
 
-        public override IEnumerator Initialize()
+        protected override IEnumerator OnInitialize()
         {
             LogHelper.LogFunctionCallCount(this);
-
-            // 부모(BaseContext)의 전체 초기화 시퀀스를 먼저 완주합니다. 
-            // (ManagerHub -> ActorHubs -> UiHub 순차 로드 완료 대기)
-            yield return base.Initialize();
 
             // 1프레임 쉬어주고
             yield return null;

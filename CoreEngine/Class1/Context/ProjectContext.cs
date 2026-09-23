@@ -42,13 +42,16 @@ namespace CoreEngine
 
         private IEnumerator Start()
         {
-            LogHelper.LogFunctionCallCount(this);
-
             // 코어 매니저들을 초기화하기 전, 확장 시스템 씬들을 먼저 런타임에 병합합니다.
             yield return LoadExtensionScenesRoutine();
 
             // BaseContext의 초기화를 실행 (내부에서 0.3, 0.6, 0.9 순서로 이벤트가 발송됨)
             yield return Initialize();
+        }
+
+        protected override IEnumerator OnInitialize()
+        {
+            LogHelper.LogFunctionCallCount(this);
 
             // 1프레임 쉬어주고
             yield return null;

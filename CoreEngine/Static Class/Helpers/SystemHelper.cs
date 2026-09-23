@@ -24,10 +24,10 @@ namespace CoreEngine.Helpers
         }
 
         #region IsAppQuitting
-        // 1. 앱 종료 상태를 저장할 전역 프로퍼티
+        // 앱 종료 상태를 저장할 전역 프로퍼티
         public static bool IsAppQuitting { get; private set; } = false;
 
-        // 2. 게임 시작 시 유니티 엔진이 자동으로 이 메서드를 찾아 실행함
+        // 게임 시작 시 유니티 엔진이 자동으로 이 메서드를 찾아 실행함
         // SubsystemRegistration 타이밍에 실행하여 에디터 플레이 모드 반복 시에도 완벽히 초기화됨
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void InitAppQuitState()
@@ -40,7 +40,7 @@ namespace CoreEngine.Helpers
             Application.quitting += OnApplicationQuitting;
         }
 
-        // 3. 앱이 종료될 때 유니티가 호출해주는 콜백
+        // 앱이 종료될 때 유니티가 호출해주는 콜백
         private static void OnApplicationQuitting()
         {
             IsAppQuitting = true;

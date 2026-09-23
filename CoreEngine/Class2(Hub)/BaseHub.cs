@@ -4,13 +4,13 @@ using UnityEngine;
 
 namespace CoreEngine.Hub
 {
-    public interface IRegistration
+    internal interface IRegistration
     {
         public bool isAdd { get; }
         public ContextScope scope { get;}
     }
 
-    public abstract class BaseHub<TRegistrationEvent> : MonoBehaviour
+    internal abstract class BaseHub<TRegistrationEvent> : MonoBehaviour
         where TRegistrationEvent : struct, IEvent, IRegistration
     {
         public ContextScope myScope { get; private set; }
@@ -20,15 +20,26 @@ namespace CoreEngine.Hub
             myScope = scope;
         }
 
-        internal virtual void OnEnableFromContext() 
+        private void OnEnable()
         {
             EventBus<TRegistrationEvent>.Subscribe(OnLeafRegistration);
         }
-        internal virtual void OnDisableFromContext() 
+        private void OnDisable()
         {
             EventBus<TRegistrationEvent>.Unsubscribe(OnLeafRegistration);
         }
 
+
+        //internal virtual void OnEnableFromContext() 
+        //{
+        //    EventBus<TRegistrationEvent>.Subscribe(OnLeafRegistration);
+        //}
+        //internal virtual void OnDisableFromContext() 
+        //{
+        //    EventBus<TRegistrationEvent>.Unsubscribe(OnLeafRegistration);
+        //}
+
+        public virtual IEnumerator Exit() { yield break; }
         public virtual IEnumerator Initialize() { yield break; }
         public virtual IEnumerator LateInitialize() { yield break; }
 

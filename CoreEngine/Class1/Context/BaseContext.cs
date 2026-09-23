@@ -20,7 +20,7 @@ namespace CoreEngine
     }
 
     [RequireComponent(typeof(ManagerHub))]
-    [RequireComponent(typeof(ActorHub))] // 💡 단일 ActorHub도 필수로 요구하도록 추가!
+    [RequireComponent(typeof(ActorHub))]
     [RequireComponent(typeof(UiHub))]
     public abstract class BaseContext<T> : Singleton<T> 
         where T : BaseContext<T>
@@ -29,7 +29,12 @@ namespace CoreEngine
         //public static T Inst => _instance;
 
         protected bool _isInit;
-        public bool IsInit => Inst._isInit;
+        protected bool _isExit;
+        public bool IsInit => _isInit;
+        public bool IsExit => _isExit;
+
+        public bool GetIsInit() => _isInit;
+        public bool GetIsExit() => _isExit;
 
         protected abstract ContextScope myScope { get; }
 
@@ -40,7 +45,6 @@ namespace CoreEngine
 
         protected override void OnDestroy()
         {
-            
             base.OnDestroy();
         }
 
@@ -59,38 +63,48 @@ namespace CoreEngine
             uiHub.SetScope(myScope);
         }
 
-        protected virtual void OnEnable()
+        //protected virtual void OnEnable()
+        //{
+        //    OnEnableToss();
+        //}
+
+        //protected virtual void OnDisable()
+        //{
+        //    OnDisableToss();
+        //}
+
+        //public void OnEnableToss()
+        //{
+        //    // 가장 처음 시작하는 Context가 책임지고 Hub를 Awake (구독 시작)
+        //    // Manager -> Actor -> UI 순서 명확화
+        //    managerHub?.OnEnableFromContext();
+        //    actorHub?.OnEnableFromContext();
+        //    uiHub?.OnEnableFromContext();
+        //}
+
+        //public void OnDisableToss()
+        //{
+        //    // 초기화의 반대 순서로 정리될수 있도록 보장
+        //    uiHub?.OnDisableFromContext();
+        //    actorHub?.OnDisableFromContext();
+        //    managerHub?.OnDisableFromContext();
+        //}
+
+        public IEnumerator Exit()
         {
-            OnEnableToss();
+            yield return uiHub?.Exit();
+            yield return actorHub?.Exit();
+            yield return managerHub?.Exit();
+            _isExit = true;
         }
 
-        protected virtual void OnDisable()
+        public IEnumerator Initialize()
         {
-            OnDisableToss();
-        }
-
-        public void OnEnableToss()
-        {
-            // 가장 처음 시작하는 Context가 책임지고 Hub를 Awake (구독 시작)
-            // Manager -> Actor -> UI 순서 명확화
-            managerHub?.OnEnableFromContext();
-            actorHub?.OnEnableFromContext();
-            uiHub?.OnEnableFromContext();
-        }
-
-        public void OnDisableToss()
-        {
-            // 초기화의 반대 순서로 정리될수 있도록 보장
-            uiHub?.OnDisableFromContext();
-            actorHub?.OnDisableFromContext();
-            managerHub?.OnDisableFromContext();
-        }
-
-        public virtual IEnumerator Initialize()
-        {
+            if (_isInit) yield break;
             yield return InitializeHubsSequence();
+            yield return OnInitialize();
         }
-
+        protected virtual IEnumerator OnInitialize() { yield break; }
         protected virtual IEnumerator InitializeHubsSequence()
         {
             // 로딩 시작 알림
@@ -106,7 +120,6 @@ namespace CoreEngine
             yield return managerHub.Initialize();
 
             // 단일 ActorHub 초기화 
-            // 💡 더 이상 List 루프를 돌지 않고, 단일 객체만 가볍게 초기화합니다.
             EventBus<SystemLoadingEvent>.Publish(new SystemLoadingEvent(SystemLoadingEvent.State.Progress, "인게임 엔티티(Actor) 시스템 세팅 중...", 0.66f));
             yield return actorHub.Initialize();
 
@@ -115,7 +128,6 @@ namespace CoreEngine
             yield return uiHub.Initialize();
 
             #region LateInit
-            // LateInit 역시 루프 없이 깔끔하게 1:1:1 호출
             yield return managerHub.LateInitialize();
             yield return actorHub.LateInitialize();
             yield return uiHub.LateInitialize();

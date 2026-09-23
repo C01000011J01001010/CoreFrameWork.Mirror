@@ -84,6 +84,8 @@ namespace CoreEngine.Director
             {
                 // 현재 씬을 비활성화하고 언로드
                 SceneContext.Inst.gameObject.SetActive(false);
+                StartCoroutine(SceneContext.Inst.Exit());
+                await TaskHelper.WaitUntil(SceneContext.Inst.GetIsExit);
                 await SceneManager.UnloadSceneAsync(currentScene);
             }
 

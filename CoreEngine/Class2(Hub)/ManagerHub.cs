@@ -1,9 +1,10 @@
-﻿
+﻿using CoreEngine.Helpers;
 using System.Collections;
-using CoreEngine.Helpers;
+using UnityEngine;
 
 namespace CoreEngine.Hub
 {
+    [DefaultExecutionOrder((int)ExecutionOrder.Hub)]
     internal sealed class ManagerHub : BaseModuleHub<IManager>
     {
         protected override bool moduleEnabled => true;
