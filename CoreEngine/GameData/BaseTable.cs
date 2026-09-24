@@ -15,7 +15,10 @@ namespace CoreEngine.GameData
         List<IRecord> GetListCopy();
     }
 
-    public abstract class BaseTable<TRecord> : ScriptableObject, ITableSetter
+    // 에디터 윈도우 필터링을 위한 마커 클래스
+    public abstract class BaseTable : ScriptableObject { }
+
+    public abstract class BaseTable<TRecord> : BaseTable, ITableSetter
         where TRecord : BaseRecord, IRecord, new()
     {
         [SerializeField]
@@ -23,10 +26,7 @@ namespace CoreEngine.GameData
 
         private Dictionary<int, TRecord> _tableDict = null;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns>int를 index로 하는 dictionary 반환</returns>
+        // int를 index로 하는 dictionary 반환
         public Dictionary<int, TRecord> GetCachedTableDict()
         {
             // 이미 캐시를 했다면

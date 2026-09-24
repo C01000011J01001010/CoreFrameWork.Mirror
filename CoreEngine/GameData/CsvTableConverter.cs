@@ -11,7 +11,7 @@ namespace CoreEditor.GameData
     public class CsvTableConverter : EditorWindow
     {
         private TextAsset _csv;
-        private ScriptableObject _table;
+        private BaseTable _table;
 
         private string _status;
         private MessageType _statusType;
@@ -42,8 +42,33 @@ namespace CoreEditor.GameData
 
         private void DrawObjectFields()
         {
-            _csv = (TextAsset)EditorGUILayout.ObjectField("CSV", _csv, typeof(TextAsset), false);
-            _table = (ScriptableObject)EditorGUILayout.ObjectField("Table", _table, typeof(ScriptableObject), false);
+            EditorGUI.BeginChangeCheck();
+            TextAsset selectedCsv = (TextAsset)EditorGUILayout.ObjectField("CSV", _csv, typeof(TextAsset), false);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                if (selectedCsv != null)
+                {
+                    // 할당된 에셋의 실제 프로젝트 내 경로를 가져옵니다
+                    string assetPath = AssetDatabase.GetAssetPath(selectedCsv);
+
+                    // 경로가 .csv로 끝나지 않는다면 할당을 거부합니다
+                    if (!assetPath.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                    {
+                        SetStatus("CSV 확장자를 가진 파일만 할당할 수 있습니다", MessageType.Warning);
+                        selectedCsv = null;
+                    }
+                    else
+                    {
+                        ClearStatus();
+                    }
+                }
+
+                _csv = selectedCsv;
+            }
+
+            // 에디터에서는 BaseTable을 상속받은 객체만 슬롯에 넣을 수 있도록 강제합니다
+            _table = (BaseTable)EditorGUILayout.ObjectField("Table", _table, typeof(BaseTable), false);
         }
 
         private void DrawConvertButton()
