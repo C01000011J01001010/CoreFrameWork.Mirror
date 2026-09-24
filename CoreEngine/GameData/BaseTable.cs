@@ -12,6 +12,7 @@ namespace CoreEngine.GameData
         void SetCapacity(int count);
         bool Add(IRecord record);
         void Clear();
+        List<IRecord> GetListCopy();
     }
 
     public abstract class BaseTable<TRecord> : ScriptableObject, ITableSetter
@@ -92,6 +93,11 @@ namespace CoreEngine.GameData
         {
             _table.Clear();
             _tableDict = null;
+        }
+
+        List<IRecord> ITableSetter.GetListCopy()
+        {
+            return new List<IRecord>(_table);
         }
         #endregion
     }
