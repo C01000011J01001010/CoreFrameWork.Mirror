@@ -34,64 +34,6 @@ namespace CoreEngine.Test
             IsSceneTest = false;
         }
 
-        //[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        //private static void PrepareScene()
-        //{
-        //    if(SceneManager.sceneCount > 1)
-        //    {
-        //        IsSceneTest = false;
-        //        return;
-        //    }
-        //    IsSceneTest = true;
-
-        //    if (Inst == null) return;
-        //    //SceneTestDriver[] testDrivers = FindObjectsByType<SceneTestDriver>(
-        //    //FindObjectsInactive.Include,
-        //    //FindObjectsSortMode.None);
-
-        //    //if (testDrivers.Length == 0)
-        //    //    return;
-
-        //    //SceneTestDriver testDriver = testDrivers[0];
-
-        //    //TestScene = Inst.gameObject.scene;
-            
-        //    GameObject testDriverRoot = Inst.transform.root.gameObject;
-
-        //    // Scene에 존재하는 모든 GameObject를 가져온다
-        //    GameObject[] objects = FindObjectsByType<GameObject>(
-        //        FindObjectsInactive.Include,
-        //        FindObjectsSortMode.None);
-
-        //    HashSet<GameObject> roots = new();
-
-        //    foreach (GameObject obj in objects)
-        //    {
-        //        GameObject root = obj.transform.root.gameObject;
-
-        //        // TestDriver가 있는 Root는 유지
-        //        if (root == testDriverRoot)
-        //            continue;
-
-        //        roots.Add(root);
-        //    }
-
-        //    foreach (GameObject root in roots)
-        //    {
-        //        if (!root.activeSelf)
-        //            continue;
-
-        //        Inst.targetRoots.Add(root);
-        //        root.SetActive(false);
-        //    }
-        //}
-
-        //protected override void Awake()
-        //{
-        //    if (!IsSceneTest) Destroy(gameObject);
-        //    TestScene = gameObject.scene;
-        //}
-
         protected override void Awake()
         {
             base.Awake();
