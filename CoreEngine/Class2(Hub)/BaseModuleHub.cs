@@ -31,7 +31,7 @@ namespace CoreEngine.Hub
     {
         // 단일 매니저들을 담아두는 딕셔너리
         protected Dictionary<Type, TModule> moduleDict = new();
-        protected abstract bool moduleEnabled { get; } //Hub에서 초기화 후 module의 active 결정
+        //protected abstract bool moduleEnabled { get; } //Hub에서 초기화 후 module의 active 결정
         
 
         private bool _isInitStarted = false;
@@ -134,7 +134,7 @@ namespace CoreEngine.Hub
                     yield return null;
                 }
                 // 상세 클래스에서 모듈 초기화 후 active를 결정
-                module.SetActive(moduleEnabled);
+                //module.SetActive(moduleEnabled);
             }
 
             // 다 썼으니 반환
@@ -194,7 +194,7 @@ namespace CoreEngine.Hub
 
             // 모든 초기화가 끝난 후 안전하게 Active 상태 세팅
             // (hardcoded true 대신 Hub의 정책인 moduleEnabled를 따르도록 수정!)
-            tardyModule.SetActive(moduleEnabled);
+            //tardyModule.SetActive(moduleEnabled);
         }
 
         // [수정된 부분] 

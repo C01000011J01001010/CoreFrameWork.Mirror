@@ -6,7 +6,7 @@ namespace CoreEngine
 {
     public abstract class BaseUi : BaseModule, IUi
     {
-        private void Start()
+        protected virtual void Start()
         {
             Hide();
         }

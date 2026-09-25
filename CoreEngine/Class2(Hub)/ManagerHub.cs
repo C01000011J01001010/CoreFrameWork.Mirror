@@ -7,7 +7,7 @@ namespace CoreEngine.Hub
     [DefaultExecutionOrder((int)ExecutionOrder.Hub)]
     internal sealed class ManagerHub : BaseModuleHub<IManager>
     {
-        protected override bool moduleEnabled => true;
+        //protected override bool moduleEnabled => true;
 
         public override IEnumerator Initialize()
         {

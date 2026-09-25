@@ -9,7 +9,7 @@ namespace CoreEngine.Hub
     [DefaultExecutionOrder((int)ExecutionOrder.Hub)]
     internal sealed class UiHub : BaseModuleHub<IUi>
     {
-        protected override bool moduleEnabled => false;
+        //protected override bool moduleEnabled => false;
 
         public override IEnumerator Initialize()
         {
