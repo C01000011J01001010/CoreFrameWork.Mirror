@@ -155,7 +155,11 @@ namespace CoreEngine.Facades
 
         public static Scene GetGlobalScene()
         {
-            return SceneManager.GetSceneByName(CoreEngineSettingsSO.Instance.GlobalScene);
+            if (ProjectContext.Inst == null)
+            {
+                SceneManager.GetSceneByName(CoreEngineSettingsSO.Instance.GlobalScene);
+            }
+            return ProjectContext.Inst.gameObject.scene;
         }
     }
 }
