@@ -1,4 +1,5 @@
-﻿using CoreEngine.Facades;
+﻿using CoreEngine.Extensions;
+using CoreEngine.Facades;
 using CoreEngine.Resource;
 using System;
 using System.Collections.Generic;
@@ -110,7 +111,12 @@ namespace CoreEngine.UI
                 return null;
             }
 
-            GameObject instance = UnityEngine.Object.Instantiate(loadedUi.gameObject);
+            GameObject instance = UnityEngine.Object.Instantiate(loadedUiObj);
+
+            // 현재 씬과 생명주기를 같이함
+            // Global Scene에서 관리될 경우 UiManager는 죽는데 Ui는 살아있는
+            // 유령객체 문제가 생길 수 있음
+            instance.MoveScene(CoreFacade.GetCurrentScene());
 
             // 원본 Prefab Asset은 더 이상 필요하지 않음
             _resourceManager.ReleaseSceneAsset(address);
