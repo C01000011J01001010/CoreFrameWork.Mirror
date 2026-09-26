@@ -13,10 +13,10 @@ namespace CoreEngine.DesignPattern.Singleton
             get
             {
                 var attribute = typeof(T)
-                    .GetCustomAttributes(typeof(SingletonSODirectory), true);
+                    .GetCustomAttributes(typeof(SingletonSO_DirectoryAttribute), true);
 
                 if (attribute.Length > 0)
-                    return ((SingletonSODirectory)attribute[0]).Derectory;
+                    return ((SingletonSO_DirectoryAttribute)attribute[0]).Derectory;
 
                 return Constants.DataDirectory;
             }
