@@ -17,17 +17,11 @@ namespace CoreEditor.GameData
         private Type _assetType;
         private string _targetGuid;
 
-        // 스캔 결과 분류
         private List<AssetInfo> _validAssets = new();
         private List<AssetInfo> _invalidTypeAssets = new();
         private List<AssetInfo> _multipleAssetsViolation = new();
         private List<AssetInfo> _missingIdAssets = new();
         private List<ConflictGroup> _conflictGroups = new();
-
-        // UI 상태
-        private int _selectedAddressableGroupIndex = 0;
-        private List<AddressableAssetGroup> _addressableGroups = new();
-        private string[] _addressableGroupNames;
 
         private Dictionary<string, string> _manualIdInputs = new();
         private Dictionary<string, int> _recommendedSelections = new();
@@ -45,7 +39,6 @@ namespace CoreEditor.GameData
             }
             if (current != null) _assetType = current.GetGenericArguments()[0];
 
-            LoadAddressableGroups();
             Refresh();
         }
 
@@ -71,10 +64,6 @@ namespace CoreEditor.GameData
             serializedObject.ApplyModifiedProperties();
         }
 
-        // =========================================================
-        // [UI 렌더링 파트]
-        // =========================================================
-
         private void DrawTopSettings()
         {
             EditorGUILayout.BeginVertical("box");
@@ -92,16 +81,6 @@ namespace CoreEditor.GameData
                 }
             }
             EditorGUILayout.EndHorizontal();
-
-            if (_addressableGroupNames != null && _addressableGroupNames.Length > 0)
-            {
-                _selectedAddressableGroupIndex = EditorGUILayout.Popup("📦 Addressable 그룹", _selectedAddressableGroupIndex, _addressableGroupNames);
-                EditorPrefs.SetInt($"RegGroup_{_targetGuid}", _selectedAddressableGroupIndex);
-            }
-            else
-            {
-                EditorGUILayout.HelpBox("Addressables 패키지가 설치되지 않았거나 초기화되지 않았습니다.", MessageType.Error);
-            }
 
             if (GUILayout.Button("🔄 대상 폴더 재스캔", GUILayout.Height(25)))
             {
@@ -156,7 +135,7 @@ namespace CoreEditor.GameData
                     {
                         AssetDatabase.MoveAssetToTrash(asset.AssetPath);
                         Refresh();
-                        GUIUtility.ExitGUI(); // [Fix] UI 그리기 즉시 중단 및 다음 프레임에 새로고침
+                        GUIUtility.ExitGUI();
                     }
                     EditorGUILayout.EndHorizontal();
                 }
@@ -201,7 +180,7 @@ namespace CoreEditor.GameData
                         if (GUILayout.Button("🔄 ID 회수", GUILayout.Width(80)))
                         {
                             RevokeId(asset);
-                            GUIUtility.ExitGUI(); // [Fix] 이중 루프 탈출 및 UI 그리기 중단
+                            GUIUtility.ExitGUI();
                         }
                         EditorGUILayout.EndHorizontal();
                     }
@@ -229,7 +208,7 @@ namespace CoreEditor.GameData
                         if (int.TryParse(_manualIdInputs[asset.AssetPath], out int newId))
                         {
                             ApplyNewId(asset, newId);
-                            GUIUtility.ExitGUI(); // [Fix]
+                            GUIUtility.ExitGUI();
                         }
                     }
                     EditorGUILayout.EndHorizontal();
@@ -257,7 +236,7 @@ namespace CoreEditor.GameData
                         if (GUILayout.Button("✨ 선택 적용", GUILayout.Width(80)))
                         {
                             ApplyNewId(asset, _recommendedIds[_recommendedSelections[asset.AssetPath]]);
-                            GUIUtility.ExitGUI(); // [Fix]
+                            GUIUtility.ExitGUI();
                         }
                         EditorGUILayout.EndHorizontal();
                     }
@@ -277,7 +256,7 @@ namespace CoreEditor.GameData
             Color defaultColor = GUI.backgroundColor;
             GUI.backgroundColor = canSync ? Color.cyan : Color.gray;
 
-            string btnText = canSync ? "🚀 레지스트리 갱신 및 Addressable 자동 세팅" : $"🔒 에러({errorCount}) 해결 후 갱신 가능";
+            string btnText = canSync ? "🚀 로컬 주소 세팅 및 컨텍스트 자동 그룹핑" : $"🔒 에러({errorCount}) 해결 후 갱신 가능";
             if (GUILayout.Button(btnText, GUILayout.Height(40)))
             {
                 ExecuteSyncAndBake();
@@ -285,23 +264,6 @@ namespace CoreEditor.GameData
 
             GUI.backgroundColor = defaultColor;
             GUI.enabled = true;
-        }
-
-        // =========================================================
-        // [핵심 로직: 서브 에셋 완전 탐색 및 분류]
-        // =========================================================
-
-        private void LoadAddressableGroups()
-        {
-            var settings = AddressableAssetSettingsDefaultObject.Settings;
-            if (settings != null)
-            {
-                _addressableGroups = settings.groups.Where(g => !g.ReadOnly).ToList();
-                _addressableGroupNames = _addressableGroups.Select(g => g.Name).ToArray();
-
-                int savedIndex = EditorPrefs.GetInt($"RegGroup_{_targetGuid}", 0);
-                _selectedAddressableGroupIndex = Mathf.Clamp(savedIndex, 0, _addressableGroupNames.Length - 1);
-            }
         }
 
         private void Refresh()
@@ -387,32 +349,27 @@ namespace CoreEditor.GameData
             Repaint();
         }
 
-        // [핵심 로직 변경] 기획하신 "연속된 ID의 끝 번호만 추천"하는 알고리즘
         private void CalculateRecommendedIds()
         {
             _recommendedIds.Clear();
 
-            // 1. 현재 사용 중인 모든 ID 수집 (충돌 중인 ID도 할당된 것으로 간주하여 방어)
             HashSet<int> usedIds = new HashSet<int>(_validAssets.Select(a => a.Id));
             foreach (var group in _conflictGroups)
             {
                 usedIds.Add(group.Id);
             }
 
-            // 2. 아무 ID도 없다면 무조건 1 추천
             if (usedIds.Count == 0)
             {
                 _recommendedIds.Add(1);
             }
             else
             {
-                // 3. ID들을 오름차순 정렬 후, 연속된 구간의 끝을 찾음
                 List<int> sortedIds = usedIds.ToList();
                 sortedIds.Sort();
 
                 foreach (int id in sortedIds)
                 {
-                    // 현재 id의 다음 번호(id + 1)가 사용 중이지 않다면, 거기가 연속된 클러스터의 끝임
                     if (!usedIds.Contains(id + 1))
                     {
                         _recommendedIds.Add(id + 1);
@@ -446,12 +403,14 @@ namespace CoreEditor.GameData
             Refresh();
         }
 
+        // [핵심 변경] 레지스트리 자신을 그룹에 넣는 로직(메타데이터 책임)이 삭제되었습니다.
         private void ExecuteSyncAndBake()
         {
             SerializedProperty entriesProp = serializedObject.FindProperty("_entries");
             entriesProp.ClearArray();
 
             string baseDir = serializedObject.FindProperty("_baseDirectory").stringValue;
+            baseDir = baseDir.TrimEnd('/');
 
             for (int i = 0; i < _validAssets.Count; i++)
             {
@@ -471,28 +430,38 @@ namespace CoreEditor.GameData
                 return;
             }
 
-            var group = _addressableGroups[_selectedAddressableGroupIndex];
+            string baseFolderName = Path.GetFileName(baseDir);
 
             foreach (var asset in _validAssets)
             {
+                string assetDir = Path.GetDirectoryName(asset.AssetPath).Replace('\\', '/');
+                string relativeDir = string.Empty;
+
+                if (assetDir.Length > baseDir.Length)
+                {
+                    relativeDir = assetDir.Substring(baseDir.Length).Trim('/');
+                }
+
+                string groupName = baseFolderName;
+                if (!string.IsNullOrEmpty(relativeDir))
+                {
+                    groupName += "_" + relativeDir.Replace('/', '_');
+                }
+
+                AddressableAssetGroup targetGroup = settings.FindGroup(groupName);
+                if (targetGroup == null)
+                {
+                    targetGroup = settings.CreateGroup(groupName, false, false, false, settings.DefaultGroup.Schemas);
+                }
+
                 string guid = AssetDatabase.AssetPathToGUID(asset.AssetPath);
-                var entry = settings.CreateOrMoveEntry(guid, group, readOnly: false, postEvent: false);
+                var entry = settings.CreateOrMoveEntry(guid, targetGroup, readOnly: false, postEvent: false);
                 entry.SetAddress($"{baseDir}/{asset.PathDetail}");
             }
 
-            string registryGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(target));
-            var registryEntry = settings.CreateOrMoveEntry(registryGuid, group, readOnly: false, postEvent: false);
-
-            settings.AddLabel("GlobalData");
-            registryEntry.SetLabel("GlobalData", true, true);
-
             AssetDatabase.SaveAssets();
-            Debug.Log($"[AssetRegistry] 갱신 완료! {_validAssets.Count}개의 에셋이 Addressable에 등록되었습니다.");
+            Debug.Log($"[AssetRegistry] 갱신 완료! {_validAssets.Count}개의 에셋이 각각의 폴더 기반 그룹에 등록되었습니다.");
         }
-
-        // =========================================================
-        // [내부 데이터 구조]
-        // =========================================================
 
         private class AssetInfo
         {
