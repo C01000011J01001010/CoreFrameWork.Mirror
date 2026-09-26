@@ -48,6 +48,11 @@ namespace CoreEditor.GameData
                 Refresh();
             }
 
+            if (GUILayout.Button("➡️ Preload 관리자 열기", GUILayout.Height(30)))
+            {
+                GetWindow<PreloadDashboard>("Preload Manager").Show();
+            }
+
             EditorGUILayout.Space();
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
 
