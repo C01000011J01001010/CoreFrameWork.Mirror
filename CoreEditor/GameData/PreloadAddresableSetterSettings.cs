@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using CoreEngine.DesignPattern.Singleton;
 
 namespace CoreEditor.GameData
 {
@@ -14,8 +12,7 @@ namespace CoreEditor.GameData
         public bool IsEnabled = true;
     }
 
-    [SingletonSODirectory(Constants.ToolSettingsDirectory)]
-    public class PreloadSettings : BaseToolSettings<PreloadSettings>
+    public class PreloadAddresableSetterSettings : BaseToolSettings<PreloadAddresableSetterSettings>
     {
         public string TargetGroupName = "Preload Group";
         public string TargetLabel = "Preload";

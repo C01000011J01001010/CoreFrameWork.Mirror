@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,7 +11,7 @@ using CoreEditor.Helpers;
 
 namespace CoreEditor.GameData
 {
-    public class CsvToTableConverter : EditorWindow
+    public class CsvToTableBatchProcessor : EditorWindow
     {
         private class TableProcessInfo
         {
@@ -21,17 +20,18 @@ namespace CoreEditor.GameData
             public TextAsset MatchedCsv;
             public string StatusMessage = "대기 중";
             public MessageType StatusType = MessageType.None;
-
             public List<TextAsset> ConflictedCsvs = new List<TextAsset>();
         }
 
         private List<TableProcessInfo> _tableInfos = new List<TableProcessInfo>();
         private Vector2 _scrollPosition;
+        private string _searchQuery = ""; // [UX] 검색 필터
 
-        [MenuItem(Constants.ToolRootGameData + "CSV Batch Converter Dashboard")]
+        public const string WindowName = "CSV To Table Batch Processor";
+        [MenuItem(Constants.ToolRootGameData + WindowName, priority = Constants.GameDataPriority + 2)]
         private static void Open()
         {
-            var window = GetWindow<CsvToTableConverter>("Data Converter");
+            var window = GetWindow<CsvToTableBatchProcessor>(WindowName);
             window.minSize = new Vector2(600, 400);
             window.Show();
         }
@@ -43,6 +43,8 @@ namespace CoreEditor.GameData
 
         private void OnGUI()
         {
+            DrawTopNavigationBar(); // [UX] 상단 탭 네비게이션
+
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("🚀 일괄 데이터 변환 대시보드", EditorStyles.boldLabel);
             EditorGUILayout.Space();
@@ -50,10 +52,30 @@ namespace CoreEditor.GameData
             DrawSettings();
             EditorGUILayout.Space();
 
-            DrawBatchActionButtons();
+            // [UX] 검색 바 추가
+            _searchQuery = EditorGUILayout.TextField("🔍 검색 (테이블명)", _searchQuery, EditorStyles.toolbarSearchField);
             EditorGUILayout.Space();
 
             DrawTableList();
+
+            GUILayout.FlexibleSpace(); // [UX] 하단 고정 액션 바
+
+            EditorGUILayout.Space();
+            DrawBottomActions();
+        }
+
+        private void DrawTopNavigationBar()
+        {
+            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+            if (GUILayout.Button("1. " + GameDataOrganizer.WindowName, EditorStyles.toolbarButton))
+                GetWindow<GameDataOrganizer>(GameDataOrganizer.WindowName).Show();
+            if (GUILayout.Button("2. " + PreloadAddresableSetter.WindowName, EditorStyles.toolbarButton))
+                GetWindow<PreloadAddresableSetter>(PreloadAddresableSetter.WindowName).Show();
+
+            GUI.backgroundColor = Color.cyan;
+            if (GUILayout.Button("3. " + WindowName, EditorStyles.toolbarButton)) { }
+            GUI.backgroundColor = Color.white;
+            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawSettings()
@@ -64,35 +86,18 @@ namespace CoreEditor.GameData
             float originalLabelWidth = EditorGUIUtility.labelWidth;
             EditorGUIUtility.labelWidth = 180f;
 
-            CsvConverterSettings.Instance.IgnorePrefix = EditorGUILayout.TextField(
+            CsvToTableBatchProcessorSettings.Instance.IgnorePrefix = EditorGUILayout.TextField(
                 new GUIContent("무시할 접두사 (Ignore Prefix)"),
-                CsvConverterSettings.Instance.IgnorePrefix);
+                CsvToTableBatchProcessorSettings.Instance.IgnorePrefix);
 
             EditorGUIUtility.labelWidth = originalLabelWidth;
 
             if (EditorGUI.EndChangeCheck())
             {
-                EditorUtility.SetDirty(CsvConverterSettings.Instance);
+                EditorUtility.SetDirty(CsvToTableBatchProcessorSettings.Instance);
                 ScanProjectForTables();
             }
             EditorGUILayout.EndVertical();
-        }
-
-        private void DrawBatchActionButtons()
-        {
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("🔄 전체 다시 스캔", GUILayout.Height(30)))
-            {
-                ScanProjectForTables();
-            }
-
-            GUI.backgroundColor = Color.cyan;
-            if (GUILayout.Button("✨ 체크된 항목 일괄 변환", GUILayout.Height(30)))
-            {
-                ExecuteBatchConversion();
-            }
-            GUI.backgroundColor = Color.white;
-            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawTableList()
@@ -106,7 +111,11 @@ namespace CoreEditor.GameData
                 EditorGUILayout.HelpBox("프로젝트 내에 _DataTable을 상속받는 에셋이 없습니다.", MessageType.Info);
             }
 
-            foreach (var info in _tableInfos)
+            var filteredInfos = _tableInfos.Where(info =>
+                string.IsNullOrEmpty(_searchQuery) ||
+                info.TableAsset.name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            foreach (var info in filteredInfos)
             {
                 EditorGUILayout.BeginVertical("helpbox");
                 EditorGUILayout.BeginHorizontal();
@@ -122,7 +131,6 @@ namespace CoreEditor.GameData
                     EditorGUILayout.LabelField($"<- {info.MatchedCsv.name}.csv", GUILayout.Width(150));
                     GUI.contentColor = Color.white;
 
-                    // [Fix] 1:1 매칭된 CSV 파일도 핑을 찍을 수 있는 버튼 추가
                     if (GUILayout.Button("🔍 파일 위치", EditorStyles.miniButton, GUILayout.Width(80)))
                     {
                         Selection.activeObject = info.MatchedCsv;
@@ -166,9 +174,23 @@ namespace CoreEditor.GameData
             EditorGUILayout.EndScrollView();
         }
 
-        // ==========================================================
-        // 1. 스캔 및 자동 매칭 로직
-        // ==========================================================
+        private void DrawBottomActions()
+        {
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("🔄 전체 다시 스캔", GUILayout.Height(40)))
+            {
+                ScanProjectForTables();
+            }
+
+            GUI.backgroundColor = Color.cyan;
+            if (GUILayout.Button("✨ 체크된 항목 일괄 변환", GUILayout.Height(40)))
+            {
+                ExecuteBatchConversion();
+            }
+            GUI.backgroundColor = Color.white;
+            EditorGUILayout.EndHorizontal();
+        }
+
         private void ScanProjectForTables()
         {
             _tableInfos.Clear();
@@ -225,7 +247,7 @@ namespace CoreEditor.GameData
 
         private bool IsIgnoredPath(string path)
         {
-            string ignorePrefix = CsvConverterSettings.Instance.IgnorePrefix;
+            string ignorePrefix = CsvToTableBatchProcessorSettings.Instance.IgnorePrefix;
             if (string.IsNullOrWhiteSpace(ignorePrefix)) return false;
 
             string[] parts = path.Split('/');
@@ -236,9 +258,6 @@ namespace CoreEditor.GameData
             return false;
         }
 
-        // ==========================================================
-        // 2. 일괄 변환 실행
-        // ==========================================================
         private void ExecuteBatchConversion()
         {
             int successCount = 0;
@@ -255,7 +274,7 @@ namespace CoreEditor.GameData
 
                     Type recordType = GetRecordType(info.TableAsset.GetType());
 
-                    MethodInfo convertMethod = typeof(CsvToTableConverter).GetMethod(nameof(ConvertCsvGeneric), BindingFlags.NonPublic | BindingFlags.Instance);
+                    MethodInfo convertMethod = typeof(CsvToTableBatchProcessor).GetMethod(nameof(ConvertCsvGeneric), BindingFlags.NonPublic | BindingFlags.Instance);
                     MethodInfo genericMethod = convertMethod.MakeGenericMethod(recordType);
 
                     genericMethod.Invoke(this, new object[] { tableSetter, info.MatchedCsv.text });
@@ -279,12 +298,10 @@ namespace CoreEditor.GameData
             }
 
             AssetDatabase.SaveAssets();
-            EditorUtility.DisplayDialog("일괄 변환 결과", $"작업 완료!\n\n성공: {successCount}개\n실패: {failCount}개", "확인");
+            // [UX] Notification 적용
+            this.ShowNotification(new GUIContent($"일괄 변환 완료! (성공: {successCount}, 실패: {failCount})"));
         }
 
-        // ==========================================================
-        // 3. 단일 테이블 파싱 및 검증 로직
-        // ==========================================================
         private void ConvertCsvGeneric<TRecord>(IDataTableSetter tableSetter, string csvText)
             where TRecord : BaseDataRecord, IDataRecord, new()
         {
@@ -325,29 +342,19 @@ namespace CoreEditor.GameData
                 currentType = currentType.BaseType;
             }
 
-            // [Fix] 교차 검증: C#에만 있는 필드와 CSV에만 있는 헤더를 각각 찾아서 보여줍니다.
-            var csOnly = csFields
-                .Where(f => !csvHeaders.Any(h => string.Equals(h.FieldName, f.Name, StringComparison.OrdinalIgnoreCase)))
-                .Select(f => f.Name)
-                .ToList();
-
-            var csvOnly = csvHeaders
-                .Where(h => !csFields.Any(f => string.Equals(f.Name, h.FieldName, StringComparison.OrdinalIgnoreCase)))
-                .Select(h => h.FieldName)
-                .ToList();
+            var csOnly = csFields.Where(f => !csvHeaders.Any(h => string.Equals(h.FieldName, f.Name, StringComparison.OrdinalIgnoreCase))).Select(f => f.Name).ToList();
+            var csvOnly = csvHeaders.Where(h => !csFields.Any(f => string.Equals(f.Name, h.FieldName, StringComparison.OrdinalIgnoreCase))).Select(h => h.FieldName).ToList();
 
             if (csOnly.Count > 0 || csvOnly.Count > 0)
             {
                 List<string> errorLines = new List<string> { "컬럼 매칭 실패!" };
                 if (csOnly.Count > 0) errorLines.Add($"CSV 누락 (C#에만 존재): {string.Join(", ", csOnly)}");
                 if (csvOnly.Count > 0) errorLines.Add($"C# 누락 (CSV에만 존재): {string.Join(", ", csvOnly)}");
-
                 throw new Exception(string.Join("\n", errorLines));
             }
 
             foreach (var header in csvHeaders)
             {
-                // 위에서 교차 검증을 마쳤으므로 반드시 1:1 매칭됩니다.
                 FieldInfo matchedField = csFields.First(f => string.Equals(f.Name, header.FieldName, StringComparison.OrdinalIgnoreCase));
                 header.Field = matchedField;
                 header.FieldType = matchedField.FieldType;
@@ -397,17 +404,12 @@ namespace CoreEditor.GameData
             EditorUtility.SetDirty((UnityEngine.Object)tableSetter);
         }
 
-        // ==========================================================
-        // 4. 값 변환 및 배열 파싱 로직
-        // ==========================================================
         private static object ConvertValue(string value, Type targetType, int row, string columnName)
         {
             if (string.IsNullOrEmpty(value)) return GetDefaultValue(targetType);
 
             if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(List<>))
-            {
                 throw new Exception($"List<T> 타입은 사용할 수 없습니다. 데이터 압축을 위해 배열(T[])을 사용하세요.");
-            }
 
             if (targetType.IsArray)
             {
@@ -424,10 +426,7 @@ namespace CoreEditor.GameData
             if (targetType == typeof(string)) return value;
 
             Type nullableType = Nullable.GetUnderlyingType(targetType);
-            if (nullableType != null)
-            {
-                targetType = nullableType;
-            }
+            if (nullableType != null) targetType = nullableType;
 
             if (targetType.IsEnum)
             {
@@ -457,9 +456,7 @@ namespace CoreEditor.GameData
             while (current != null)
             {
                 if (current.IsGenericType && current.GetGenericTypeDefinition() == typeof(BaseDataTable<>))
-                {
                     return current.GetGenericArguments()[0];
-                }
                 current = current.BaseType;
             }
             throw new InvalidOperationException("BaseDataTable 형식을 찾을 수 없습니다.");

@@ -9,16 +9,18 @@ using CoreEngine.GameData;
 
 namespace CoreEditor.GameData
 {
-    public class PreloadDashboard : EditorWindow
+    public class PreloadAddresableSetter : EditorWindow
     {
         private List<ScriptableObject> _tableInstances = new List<ScriptableObject>();
         private List<ScriptableObject> _registryInstances = new List<ScriptableObject>();
         private Vector2 _scrollPosition;
+        private string _searchQuery = ""; // [UX] 검색 필터
 
-        [MenuItem(Constants.ToolRootGameData + "Preload Data Manager")]
+        public const string WindowName = "Preload Addresable Setter";
+        [MenuItem(Constants.ToolRootGameData + WindowName, priority = Constants.GameDataPriority + 1)]
         private static void Open()
         {
-            var window = GetWindow<PreloadDashboard>("Preload Manager");
+            var window = GetWindow<PreloadAddresableSetter>(WindowName);
             window.minSize = new Vector2(550, 500);
             window.Show();
         }
@@ -30,6 +32,8 @@ namespace CoreEditor.GameData
 
         private void OnGUI()
         {
+            DrawTopNavigationBar(); // [UX] 상단 탭 네비게이션
+
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("📦 Preload 메타데이터 어드레서블 관리", EditorStyles.boldLabel);
             EditorGUILayout.Space();
@@ -40,10 +44,31 @@ namespace CoreEditor.GameData
             DrawTypeToggles();
             EditorGUILayout.Space();
 
-            DrawActionButtons();
+            // [UX] 검색 바 추가
+            _searchQuery = EditorGUILayout.TextField("🔍 검색 (파일명/클래스명)", _searchQuery, EditorStyles.toolbarSearchField);
             EditorGUILayout.Space();
 
             DrawInstanceList();
+
+            GUILayout.FlexibleSpace(); // [UX] 하단 고정 액션 바
+
+            EditorGUILayout.Space();
+            DrawBottomActions();
+        }
+
+        private void DrawTopNavigationBar()
+        {
+            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+            if (GUILayout.Button("1. " + GameDataOrganizer.WindowName, EditorStyles.toolbarButton))
+                GetWindow<GameDataOrganizer>(GameDataOrganizer.WindowName).Show();
+
+            GUI.backgroundColor = Color.cyan;
+            if (GUILayout.Button("2. " + WindowName, EditorStyles.toolbarButton)) { }
+            GUI.backgroundColor = Color.white;
+
+            if (GUILayout.Button("3. " + CsvToTableBatchProcessor.WindowName, EditorStyles.toolbarButton))
+                GetWindow<CsvToTableBatchProcessor>(CsvToTableBatchProcessor.WindowName).Show();
+            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawSettings()
@@ -54,14 +79,14 @@ namespace CoreEditor.GameData
             float originalLabelWidth = EditorGUIUtility.labelWidth;
             EditorGUIUtility.labelWidth = 150f;
 
-            PreloadSettings.Instance.TargetGroupName = EditorGUILayout.TextField("대상 그룹 이름", PreloadSettings.Instance.TargetGroupName);
-            PreloadSettings.Instance.TargetLabel = EditorGUILayout.TextField("부여할 라벨", PreloadSettings.Instance.TargetLabel);
+            PreloadAddresableSetterSettings.Instance.TargetGroupName = EditorGUILayout.TextField("대상 그룹 이름", PreloadAddresableSetterSettings.Instance.TargetGroupName);
+            PreloadAddresableSetterSettings.Instance.TargetLabel = EditorGUILayout.TextField("부여할 라벨", PreloadAddresableSetterSettings.Instance.TargetLabel);
 
             EditorGUIUtility.labelWidth = originalLabelWidth;
 
             if (EditorGUI.EndChangeCheck())
             {
-                EditorUtility.SetDirty(PreloadSettings.Instance);
+                EditorUtility.SetDirty(PreloadAddresableSetterSettings.Instance);
             }
             EditorGUILayout.EndVertical();
         }
@@ -72,45 +97,20 @@ namespace CoreEditor.GameData
             EditorGUILayout.BeginVertical("box");
 
             EditorGUI.BeginChangeCheck();
-            foreach (var state in PreloadSettings.Instance.TypeStates)
+            foreach (var state in PreloadAddresableSetterSettings.Instance.TypeStates)
             {
                 state.IsEnabled = EditorGUILayout.ToggleLeft(state.TypeName, state.IsEnabled);
             }
 
             if (EditorGUI.EndChangeCheck())
             {
-                EditorUtility.SetDirty(PreloadSettings.Instance);
+                EditorUtility.SetDirty(PreloadAddresableSetterSettings.Instance);
             }
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawActionButtons()
-        {
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("🔄 프로젝트 스캔", GUILayout.Height(30)))
-            {
-                ScanAndSyncTypes();
-            }
-
-            GUI.backgroundColor = Color.cyan;
-            if (GUILayout.Button("🚀 그룹 및 라벨 일괄 적용", GUILayout.Height(30)))
-            {
-                ExecuteBake();
-            }
-            GUI.backgroundColor = Color.white;
-
-            // 툴 간 빠른 이동 버튼
-            if (GUILayout.Button("➡️ SO Data Validator 열기", GUILayout.Height(30), GUILayout.Width(170)))
-            {
-                GetWindow<SODataValidator>("SO Data Validator").Show();
-            }
-
-            EditorGUILayout.EndHorizontal();
-        }
-
         private void DrawInstanceList()
         {
-            // [Fix] 그리기 전 파괴된 객체(Null) 정리
             _tableInstances.RemoveAll(i => i == null);
             _registryInstances.RemoveAll(i => i == null);
 
@@ -135,18 +135,21 @@ namespace CoreEditor.GameData
             EditorGUILayout.LabelField("클래스 이름 (Class Type)");
             EditorGUILayout.EndHorizontal();
 
-            if (instances.Count == 0)
+            var filteredInstances = instances.Where(i =>
+                string.IsNullOrEmpty(_searchQuery) ||
+                i.name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                i.GetType().Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            if (filteredInstances.Count == 0)
             {
-                EditorGUILayout.HelpBox("해당 타입의 에셋이 발견되지 않았습니다.", MessageType.None);
+                EditorGUILayout.HelpBox("조건에 맞는 에셋이 없습니다.", MessageType.None);
                 return;
             }
 
-            foreach (var instance in instances)
+            foreach (var instance in filteredInstances)
             {
-                if (instance == null) continue; // 안전 장치
-
                 string typeFullName = instance.GetType().FullName;
-                var state = PreloadSettings.Instance.TypeStates.FirstOrDefault(t => t.TypeFullName == typeFullName);
+                var state = PreloadAddresableSetterSettings.Instance.TypeStates.FirstOrDefault(t => t.TypeFullName == typeFullName);
                 bool isEnabled = state != null && state.IsEnabled;
 
                 GUI.enabled = isEnabled;
@@ -158,43 +161,49 @@ namespace CoreEditor.GameData
             }
         }
 
+        private void DrawBottomActions()
+        {
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("🔄 프로젝트 스캔", GUILayout.Height(40)))
+            {
+                ScanAndSyncTypes();
+            }
+
+            GUI.backgroundColor = Color.cyan;
+            if (GUILayout.Button("🚀 그룹 및 라벨 일괄 적용", GUILayout.Height(40)))
+            {
+                ExecuteBake();
+            }
+            GUI.backgroundColor = Color.white;
+            EditorGUILayout.EndHorizontal();
+        }
+
         private void ScanAndSyncTypes()
         {
             _tableInstances.Clear();
             _registryInstances.Clear();
             var foundTypes = new HashSet<Type>();
 
-            // 테이블 스캔
             string[] tableGuids = AssetDatabase.FindAssets("t:_DataTable");
             foreach (string guid in tableGuids)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 ScriptableObject obj = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
-                if (obj != null)
-                {
-                    _tableInstances.Add(obj);
-                    foundTypes.Add(obj.GetType());
-                }
+                if (obj != null) { _tableInstances.Add(obj); foundTypes.Add(obj.GetType()); }
             }
 
-            // 레지스트리 스캔
             string[] registryGuids = AssetDatabase.FindAssets("t:_AssetRegistry");
             foreach (string guid in registryGuids)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 ScriptableObject obj = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
-                if (obj != null)
-                {
-                    _registryInstances.Add(obj);
-                    foundTypes.Add(obj.GetType());
-                }
+                if (obj != null) { _registryInstances.Add(obj); foundTypes.Add(obj.GetType()); }
             }
 
-            // 이름순 정렬
             _tableInstances = _tableInstances.OrderBy(i => i.GetType().Name).ThenBy(i => i.name).ToList();
             _registryInstances = _registryInstances.OrderBy(i => i.GetType().Name).ThenBy(i => i.name).ToList();
 
-            PreloadSettings.Instance.SyncTypes(foundTypes);
+            PreloadAddresableSetterSettings.Instance.SyncTypes(foundTypes);
         }
 
         private void ExecuteBake()
@@ -206,14 +215,13 @@ namespace CoreEditor.GameData
                 return;
             }
 
-            string groupName = PreloadSettings.Instance.TargetGroupName;
-            string targetLabel = PreloadSettings.Instance.TargetLabel;
+            string groupName = PreloadAddresableSetterSettings.Instance.TargetGroupName;
+            string targetLabel = PreloadAddresableSetterSettings.Instance.TargetLabel;
 
             AddressableAssetGroup targetGroup = settings.FindGroup(groupName);
             if (targetGroup == null)
             {
                 targetGroup = settings.CreateGroup(groupName, false, false, true, settings.DefaultGroup.Schemas);
-                Debug.Log($"[Preload] '{groupName}' 그룹을 새로 생성했습니다.");
             }
 
             settings.AddLabel(targetLabel);
@@ -223,9 +231,9 @@ namespace CoreEditor.GameData
 
             foreach (var instance in allInstances)
             {
-                if (instance == null) continue; // 안전 장치
+                if (instance == null) continue;
 
-                var state = PreloadSettings.Instance.TypeStates.FirstOrDefault(t => t.TypeFullName == instance.GetType().FullName);
+                var state = PreloadAddresableSetterSettings.Instance.TypeStates.FirstOrDefault(t => t.TypeFullName == instance.GetType().FullName);
                 if (state != null && state.IsEnabled)
                 {
                     string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(instance));
@@ -236,7 +244,9 @@ namespace CoreEditor.GameData
             }
 
             AssetDatabase.SaveAssets();
-            EditorUtility.DisplayDialog("적용 완료", $"선택된 {applyCount}개의 SO 에셋이 '{groupName}' 그룹에 편입되고 '{targetLabel}' 라벨이 부여되었습니다.", "확인");
+
+            // [UX] 팝업 대신 Notification 사용
+            this.ShowNotification(new GUIContent($"적용 완료! {applyCount}개의 SO 객체가 어드레서블에 등록되었습니다."));
         }
     }
 }

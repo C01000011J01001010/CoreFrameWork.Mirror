@@ -14,5 +14,7 @@ namespace CoreEditor
 
 
         public const string ToolSettingsDirectory = "Assets/CoreFramework Tool Settings";
+
+        public const int GameDataPriority = 0;
     }
 }
