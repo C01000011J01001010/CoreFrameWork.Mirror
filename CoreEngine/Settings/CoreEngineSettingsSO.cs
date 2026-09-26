@@ -6,7 +6,7 @@ using CoreEngine.DesignPattern.Singleton;
 
 namespace CoreEngine.Settings
 {
-    [SingletonSODirectory(Prefix+"/Settings")]
+    [SingletonSODirectory(Constants.DataDirectory + "/Settings")]
     public class CoreEngineSettingsSO : SingletonSO<CoreEngineSettingsSO>
     {
         // 데이터와 동기화 로직을 모두 캡슐화한 Tracker 선언

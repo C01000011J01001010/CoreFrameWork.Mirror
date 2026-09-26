@@ -14,7 +14,7 @@ namespace CoreEditor.EditorTools
     {
         protected abstract string ConverterTarget { get; }
         protected abstract Type TargetType { get; }
-        protected const string defaultMenu = Constants.ToolRootCsv + "CSV to SO Converter -> ";
+        protected const string defaultMenu = Constants.ToolRootGameData + "CSV to SO Converter -> ";
 
         protected string saveDirectory { get => editorSetting.saveDirectory; set => editorSetting.saveDirectory = value; }
         protected string TypeName { get => editorSetting.typeName; set => editorSetting.typeName = value; }

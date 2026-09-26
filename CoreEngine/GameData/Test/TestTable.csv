@@ -1,0 +1,5 @@
+﻿{id},{name},{damage},{level},{enabled},{spriteAsset}
+100,ABCD,1,10,TRUE,1
+200,EFG,1,10,TRUE,2
+300,HIJK,1,10,TRUE,3
+400,LMN,1,10,FALSE,4

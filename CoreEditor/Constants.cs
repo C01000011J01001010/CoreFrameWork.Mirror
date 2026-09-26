@@ -9,7 +9,10 @@ namespace CoreEditor
         public const string ToolRootLevelDesgin = ToolRoot+"Level Desgin/";
         public const string ToolRootAsset = ToolRoot+"Asset/";
         public const string ToolRootComponent = ToolRoot+"Component/";
-        public const string ToolRootCsv = ToolRoot+"Csv/";
+        public const string ToolRootGameData = ToolRoot+"Game Data/";
         public const string ToolRootComponentPrefab = ToolRoot+"Component/Prefab/";
+
+
+        public const string ToolSettingsDirectory = "Assets/CoreFramework Tool Settings";
     }
 }

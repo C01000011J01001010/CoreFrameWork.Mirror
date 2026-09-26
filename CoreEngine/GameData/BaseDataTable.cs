@@ -4,22 +4,21 @@ using UnityEngine;
 
 namespace CoreEngine.GameData
 {
+    // 에디터 윈도우 필터링을 위한 마커 클래스
+    public abstract class _DataTable : ScriptableObject { }
+
     /// <summary>
     /// csv 컨버터에서 사용할 인터페이스
     /// </summary>
-    public interface ITableSetter
+    public interface IDataTableSetter
     {
         void SetCapacity(int count);
-        bool Add(IRecord record);
+        bool Add(IDataRecord record);
         void Clear();
-        List<IRecord> GetListCopy();
+        List<IDataRecord> GetListCopy();
     }
-
-    // 에디터 윈도우 필터링을 위한 마커 클래스
-    public abstract class BaseTable : ScriptableObject { }
-
-    public abstract class BaseTable<TRecord> : BaseTable, ITableSetter
-        where TRecord : BaseRecord, IRecord, new()
+    public abstract class BaseDataTable<TRecord> : _DataTable, IDataTableSetter
+        where TRecord : BaseDataRecord, IDataRecord, new()
     {
         [SerializeField]
         private List<TRecord> _table = new();
@@ -48,7 +47,7 @@ namespace CoreEngine.GameData
             _tableDict = new(_table.Count);
             for (int i = 0; i < _table.Count; i++)
             {
-                int index = _table[i].Index;
+                int index = _table[i].Id;
                 if (_tableDict.ContainsKey(index))
                 {
                     LogHelper.LogWarning($"{this.name}에 동일한 index의 데이터가 존재합니다.");
@@ -60,9 +59,9 @@ namespace CoreEngine.GameData
 
         #region ITableSetter
         private static readonly IComparer<TRecord> _indexComparer =
-            Comparer<TRecord>.Create((x, y) => x.Index.CompareTo(y.Index));
+            Comparer<TRecord>.Create((x, y) => x.Id.CompareTo(y.Id));
 
-        void ITableSetter.SetCapacity(int count)
+        void IDataTableSetter.SetCapacity(int count)
         {
             if (count > _table.Capacity)
                 _table.Capacity = count;
@@ -71,7 +70,7 @@ namespace CoreEngine.GameData
         /// <summary>
         /// 정렬 삽입
         /// </summary>
-        bool ITableSetter.Add(IRecord newRecord)
+        bool IDataTableSetter.Add(IDataRecord newRecord)
         {
             // 타입방어 및 캐스팅
             if (newRecord is not TRecord recordAsT) return false;
@@ -89,15 +88,15 @@ namespace CoreEngine.GameData
             return true;
         }
 
-        void ITableSetter.Clear()
+        void IDataTableSetter.Clear()
         {
             _table.Clear();
             _tableDict = null;
         }
 
-        List<IRecord> ITableSetter.GetListCopy()
+        List<IDataRecord> IDataTableSetter.GetListCopy()
         {
-            return new List<IRecord>(_table);
+            return new List<IDataRecord>(_table);
         }
         #endregion
     }

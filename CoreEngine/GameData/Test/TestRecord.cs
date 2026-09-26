@@ -3,16 +3,19 @@
 namespace CoreEngine.GameData.Test
 {
     [System.Serializable]
-    public class TestRecord : BaseRecord
+    public class TestRecord : BaseDataRecord
     {
-        private string name;
-        private int level;
-        private float damage;
-        private bool enabled;
+        [TableColumn] private string name;
+        [TableColumn] private int level;
+        [TableColumn] private float damage;
+        [TableColumn] private bool enabled;
+        [TableColumn] private AssetId<Sprite> spriteAsset;
+        //[TableColumn] private int temp;
 
         public string Name => name;
         public int Level => level;
         public float Damage => damage;
         public bool Enabled => enabled;
+        public Sprite SpriteAsset => spriteAsset.Get();
     }
 }

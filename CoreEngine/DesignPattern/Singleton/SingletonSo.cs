@@ -8,7 +8,6 @@ namespace CoreEngine.DesignPattern.Singleton
     public abstract class SingletonSO<T> : ScriptableObject
         where T : SingletonSO<T>
     {
-        protected const string Prefix = "Assets/CoreFramework SO";
         protected static string DefaultDirectory
         {
             get
@@ -19,7 +18,7 @@ namespace CoreEngine.DesignPattern.Singleton
                 if (attribute.Length > 0)
                     return ((SingletonSODirectory)attribute[0]).Derectory;
 
-                return Prefix;
+                return Constants.DataDirectory;
             }
         }
 

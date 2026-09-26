@@ -232,5 +232,36 @@ namespace CoreEngine.Resource
         {
             ReleaseSceneAssets();
         }
+
+
+        // =========================================================
+        // [Synchronous API (안전망)]
+        // =========================================================
+
+        /// <summary>
+        /// 비동기 로드를 기다리지 않고 즉시 에셋을 반환 (에러 방지용)
+        /// 로드되지 않은 에셋일 경우 메인 스레드를 멈추고 강제 로드
+        /// </summary>
+        public T LoadSceneAssetSync<T>(string address) where T : UnityEngine.Object
+        {
+            string cacheKey = $"Addr_{address}";
+
+            // 이미 캐시에 있는지 확인
+            if (_sceneHandles.TryGetValue(cacheKey, out AsyncOperationHandle existingHandle))
+            {
+                if (existingHandle.IsDone)
+                    return existingHandle.Result as T;
+
+                // 로드 중이라면 즉시 완료되도록 강제 대기
+                return existingHandle.WaitForCompletion() as T;
+            }
+
+            // 캐시에 없다면 새로 로드하되 즉시 대기(동기화)하여 반환
+            var newHandle = Addressables.LoadAssetAsync<T>(address);
+            _sceneHandles.Add(cacheKey, newHandle);
+
+            Debug.LogWarning($"[ResourceManager] 동기 로드 발생 (프레임 드랍 주의): {address}");
+            return newHandle.WaitForCompletion();
+        }
     }
 }
