@@ -13,6 +13,7 @@ namespace CoreEditor.GameData
 {
     public class CsvToTableBatchProcessor : EditorWindow
     {
+        #region 데이터 구조체 및 UI 상태
         private class TableProcessInfo
         {
             public bool IsSelected = true;
@@ -23,9 +24,18 @@ namespace CoreEditor.GameData
             public List<TextAsset> ConflictedCsvs = new List<TextAsset>();
         }
 
+        private class FieldSchema
+        {
+            public int ColumnIndex;
+            public string FieldName;
+            public FieldInfo Field;
+            public Type FieldType;
+        }
+
         private List<TableProcessInfo> _tableInfos = new List<TableProcessInfo>();
         private Vector2 _scrollPosition;
-        private string _searchQuery = ""; // [UX] 검색 필터
+        private string _searchQuery = "";
+        #endregion
 
         public const string WindowName = "CSV To Table Batch Processor";
         [MenuItem(Constants.ToolRootGameData + WindowName, priority = Constants.GameDataPriority + 2)]
@@ -36,14 +46,12 @@ namespace CoreEditor.GameData
             window.Show();
         }
 
-        private void OnEnable()
-        {
-            ScanProjectForTables();
-        }
+        private void OnEnable() => ScanProjectForTables();
 
+        #region 에디터 윈도우 UI 렌더링
         private void OnGUI()
         {
-            DrawTopNavigationBar(); // [UX] 상단 탭 네비게이션
+            DrawTopNavigationBar();
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("🚀 일괄 데이터 변환 대시보드", EditorStyles.boldLabel);
@@ -52,14 +60,12 @@ namespace CoreEditor.GameData
             DrawSettings();
             EditorGUILayout.Space();
 
-            // [UX] 검색 바 추가
             _searchQuery = EditorGUILayout.TextField("🔍 검색 (테이블명)", _searchQuery, EditorStyles.toolbarSearchField);
             EditorGUILayout.Space();
 
             DrawTableList();
 
-            GUILayout.FlexibleSpace(); // [UX] 하단 고정 액션 바
-
+            GUILayout.FlexibleSpace();
             EditorGUILayout.Space();
             DrawBottomActions();
         }
@@ -107,9 +113,7 @@ namespace CoreEditor.GameData
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, "box");
 
             if (_tableInfos.Count == 0)
-            {
                 EditorGUILayout.HelpBox("프로젝트 내에 _DataTable을 상속받는 에셋이 없습니다.", MessageType.Info);
-            }
 
             var filteredInfos = _tableInfos.Where(info =>
                 string.IsNullOrEmpty(_searchQuery) ||
@@ -170,32 +174,27 @@ namespace CoreEditor.GameData
 
                 EditorGUILayout.EndVertical();
             }
-
             EditorGUILayout.EndScrollView();
         }
 
         private void DrawBottomActions()
         {
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("🔄 전체 다시 스캔", GUILayout.Height(40)))
-            {
-                ScanProjectForTables();
-            }
+            if (GUILayout.Button("🔄 전체 다시 스캔", GUILayout.Height(40))) ScanProjectForTables();
 
             GUI.backgroundColor = Color.cyan;
-            if (GUILayout.Button("✨ 체크된 항목 일괄 변환", GUILayout.Height(40)))
-            {
-                ExecuteBatchConversion();
-            }
+            if (GUILayout.Button("✨ 체크된 항목 일괄 변환", GUILayout.Height(40))) ExecuteBatchConversion();
             GUI.backgroundColor = Color.white;
             EditorGUILayout.EndHorizontal();
         }
+        #endregion
 
+        #region 스캐닝 및 배치 처리 로직
         private void ScanProjectForTables()
         {
             _tableInfos.Clear();
-
             string[] tableGuids = AssetDatabase.FindAssets("t:_DataTable");
+
             foreach (string guid in tableGuids)
             {
                 string tablePath = AssetDatabase.GUIDToAssetPath(guid);
@@ -250,8 +249,7 @@ namespace CoreEditor.GameData
             string ignorePrefix = CsvToTableBatchProcessorSettings.Instance.IgnorePrefix;
             if (string.IsNullOrWhiteSpace(ignorePrefix)) return false;
 
-            string[] parts = path.Split('/');
-            foreach (string part in parts)
+            foreach (string part in path.Split('/'))
             {
                 if (part.StartsWith(ignorePrefix, StringComparison.OrdinalIgnoreCase)) return true;
             }
@@ -260,8 +258,7 @@ namespace CoreEditor.GameData
 
         private void ExecuteBatchConversion()
         {
-            int successCount = 0;
-            int failCount = 0;
+            int successCount = 0, failCount = 0;
 
             foreach (var info in _tableInfos)
             {
@@ -273,7 +270,6 @@ namespace CoreEditor.GameData
                     if (tableSetter == null) throw new InvalidOperationException("IDataTableSetter 인터페이스 미구현");
 
                     Type recordType = GetRecordType(info.TableAsset.GetType());
-
                     MethodInfo convertMethod = typeof(CsvToTableBatchProcessor).GetMethod(nameof(ConvertCsvGeneric), BindingFlags.NonPublic | BindingFlags.Instance);
                     MethodInfo genericMethod = convertMethod.MakeGenericMethod(recordType);
 
@@ -298,31 +294,59 @@ namespace CoreEditor.GameData
             }
 
             AssetDatabase.SaveAssets();
-            // [UX] Notification 적용
             this.ShowNotification(new GUIContent($"일괄 변환 완료! (성공: {successCount}, 실패: {failCount})"));
         }
+        #endregion
 
+        #region 코어 파이프라인 (리팩터링 구역)
+
+        /// <summary>
+        /// 5단계 모듈화된 메인 컨버팅 파이프라인 (오케스트레이터)
+        /// </summary>
         private void ConvertCsvGeneric<TRecord>(IDataTableSetter tableSetter, string csvText)
             where TRecord : BaseDataRecord, IDataRecord, new()
         {
             string[] lines = SplitLines(csvText);
-            int schemaRowIndex = -1;
+
+            // 1. CSV 라인 분할 및 스키마(헤더) 위치 탐색
+            var headers = ExtractSchemaHeaders(lines, out int schemaRowIndex);
+
+            // 2. CSV 헤더와 C# 필드 간의 리플렉션 매핑 및 유효성 검사
+            ValidateAndMapFields<TRecord>(headers);
+
+            // 3. 실제 데이터 파싱 및 객체 생성
+            var records = ParseRecords<TRecord>(lines, schemaRowIndex + 1, headers);
+
+            // 4. 생성된 객체들로부터 _AssetId 일괄 추출 (베이킹 준비)
+            var bakedAssetIds = ExtractAssetIdsForBaking<TRecord>(records);
+
+            // 5. 인터페이스를 통한 최종 데이터 주입 및 에셋 저장
+            ApplyToTableAsset(tableSetter, records, bakedAssetIds);
+        }
+
+        private List<FieldSchema> ExtractSchemaHeaders(string[] lines, out int schemaRowIndex)
+        {
+            schemaRowIndex = -1;
             string[] schemaColumns = null;
 
             for (int r = 0; r < lines.Length; r++)
             {
                 if (string.IsNullOrWhiteSpace(lines[r])) continue;
                 string[] cols = CsvParserHelper.ParseLine(lines[r]);
-                if (FindFirstSchemaColumn(cols) >= 0)
+
+                int firstCol = FindFirstSchemaColumn(cols);
+                if (firstCol >= 0)
                 {
                     schemaRowIndex = r;
                     schemaColumns = cols;
                     break;
                 }
             }
-            if (schemaRowIndex < 0) throw new Exception("CSV에서 중괄호 { } 로 감싸진 헤더 영역을 찾지 못했습니다.");
 
-            List<FieldSchema> csvHeaders = new List<FieldSchema>();
+            if (schemaRowIndex < 0)
+                throw new Exception("CSV에서 중괄호 { } 로 감싸진 헤더 영역을 찾지 못했습니다.");
+
+            var csvHeaders = new List<FieldSchema>();
             for (int col = 0; col < schemaColumns.Length; col++)
             {
                 string value = schemaColumns[col].Trim();
@@ -331,10 +355,15 @@ namespace CoreEditor.GameData
                     csvHeaders.Add(new FieldSchema { ColumnIndex = col, FieldName = GetFieldName(value) });
                 }
             }
+            return csvHeaders;
+        }
 
+        private void ValidateAndMapFields<TRecord>(List<FieldSchema> csvHeaders)
+        {
             const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
             List<FieldInfo> csFields = new List<FieldInfo>();
             Type currentType = typeof(TRecord);
+
             while (currentType != null && currentType != typeof(object))
             {
                 var fields = currentType.GetFields(flags).Where(f => f.GetCustomAttribute<TableColumnAttribute>() != null);
@@ -359,11 +388,15 @@ namespace CoreEditor.GameData
                 header.Field = matchedField;
                 header.FieldType = matchedField.FieldType;
             }
+        }
 
+        private List<IDataRecord> ParseRecords<TRecord>(string[] lines, int startRow, List<FieldSchema> csvHeaders)
+            where TRecord : BaseDataRecord, IDataRecord, new()
+        {
             List<IDataRecord> temporaryRecords = new List<IDataRecord>();
             HashSet<int> usedIds = new HashSet<int>();
 
-            for (int row = schemaRowIndex + 1; row < lines.Length; row++)
+            for (int row = startRow; row < lines.Length; row++)
             {
                 string line = lines[row];
                 if (string.IsNullOrWhiteSpace(line)) continue;
@@ -395,15 +428,65 @@ namespace CoreEditor.GameData
                 temporaryRecords.Add(record);
             }
 
+            return temporaryRecords;
+        }
+
+        private _AssetId[] ExtractAssetIdsForBaking<TRecord>(List<IDataRecord> records)
+        {
+            var assetIdFields = new List<FieldInfo>();
+            var assetIdArrayFields = new List<FieldInfo>();
+
+            var allFields = typeof(TRecord).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            foreach (var field in allFields)
+            {
+                if (typeof(_AssetId).IsAssignableFrom(field.FieldType))
+                    assetIdFields.Add(field);
+                else if (field.FieldType.IsArray && typeof(_AssetId).IsAssignableFrom(field.FieldType.GetElementType()))
+                    assetIdArrayFields.Add(field);
+            }
+
+            var bakedAssetIds = new List<_AssetId>();
+            foreach (var rec in records)
+            {
+                // 단일 필드 추출
+                foreach (var field in assetIdFields)
+                {
+                    if (field.GetValue(rec) is _AssetId val && val.Id > 0)
+                        bakedAssetIds.Add(val);
+                }
+                // 배열 필드 추출
+                foreach (var field in assetIdArrayFields)
+                {
+                    if (field.GetValue(rec) is Array arr)
+                    {
+                        foreach (var item in arr)
+                        {
+                            if (item is _AssetId val && val.Id > 0)
+                                bakedAssetIds.Add(val);
+                        }
+                    }
+                }
+            }
+            return bakedAssetIds.ToArray();
+        }
+
+        private void ApplyToTableAsset(IDataTableSetter tableSetter, List<IDataRecord> records, _AssetId[] bakedAssetIds)
+        {
             tableSetter.Clear();
-            tableSetter.SetCapacity(temporaryRecords.Count);
-            foreach (var rec in temporaryRecords)
+            tableSetter.SetCapacity(records.Count);
+            foreach (var rec in records)
             {
                 tableSetter.Add(rec);
             }
+
+            // 확장된 IDataTableSetter 인터페이스를 통해 직접 주입 (다운캐스팅 불필요)
+            tableSetter.BakePreloadAssetIds(bakedAssetIds);
+
             EditorUtility.SetDirty((UnityEngine.Object)tableSetter);
         }
+        #endregion
 
+        #region 타입 변환 및 헬퍼 함수 모음
         private static object ConvertValue(string value, Type targetType, int row, string columnName)
         {
             if (string.IsNullOrEmpty(value)) return GetDefaultValue(targetType);
@@ -471,27 +554,9 @@ namespace CoreEditor.GameData
             return -1;
         }
 
-        private static bool IsSchemaField(string value)
-        {
-            return value.Length >= 2 && value[0] == '{' && value[^1] == '}';
-        }
-
-        private static string GetFieldName(string value)
-        {
-            return value.Substring(1, value.Length - 2).Trim();
-        }
-
-        private static string[] SplitLines(string text)
-        {
-            return text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
-        }
-
-        private class FieldSchema
-        {
-            public int ColumnIndex;
-            public string FieldName;
-            public FieldInfo Field;
-            public Type FieldType;
-        }
+        private static bool IsSchemaField(string value) => value.Length >= 2 && value[0] == '{' && value[^1] == '}';
+        private static string GetFieldName(string value) => value.Substring(1, value.Length - 2).Trim();
+        private static string[] SplitLines(string text) => text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
+        #endregion
     }
 }

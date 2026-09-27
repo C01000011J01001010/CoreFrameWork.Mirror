@@ -4,10 +4,16 @@ using UnityEngine;
 
 namespace CoreEngine.GameData
 {
-    public abstract class _DataTable : ScriptableObject
+    internal interface IPreloadAssetIdsBaker
+    {
+#if UNITY_EDITOR
+        void BakePreloadAssetIds(_AssetId[] bakedIds);
+#endif
+    }
+    public abstract class _DataTable : ScriptableObject, IPreloadAssetIdsBaker
     {
         // [핵심] SerializeReference를 통해 자식 제네릭 클래스들의 다형성을 유지하며 저장
-        [SerializeReference]
+        [SerializeReference, ReadOnly]
         private _AssetId[] _preloadAssetIds;
 
         // ==========================================
@@ -43,11 +49,8 @@ namespace CoreEngine.GameData
             }
         }
 
-        // ==========================================
-        // [에디터 전용] CsvToTableBatchProcessor가 컨버팅 시 호출
-        // ==========================================
 #if UNITY_EDITOR
-        public void Editor_BakePreloadAssetIds(_AssetId[] bakedIds)
+        void IPreloadAssetIdsBaker.BakePreloadAssetIds(_AssetId[] bakedIds)
         {
             _preloadAssetIds = bakedIds;
         }
