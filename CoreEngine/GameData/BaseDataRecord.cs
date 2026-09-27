@@ -13,7 +13,7 @@ namespace CoreEngine.GameData
     [System.Serializable]
     public class BaseDataRecord: IDataRecord
     {
-        [TableColumn]
+        [TableColumn, SerializeField]
         protected int id;
 
         public int Id => id;

@@ -10,10 +10,9 @@ namespace CoreEngine.GameData
     [Serializable]
     public class AssetId<TAsset> : _AssetId, IEquatable<AssetId<TAsset>> where TAsset : Object
     {
-        [SerializeField] private int id;
-        public override int Id => id;
-
-        public AssetId(int id) { this.id = id; }
+        // 부모 생성자 호출
+        public AssetId() : base() { }
+        public AssetId(int id) : base(id) { }
 
         public TAsset Get()
         {
