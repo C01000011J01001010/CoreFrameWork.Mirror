@@ -11,7 +11,8 @@ namespace CoreEngine.GameData
         internal static void InjectRegistry(BaseAssetRegistry<TAsset> registry)
         {
             _registry = registry;
-            _registry.InitializeRuntimeCache(); // 주입받을 때 딕셔너리 초기화!
+            // 중복이라 제거
+            //_registry.InitializeRuntimeCache(); // 주입받을 때 딕셔너리 초기화!
         }
 
         public static TAsset Get(int id)

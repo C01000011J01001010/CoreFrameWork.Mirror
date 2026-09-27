@@ -1,4 +1,5 @@
 ﻿using CoreEngine.Culling;
+using CoreEngine.GameData;
 using CoreEngine.Helpers;
 using CoreEngine.Hub;
 using CoreEngine.Settings;
@@ -160,6 +161,23 @@ namespace CoreEngine.Facades
                 SceneManager.GetSceneByName(CoreEngineSettingsSO.Instance.GlobalScene);
             }
             return ProjectContext.Inst.gameObject.scene;
+        }
+
+        public static List<TableReference> GetTableRefListOfCurrentScene()
+        {
+            var settings = CoreEngineSettingsSO.Instance;
+            List <TableReference> result = null;
+            string currentScene = GetCurrentScene().name;
+            for (int i = 0; i < settings.SceneTableDependencies.Count; ++i)
+            {
+                SceneTableDependency sceneTableDependency = settings.SceneTableDependencies[i];
+                if (sceneTableDependency.targetScene == currentScene)
+                {
+                    result = sceneTableDependency.requiredTables;
+                    break;
+                }
+            }
+            return result;
         }
     }
 }

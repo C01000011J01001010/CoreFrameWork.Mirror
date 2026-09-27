@@ -35,5 +35,11 @@ namespace CoreEngine.GameData
         }
 
         public void OnAfterDeserialize() { }
+
+        // TableReference -> Type 매칭
+        //public static implicit operator Type(TableReference reference)
+        //{
+        //    return reference.TableType;
+        //}
     }
 }

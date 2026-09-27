@@ -1,5 +1,5 @@
 using CoreEngine.Facades;
-using CoreEngine.Manager;
+using CoreEngine.Settings;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,8 +17,8 @@ namespace CoreEngine.GameData
         // 이전 씬의 로드 상태를 기억해야 하므로 static을 유지합니다.
         private static readonly HashSet<Type> _activeTables = new HashSet<Type>();
 
-        // TODO: 각 씬마다 어떤 테이블을 로드할지 외부(씬 컨텍스트 등)에서 주입해주어야 합니다.
-        private List<Type> _requestedTableTypes = new List<Type>();
+
+        private List<TableReference> _requestedTables => CoreFacade.GetTableRefListOfCurrentScene();
 
         private GameDataManager _gameDataManager;
 
@@ -31,8 +31,15 @@ namespace CoreEngine.GameData
                 yield break;
             }
 
+            // TableRef -> Type 가져오기
+            Type[] requestedTypes = new Type[_requestedTables.Count];
+            for (int i = 0; i < _requestedTables.Count; ++i)
+            {
+                requestedTypes[i] = _requestedTables[i].TableType;
+            }
+
             // 비동기 델타 로딩 실행
-            var task = UpdateTableAssetsAsync(_requestedTableTypes);
+            var task = UpdateTableAssetsAsync(requestedTypes);
 
             // Task가 완전히 끝날 때까지 코루틴 대기
             yield return new WaitUntil(() => task.IsCompleted);
@@ -41,7 +48,7 @@ namespace CoreEngine.GameData
         /// <summary>
         /// static을 제거하여 인스턴스로 캐싱된 _gameDataManager를 안전하게 사용합니다.
         /// </summary>
-        private async Task UpdateTableAssetsAsync(List<Type> requestedTypes)
+        private async Task UpdateTableAssetsAsync(Type[] requestedTypes)
         {
             var requestedSet = new HashSet<Type>(requestedTypes);
             var toRelease = new List<Type>();

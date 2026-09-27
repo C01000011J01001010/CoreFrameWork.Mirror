@@ -85,7 +85,8 @@ namespace CoreEngine.GameData
             if (assetType != null)
             {
                 var routerType = typeof(AssetRouter<>).MakeGenericType(assetType);
-                var injectMethod = routerType.GetMethod("InjectRegistry", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                var injectMethod = routerType.GetMethod("InjectRegistry",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
                 injectMethod?.Invoke(null, new object[] { registry });
             }
         }
