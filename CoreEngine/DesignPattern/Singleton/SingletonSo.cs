@@ -16,7 +16,7 @@ namespace CoreEngine.DesignPattern.Singleton
                     .GetCustomAttributes(typeof(SingletonSO_DirectoryAttribute), true);
 
                 if (attribute.Length > 0)
-                    return ((SingletonSO_DirectoryAttribute)attribute[0]).Derectory;
+                    return ((SingletonSO_DirectoryAttribute)attribute[0]).Directory;
 
                 return Constants.DataDirectory;
             }
