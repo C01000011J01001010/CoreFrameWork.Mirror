@@ -1,6 +1,7 @@
 using CoreEngine.Facades;
 using CoreEngine.Manager;
 using CoreEngine.Resource;
+using CoreEngine.Settings;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,113 +9,120 @@ using UnityEngine;
 
 namespace CoreEngine.GameData
 {
-    /// <summary>
-    /// 게임이 시작할 때 "GlobalData" 라벨을 가진 모든 Table과 Registry를 한 번에 로드하고 보관하는 매니저
-    /// </summary>
     public class GameDataManager : BaseManager, IPriority
     {
-        // ResourceManager(Infrastructure) 이후에 초기화되어야 하므로 동일하거나 약간 후순위로 설정
-        public int Priority => (int)ManagerPriority.Infrastructure;
+        public int Priority => (int)ManagerPriority.StaticData;
 
-        [Header("게임 시작시 로드할 데이터들의 라벨 지정"),SerializeField]
-        private string _label = "Table And Registry"; // 기본 라벨
+        private string Label => CoreEngineAutoSettingsSO.Instance.GameDataLabel;
 
-        // 로드된 테이블과 레지스트리를 타입별로 보관할 딕셔너리
+        // [최적화] 레지스트리는 AssetRouter가 보관하므로 매니저에서 들고 있을 필요가 없습니다. (테이블만 보관)
         private readonly Dictionary<Type, _DataTable> _tables = new();
-        private readonly Dictionary<Type, _AssetRegistry> _registries = new();
 
-        // Hub에 의해 처음 초기화 될 때
         protected override IEnumerator OnInitialize()
         {
             var resourceManager = CoreFacade.GetManager<ResourceManager>();
             if (resourceManager == null)
             {
-                Debug.LogError("[GlobalDataManager] ResourceManager를 찾을 수 없어 데이터를 로드할 수 없습니다.");
+                Debug.LogError("[GameDataManager] ResourceManager 누락.");
                 yield break;
             }
 
             bool isLoaded = false;
 
-            // ResourceManager를 통해 GlobalData 라벨을 가진 모든 SO를 비동기 로드
-            resourceManager.LoadGlobalAssetsByLabelAsync<ScriptableObject>(_label, (assets) =>
+            resourceManager.LoadGlobalAssetsByLabelAsync<ScriptableObject>(Label, (assets) =>
             {
                 if (assets != null)
                 {
+                    // 최적화된 초기화 방어용 해시셋 (중복 로드 방지)
+                    HashSet<Type> initializedRegistries = new HashSet<Type>();
+
                     foreach (var asset in assets)
                     {
                         if (asset is _DataTable table)
                         {
                             Type tableType = table.GetType();
-
-                            // [중복 검사] 이미 같은 타입의 테이블이 등록되어 있다면?
-                            if (_tables.ContainsKey(tableType))
+                            if (!_tables.TryAdd(tableType, table))
                             {
-                                Debug.LogError($"[GlobalDataManager] 치명적 에러: {tableType.Name} 타입의 테이블 SO가 중복 발견되었습니다! '{asset.name}' 에셋을 확인하세요.");
-                                continue; // 덮어씌우지 않고 스킵
+                                Debug.LogError($"[GameDataManager] 테이블 중복: {tableType.Name}");
                             }
-
-                            _tables.Add(tableType, table);
                         }
                         else if (asset is _AssetRegistry registry)
                         {
                             Type registryType = registry.GetType();
 
-                            // [중복 검사] 이미 같은 타입의 레지스트리가 등록되어 있다면?
-                            if (_registries.ContainsKey(registryType))
+                            // 레지스트리는 저장하지 않고 Router에 1회성으로 주입하고 끝냅니다.
+                            if (initializedRegistries.Add(registryType))
                             {
-                                Debug.LogError($"[GlobalDataManager] 치명적 에러: {registryType.Name} 타입의 레지스트리 SO가 중복 발견되었습니다! '{asset.name}' 에셋을 확인하세요.");
-                                continue; // 덮어씌우지 않고 스킵
+                                registry.InitializeRuntimeCache();
+                                InjectRegistryToRouter(registry);
                             }
-
-                            _registries.Add(registryType, registry);
-                            registry.InitializeRuntimeCache();
+                            else
+                            {
+                                Debug.LogError($"[GameDataManager] 레지스트리 중복: {registryType.Name}");
+                            }
                         }
                     }
                 }
-
                 isLoaded = true;
             });
 
-            // 콜백이 완료될 때까지 Hub의 초기화 시퀀스를 대기시킵니다 (매우 중요!)
             yield return new WaitUntil(() => isLoaded);
-
             yield return base.OnInitialize();
         }
 
-        // Hub에 의해 메모리가 정리 될 때
         public override void OnExit()
         {
-            // 딕셔너리 참조 해제
             _tables.Clear();
-            _registries.Clear();
-
-            // 실제 메모리 릴리즈는 ResourceManager의 OnExit()에서 일괄(ReleaseGlobalAssets) 처리되므로
-            // 여기서는 C# 레퍼런스만 비워주면 됩니다.
-
             base.OnExit();
+        }
+
+        // =========================================================
+        // [내부 헬퍼] AssetRouter 동적 주입 로직
+        // =========================================================
+        private void InjectRegistryToRouter(_AssetRegistry registry)
+        {
+            var assetType = GetAssetTypeFromRegistry(registry.GetType());
+            if (assetType != null)
+            {
+                var routerType = typeof(AssetRouter<>).MakeGenericType(assetType);
+                var injectMethod = routerType.GetMethod("InjectRegistry", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                injectMethod?.Invoke(null, new object[] { registry });
+            }
+        }
+
+        private Type GetAssetTypeFromRegistry(Type type)
+        {
+            while (type != null && type != typeof(ScriptableObject))
+            {
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(BaseAssetRegistry<>))
+                    return type.GetGenericArguments()[0];
+                type = type.BaseType;
+            }
+            return null;
         }
 
         // =========================================================
         // [Public API] 데이터 제공 인터페이스
         // =========================================================
 
+        // [수정] GetRegistry<T> 삭제. 외부에서는 철저히 AssetId.Get() 만 사용하도록 통제
+
         public TTable GetTable<TTable>() where TTable : _DataTable
         {
             if (_tables.TryGetValue(typeof(TTable), out _DataTable table))
-            {
                 return table as TTable;
-            }
-            Debug.LogWarning($"[GlobalDataManager] {typeof(TTable).Name} 테이블을 찾을 수 없습니다.");
+
+            Debug.LogWarning($"[GameDataManager] {typeof(TTable).Name} 테이블 누락.");
             return null;
         }
 
-        public TRegistry GetRegistry<TRegistry>() where TRegistry : _AssetRegistry
+        // [추가] TableAssetLoadManager가 타입(Type) 객체로 직접 테이블을 찾기 위한 오버로딩
+        public _DataTable GetTable(Type type)
         {
-            if (_registries.TryGetValue(typeof(TRegistry), out _AssetRegistry registry))
-            {
-                return registry as TRegistry;
-            }
-            Debug.LogWarning($"[GlobalDataManager] {typeof(TRegistry).Name} 레지스트리를 찾을 수 없습니다.");
+            if (_tables.TryGetValue(type, out _DataTable table))
+                return table;
+
+            Debug.LogWarning($"[GameDataManager] {type.Name} 테이블 누락.");
             return null;
         }
     }

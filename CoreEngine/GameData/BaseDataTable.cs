@@ -1,11 +1,11 @@
 using CoreEngine.Helpers;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace CoreEngine.GameData
 {
-    // 에디터 윈도우 필터링을 위한 마커 클래스
-    public abstract class _DataTable : ScriptableObject { }
+    
 
     /// <summary>
     /// csv 컨버터에서 사용할 인터페이스

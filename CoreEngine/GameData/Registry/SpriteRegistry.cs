@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CoreEngine.GameData
 {
-    public class SpriteRegistry : BaseAssetRegistry<Sprite>
+    internal class SpriteRegistry : BaseAssetRegistry<Sprite>
     {
 
     }

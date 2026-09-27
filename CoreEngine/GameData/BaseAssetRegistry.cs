@@ -1,4 +1,3 @@
-using CoreEngine.DesignPattern.Singleton;
 using CoreEngine.Facades;
 using CoreEngine.Resource;
 using System;
@@ -8,22 +7,13 @@ using UnityEngine;
 
 namespace CoreEngine.GameData
 {
-    // 에디터 윈도우나 포스트프로세서에서 모든 타입의 레지스트리를 
-    // 일괄적으로 찾고 관리하기 위한 마커 클래스입니다
-    public abstract class _AssetRegistry : ScriptableObject
-    {
-        // GlobalDataManager가 호출할 공통 인터페이스
-        public abstract void InitializeRuntimeCache();
-    }
-
-    public class BaseAssetRegistry<TAsset> : _AssetRegistry
-        where TAsset : UnityEngine.Object
+    internal class BaseAssetRegistry<TAsset> : _AssetRegistry where TAsset : UnityEngine.Object
     {
         [Serializable]
         public struct AssetEntry
         {
             public int Id;
-            public string PathDetail; // _baseDirectory 이후로의 경로와 파일이름 확장자
+            public string PathDetail;
         }
 
         [SerializeField] private string _baseDirectory;
@@ -31,8 +21,19 @@ namespace CoreEngine.GameData
 
         private Dictionary<int, string> _runtimeAddressDict;
 
+        // [최적화] 매번 탐색하지 않도록 ResourceManager를 캐싱합니다.
+        private ResourceManager _resourceManager;
+
         public override void InitializeRuntimeCache()
         {
+            // 1. 매니저 캐싱 (단 1회 수행)
+            _resourceManager = CoreFacade.GetManager<ResourceManager>();
+            if (_resourceManager == null)
+            {
+                Debug.LogError("[BaseAssetRegistry] ResourceManager를 찾을 수 없습니다!");
+            }
+
+            // 2. 주소 딕셔너리 구성
             _runtimeAddressDict = new Dictionary<int, string>(_entries.Count);
             foreach (var entry in _entries)
             {
@@ -43,34 +44,30 @@ namespace CoreEngine.GameData
             }
         }
 
-        // ==========================================
-        // 1. 동기 조회 (즉시 반환 또는 강제 로드)
-        // ==========================================
         public TAsset GetAsset(int id)
         {
             if (_runtimeAddressDict == null || !_runtimeAddressDict.TryGetValue(id, out string address))
                 return null;
 
-            // Facade를 통해 ResourceManager를 찾아 안전하게 로드합니다.
-            var resourceManager = CoreFacade.GetManager<ResourceManager>();
-            if (resourceManager == null) return null;
-
-            return resourceManager.LoadSceneAssetSync<TAsset>(address);
+            // [최적화] 캐싱된 매니저를 즉시 사용 (탐색 비용 제거)
+            return _resourceManager?.LoadSceneAssetSync<TAsset>(address);
         }
 
-        // ==========================================
-        // 2. 비동기 사전 로드 (로딩 화면용)
-        // ==========================================
         public Task<TAsset> LoadAssetAsync(int id)
         {
             if (_runtimeAddressDict == null || !_runtimeAddressDict.TryGetValue(id, out string address))
                 return Task.FromResult<TAsset>(null);
 
-            var resourceManager = CoreFacade.GetManager<ResourceManager>();
-            if (resourceManager == null) return Task.FromResult<TAsset>(null);
+            return _resourceManager != null ? _resourceManager.LoadSceneAssetAsync<TAsset>(address) : Task.FromResult<TAsset>(null);
+        }
 
-            // ResourceManager에 만들어두신 Task 반환 메서드를 호출합니다.
-            return resourceManager.LoadSceneAssetAsync<TAsset>(address);
+        public void ReleaseAsset(int id)
+        {
+            if (_runtimeAddressDict == null || !_runtimeAddressDict.TryGetValue(id, out string address))
+                return;
+
+            // 캐싱된 ResourceManager를 통해 어드레서블 릴리즈 요청
+            _resourceManager?.ReleaseSceneAsset(address);
         }
     }
 }

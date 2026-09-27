@@ -44,5 +44,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb07a6ef129558c458dde5f9421df535, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CoreEngine::CoreEngine.GameData.GameDataManager
-  myScope: 2
-  _label: Table And Registry
+  myScope: 1
