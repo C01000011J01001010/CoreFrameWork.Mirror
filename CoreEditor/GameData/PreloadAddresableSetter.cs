@@ -6,6 +6,7 @@ using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
 using CoreEngine.GameData;
+using CoreEngine.Settings;
 
 namespace CoreEditor.GameData
 {
@@ -218,16 +219,28 @@ namespace CoreEditor.GameData
             string groupName = PreloadAddresableSetterSettings.Instance.TargetGroupName;
             string targetLabel = PreloadAddresableSetterSettings.Instance.TargetLabel;
 
+            // 1. 런타임 셋팅 SO에 라벨명 동기화
+            if (CoreEngineAutoSettingsSO.Instance is IGameDataLabelSetter Setter)
+            {
+                Setter.SetGameDataLabel(targetLabel);
+                EditorUtility.SetDirty(CoreEngineAutoSettingsSO.Instance);
+            }
+
+            // 2. 타겟 그룹 생성 또는 가져오기
             AddressableAssetGroup targetGroup = settings.FindGroup(groupName);
             if (targetGroup == null)
             {
                 targetGroup = settings.CreateGroup(groupName, false, false, true, settings.DefaultGroup.Schemas);
+                Debug.Log($"[Preload] '{groupName}' 그룹을 새로 생성했습니다.");
             }
 
             settings.AddLabel(targetLabel);
 
             int applyCount = 0;
             var allInstances = _tableInstances.Concat(_registryInstances);
+
+            // [Fix] 기존에 속해있던 그룹들을 추적하기 위한 HashSet
+            HashSet<AddressableAssetGroup> previousGroups = new HashSet<AddressableAssetGroup>();
 
             foreach (var instance in allInstances)
             {
@@ -237,15 +250,44 @@ namespace CoreEditor.GameData
                 if (state != null && state.IsEnabled)
                 {
                     string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(instance));
+
+                    // [Fix 2] 이동하기 전, 이 에셋이 원래 어느 그룹에 있었는지 기록해둠
+                    var existingEntry = settings.FindAssetEntry(guid);
+                    if (existingEntry != null && existingEntry.parentGroup != null)
+                    {
+                        previousGroups.Add(existingEntry.parentGroup);
+                    }
+
+                    // 에셋 이동 (또는 생성)
                     var entry = settings.CreateOrMoveEntry(guid, targetGroup, readOnly: false, postEvent: false);
+
+                    // [Fix 1] 기존 라벨 싹 지우기 (초기화)
+                    var existingLabels = entry.labels.ToList();
+                    foreach (var oldLabel in existingLabels)
+                    {
+                        entry.SetLabel(oldLabel, false, true);
+                    }
+
+                    // 새로운 타겟 라벨만 단독으로 부여
                     entry.SetLabel(targetLabel, true, true);
+
                     applyCount++;
+                }
+            }
+
+            // [Fix 2] 에셋 이동이 모두 끝난 후, 비어버린 예전 그룹들을 청소
+            foreach (var oldGroup in previousGroups)
+            {
+                // 타겟 그룹이 아니고, 내부에 엔트리가 하나도 없으며, 어드레서블 기본 그룹이 아닐 경우에만 삭제
+                if (oldGroup != null && oldGroup != targetGroup && oldGroup.entries.Count == 0 && !oldGroup.IsDefaultGroup())
+                {
+                    settings.RemoveGroup(oldGroup);
+                    Debug.Log($"[Preload] 텅 빈 이전 그룹 '{oldGroup.Name}'을(를) 자동 삭제했습니다.");
                 }
             }
 
             AssetDatabase.SaveAssets();
 
-            // [UX] 팝업 대신 Notification 사용
             this.ShowNotification(new GUIContent($"적용 완료! {applyCount}개의 SO 객체가 어드레서블에 등록되었습니다."));
         }
     }
