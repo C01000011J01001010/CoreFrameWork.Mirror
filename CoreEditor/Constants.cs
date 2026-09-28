@@ -13,7 +13,7 @@ namespace CoreEditor
         public const string ToolRootComponentPrefab = ToolRoot+"Component/Prefab/";
 
 
-        public const string ToolSettingsDirectory = "Assets/CoreFramework Tool Settings";
+        public const string EditorDirectory = "Assets/CoreFramework/Editor";
 
         public const int GameDataPriority = 0;
     }

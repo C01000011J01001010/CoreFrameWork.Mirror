@@ -3,7 +3,7 @@ namespace CoreEngine
 {
     public class Constants
     {
-        public const string DataDirectory = "Assets/CoreFramework ProjectData";
+        public const string ProjectDirectory = "Assets/CoreFramework/Project";
     }
 }
 

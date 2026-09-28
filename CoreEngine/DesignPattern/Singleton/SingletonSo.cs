@@ -18,7 +18,7 @@ namespace CoreEngine.DesignPattern.Singleton
                 if (attribute.Length > 0)
                     return ((SingletonSO_DirectoryAttribute)attribute[0]).Directory;
 
-                return Constants.DataDirectory;
+                return Constants.ProjectDirectory;
             }
         }
 
