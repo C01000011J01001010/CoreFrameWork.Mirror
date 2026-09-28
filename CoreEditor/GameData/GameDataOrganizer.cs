@@ -82,7 +82,7 @@ namespace CoreEditor.GameData
 
             var settings = GameDataOrganizerSettings.Instance;
             EditorGUI.BeginChangeCheck();
-            DrawFolderPickerRow("기본 저장 경로", ref settings.BaseSavePath);
+            DrawFolderPickerRow("기본 저장 경로", ref settings.BaseSaveDirectory);
 
             if (EditorGUI.EndChangeCheck())
             {
@@ -91,47 +91,49 @@ namespace CoreEditor.GameData
             }
 
             GUI.contentColor = Color.gray;
-            EditorGUILayout.LabelField($" └─ Table 저장 경로: {settings.BaseSavePath}/{TableFolderName}", EditorStyles.miniLabel);
-            EditorGUILayout.LabelField($" └─ Registry 저장 경로: {settings.BaseSavePath}/{RegistryFolderName}", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField($" └─ Table 저장 경로: {settings.BaseSaveDirectory}/{TableFolderName}", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField($" └─ Registry 저장 경로: {settings.BaseSaveDirectory}/{RegistryFolderName}", EditorStyles.miniLabel);
             GUI.contentColor = Color.white;
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawFolderPickerRow(string label, ref string pathValue)
+        private void DrawFolderPickerRow(string label, ref string savedDirectory)
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(label, GUILayout.Width(EditorGUIUtility.labelWidth));
             EditorGUI.BeginDisabledGroup(true);
-            EditorGUILayout.TextField(pathValue);
+            EditorGUILayout.TextField(savedDirectory);
             EditorGUI.EndDisabledGroup();
 
             if (GUILayout.Button("📂", GUILayout.Width(30)))
             {
-                string startPath = Application.dataPath;
-                if (!string.IsNullOrEmpty(pathValue))
+                string startDirectory = Application.dataPath;
+                if (!string.IsNullOrEmpty(savedDirectory))
                 {
-                    string projectPath = Path.GetDirectoryName(Application.dataPath);
-                    startPath = $"{projectPath}/{pathValue}";
+                    string projectDirectory = Path.GetDirectoryName(Application.dataPath);
+                    startDirectory = $"{projectDirectory}/{savedDirectory}";
                 }
 
-                string absolutePath = EditorUtility.OpenFolderPanel($"{label} 선택", startPath, "");
+                
+
+                string absolutePath = EditorUtility.OpenFolderPanel($"{label} 선택", startDirectory, "");
                 if (!string.IsNullOrEmpty(absolutePath))
                 {
                     if (absolutePath.StartsWith(Application.dataPath))
                     {
-                        pathValue = "Assets" + absolutePath.Substring(Application.dataPath.Length);
+                        savedDirectory = "Assets" + absolutePath.Substring(Application.dataPath.Length);
                         GUI.FocusControl(null);
                     }
                     else
                     {
-                        Debug.LogWarning("[SO Data Validator] 프로젝트 내부(Assets 하위)의 폴더만 선택할 수 있습니다.");
+                        Debug.LogWarning($"[{WindowName}] 프로젝트 내부(Assets 하위)의 폴더만 선택할 수 있습니다.");
                     }
                 }
             }
 
             if (GUILayout.Button("확인", GUILayout.Width(50)))
             {
-                PingFolder(pathValue);
+                PingFolder(savedDirectory);
             }
             EditorGUILayout.EndHorizontal();
         }
@@ -249,8 +251,8 @@ namespace CoreEditor.GameData
         private void GenerateMissingAssets()
         {
             var settings = GameDataOrganizerSettings.Instance;
-            string tablePath = $"{settings.BaseSavePath}/{TableFolderName}";
-            string registryPath = $"{settings.BaseSavePath}/{RegistryFolderName}";
+            string tablePath = $"{settings.BaseSaveDirectory}/{TableFolderName}";
+            string registryPath = $"{settings.BaseSaveDirectory}/{RegistryFolderName}";
 
             EnsureDirectoryExists(tablePath);
             EnsureDirectoryExists(registryPath);
