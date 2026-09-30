@@ -19,7 +19,7 @@ namespace CoreEngine.GameData
         // ==========================================
         // [런타임 전용] TableAssetLoadManager가 호출할 API
         // ==========================================
-        public async Task PreloadAssetsAsync()
+        internal async Task PreloadAssetsAsync()
         {
             if (_preloadAssetIds == null || _preloadAssetIds.Length == 0) return;
 
@@ -36,7 +36,7 @@ namespace CoreEngine.GameData
             await Task.WhenAll(loadTasks);
         }
 
-        public void ReleaseAssets()
+        internal void ReleaseAssets()
         {
             if (_preloadAssetIds == null || _preloadAssetIds.Length == 0) return;
 

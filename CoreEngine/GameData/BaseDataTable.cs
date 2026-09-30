@@ -25,7 +25,7 @@ namespace CoreEngine.GameData
 
         private Dictionary<int, TRecord> _tableDict = null;
 
-        public Dictionary<int, TRecord> GetCachedTableDict()
+        internal Dictionary<int, TRecord> GetCachedTableDict()
         {
             if (_tableDict != null) return _tableDict;
 
