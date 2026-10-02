@@ -80,9 +80,10 @@ namespace CoreEditor.EditorTools
 
         private static void DrawSceneTrackerSections(SerializedProperty sceneTracker, UIStyles styles)
         {
+            EditorGUILayout.BeginVertical(styles.box);
             DrawSectionBox("Global Scene",
                 "※ 게임 시작부터 끝까지 유지되는 Scene",
-                sceneTracker.FindPropertyRelative("globalScene"), styles);
+                sceneTracker.FindPropertyRelative("globalScene"), styles, true);
 
             DrawSectionBox("Extension Scenes",
                 "※ Global Scene 로드 시 순서대로 Additive되는 Scene들의 묶음\n※ Global Scene과 함께 게임 시작부터 끝까지 유지됨",
@@ -90,7 +91,8 @@ namespace CoreEditor.EditorTools
 
             DrawSectionBox("First Scenes",
                 "※ Global Scene과 Extension Scenes가 모두 로드된 후 최종적으로 로드 되는 Scene",
-                sceneTracker.FindPropertyRelative("firstScene"), styles);
+                sceneTracker.FindPropertyRelative("firstScene"), styles, true);
+            EditorGUILayout.EndVertical();
         }
 
         // 중복되는 박스 그리기 로직을 하나의 헬퍼 함수로 통합
