@@ -18,7 +18,7 @@ namespace CoreEngine.GameData
     }
 
     public abstract class BaseDataTable<TRecord> : _DataTable, IDataTableSetter
-        where TRecord : class, IDataRecord, new()
+        where TRecord : class, IDataRecord
     {
         [SerializeField, ReadOnly]
         private List<TRecord> _table = new();

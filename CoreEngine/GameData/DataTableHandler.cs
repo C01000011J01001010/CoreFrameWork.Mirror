@@ -6,7 +6,7 @@ namespace CoreEngine.GameData
 {
     public class DataTableHandler<TTable, TRecord>
     where TTable : BaseDataTable<TRecord>
-    where TRecord : class, IDataRecord, new()
+    where TRecord : class, IDataRecord
     {
         private static TTable _table;
         private Dictionary<int, TRecord> _recordDict;
