@@ -11,7 +11,7 @@ namespace CoreEngine.GameData
     public class TableReference : ISerializationCallbackReceiver
     {
 #if UNITY_EDITOR
-        [SerializeField] private _DataTable tableAsset;
+        [SerializeField] private _Table tableAsset;
 #endif
 
         [SerializeField, HideInInspector] private string tableFullName = string.Empty;

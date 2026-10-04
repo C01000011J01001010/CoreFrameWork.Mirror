@@ -39,7 +39,7 @@ namespace CoreEditor.GameData
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Game Data SO 대시보드", EditorStyles.boldLabel);
-            EditorGUILayout.HelpBox($"{nameof(_DataTable)} 및 {nameof(_AssetRegistry)}를 상속받은 상세 클래스들의 SO 객체 상태를 확인하고 관리합니다.", MessageType.Info);
+            EditorGUILayout.HelpBox($"{nameof(_Table)} 및 {nameof(_AssetRegistry)}를 상속받은 상세 클래스들의 SO 객체 상태를 확인하고 관리합니다.", MessageType.Info);
             EditorGUILayout.Space();
 
             DrawPathSettings();
@@ -225,7 +225,7 @@ namespace CoreEditor.GameData
 
         private void Refresh()
         {
-            var tableTypes = TypeCache.GetTypesDerivedFrom<_DataTable>().Where(t => !t.IsAbstract && !t.IsGenericType).ToList();
+            var tableTypes = TypeCache.GetTypesDerivedFrom<_Table>().Where(t => !t.IsAbstract && !t.IsGenericType).ToList();
             var registryTypes = TypeCache.GetTypesDerivedFrom<_AssetRegistry>().Where(t => !t.IsAbstract && !t.IsGenericType).ToList();
 
             _tableStatuses = AnalyzeTypes(tableTypes);

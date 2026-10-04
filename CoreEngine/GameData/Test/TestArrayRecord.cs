@@ -4,7 +4,7 @@ using UnityEngine;
 namespace CoreEngine.GameData.Test
 {
     [Serializable]
-    public class TestArrayRecord : BaseDataRecord
+    public class TestArrayRecord : BaseRecord
     {
         [TableColumn]
         float[] floatArray;

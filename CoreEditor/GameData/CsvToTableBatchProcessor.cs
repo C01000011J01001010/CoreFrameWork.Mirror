@@ -17,7 +17,7 @@ namespace CoreEditor.GameData
         private class TableProcessInfo
         {
             public bool IsSelected = true;
-            public _DataTable TableAsset;
+            public _Table TableAsset;
             public TextAsset MatchedCsv;
             public string StatusMessage = "대기 중";
             public MessageType StatusType = MessageType.None;
@@ -200,7 +200,7 @@ namespace CoreEditor.GameData
                 string tablePath = AssetDatabase.GUIDToAssetPath(guid);
                 if (IsIgnoredPath(tablePath)) continue;
 
-                _DataTable tableAsset = AssetDatabase.LoadAssetAtPath<_DataTable>(tablePath);
+                _Table tableAsset = AssetDatabase.LoadAssetAtPath<_Table>(tablePath);
                 if (tableAsset == null) continue;
 
                 var info = new TableProcessInfo { TableAsset = tableAsset };
@@ -266,7 +266,7 @@ namespace CoreEditor.GameData
 
                 try
                 {
-                    IDataTableSetter tableSetter = info.TableAsset as IDataTableSetter;
+                    ITableSetter tableSetter = info.TableAsset as ITableSetter;
                     if (tableSetter == null) throw new InvalidOperationException("IDataTableSetter 인터페이스 미구현");
 
                     Type recordType = GetRecordType(info.TableAsset.GetType());
@@ -303,8 +303,8 @@ namespace CoreEditor.GameData
         /// <summary>
         /// 5단계 모듈화된 메인 컨버팅 파이프라인 (오케스트레이터)
         /// </summary>
-        private void ConvertCsvGeneric<TRecord>(IDataTableSetter tableSetter, string csvText)
-            where TRecord : BaseDataRecord, IDataRecord, new()
+        private void ConvertCsvGeneric<TRecord>(ITableSetter tableSetter, string csvText)
+            where TRecord : BaseRecord, IRecord, new()
         {
             string[] lines = SplitLines(csvText);
 
@@ -390,10 +390,10 @@ namespace CoreEditor.GameData
             }
         }
 
-        private List<IDataRecord> ParseRecords<TRecord>(string[] lines, int startRow, List<FieldSchema> csvHeaders)
-            where TRecord : BaseDataRecord, IDataRecord, new()
+        private List<IRecord> ParseRecords<TRecord>(string[] lines, int startRow, List<FieldSchema> csvHeaders)
+            where TRecord : BaseRecord, IRecord, new()
         {
-            List<IDataRecord> temporaryRecords = new List<IDataRecord>();
+            List<IRecord> temporaryRecords = new List<IRecord>();
             HashSet<int> usedIds = new HashSet<int>();
 
             for (int row = startRow; row < lines.Length; row++)
@@ -431,7 +431,7 @@ namespace CoreEditor.GameData
             return temporaryRecords;
         }
 
-        private _AssetId[] ExtractAssetIdsForBaking<TRecord>(List<IDataRecord> records)
+        private _AssetId[] ExtractAssetIdsForBaking<TRecord>(List<IRecord> records)
         {
             var assetIdFields = new List<FieldInfo>();
             var assetIdArrayFields = new List<FieldInfo>();
@@ -470,7 +470,7 @@ namespace CoreEditor.GameData
             return bakedAssetIds.ToArray();
         }
 
-        private void ApplyToTableAsset(IDataTableSetter tableSetter, List<IDataRecord> records, _AssetId[] bakedAssetIds)
+        private void ApplyToTableAsset(ITableSetter tableSetter, List<IRecord> records, _AssetId[] bakedAssetIds)
         {
             tableSetter.Clear();
             tableSetter.SetCapacity(records.Count);
@@ -538,7 +538,7 @@ namespace CoreEditor.GameData
             Type current = tableType;
             while (current != null)
             {
-                if (current.IsGenericType && current.GetGenericTypeDefinition() == typeof(BaseDataTable<>))
+                if (current.IsGenericType && current.GetGenericTypeDefinition() == typeof(BaseTable<>))
                     return current.GetGenericArguments()[0];
                 current = current.BaseType;
             }

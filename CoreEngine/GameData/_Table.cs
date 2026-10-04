@@ -10,11 +10,15 @@ namespace CoreEngine.GameData
         void BakePreloadAssetIds(_AssetId[] bakedIds);
 #endif
     }
-    public abstract class _DataTable : ScriptableObject, IPreloadAssetIdsBaker
+    public abstract class _Table : ScriptableObject, IPreloadAssetIdsBaker
     {
         // [핵심] SerializeReference를 통해 자식 제네릭 클래스들의 다형성을 유지하며 저장
         [SerializeReference, ReadOnly]
         private _AssetId[] _preloadAssetIds;
+
+        public abstract void InitializeRuntimeCache();
+
+        public abstract IRecord GetRecord(int id);
 
         // ==========================================
         // [런타임 전용] TableAssetLoadManager가 호출할 API
@@ -49,11 +53,14 @@ namespace CoreEngine.GameData
             }
         }
 
+
 #if UNITY_EDITOR
         void IPreloadAssetIdsBaker.BakePreloadAssetIds(_AssetId[] bakedIds)
         {
             _preloadAssetIds = bakedIds;
         }
+
+        
 #endif
     }
 }

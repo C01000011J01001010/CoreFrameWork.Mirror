@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CoreEngine.GameData.Test
 {
-    public class TestTable : BaseDataTable<TestRecord>
+    public class TestTable : BaseTable<TestRecord>
     {
 
     }

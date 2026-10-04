@@ -7,33 +7,33 @@ namespace CoreEngine.GameData
     /// <summary>
     /// csv 컨버터에서 에디터 전용으로 접근할 완벽한 리모컨(인터페이스)
     /// </summary>
-    internal interface IDataTableSetter : IPreloadAssetIdsBaker
+    internal interface ITableSetter : IPreloadAssetIdsBaker
     {
 #if UNITY_EDITOR
         void SetCapacity(int count);
-        bool Add(IDataRecord record);
+        bool Add(IRecord record);
         void Clear();
-        List<IDataRecord> GetListCopy();
+        List<IRecord> GetListCopy();
 #endif
     }
 
-    public abstract class BaseDataTable<TRecord> : _DataTable, IDataTableSetter
-        where TRecord : class, IDataRecord
+    public class BaseTable<TRecord> : _Table, ITableSetter
+        where TRecord : class, IRecord
     {
         [SerializeField, ReadOnly]
         private List<TRecord> _table = new();
 
-        private Dictionary<int, TRecord> _tableDict = null;
+        private Dictionary<int, TRecord> _recordDict = null;
 
         internal Dictionary<int, TRecord> GetCachedTableDict()
         {
-            if (_tableDict != null) return _tableDict;
+            if (_recordDict != null) return _recordDict;
 
-            CacheTableDict();
-            return _tableDict;
+            InitializeRuntimeCache();
+            return _recordDict;
         }
 
-        private void CacheTableDict()
+        public override void InitializeRuntimeCache()
         {
             if (_table.Count == 0)
             {
@@ -41,29 +41,39 @@ namespace CoreEngine.GameData
                 return;
             }
 
-            _tableDict = new(_table.Count);
+            _recordDict = new(_table.Count);
             for (int i = 0; i < _table.Count; i++)
             {
                 int index = _table[i].Id;
-                if (_tableDict.ContainsKey(index))
+                if (_recordDict.ContainsKey(index))
                 {
                     LogHelper.LogWarning($"{this.name}에 동일한 index의 데이터가 존재합니다.");
                     continue;
                 }
-                _tableDict.Add(index, _table[i]);
+                _recordDict.Add(index, _table[i]);
             }
+        }
+
+        public override IRecord GetRecord(int id)
+        {
+            if (_recordDict != null && _recordDict.TryGetValue(id, out TRecord record))
+            {
+                return record;
+            }
+            LogHelper.LogWarning($"Record not found for ID: {id}");
+            return null;
         }
 
 #if UNITY_EDITOR
         private static readonly IComparer<TRecord> _indexComparer = Comparer<TRecord>.Create((x, y) => x.Id.CompareTo(y.Id));
 
-        void IDataTableSetter.SetCapacity(int count)
+        void ITableSetter.SetCapacity(int count)
         {
             if (count > _table.Capacity)
                 _table.Capacity = count;
         }
 
-        bool IDataTableSetter.Add(IDataRecord newRecord)
+        bool ITableSetter.Add(IRecord newRecord)
         {
             if (newRecord is not TRecord recordAsT) return false;
 
@@ -72,20 +82,22 @@ namespace CoreEngine.GameData
 
             listIndex = ~listIndex;
             _table.Insert(listIndex, recordAsT);
-            _tableDict = null;
+            _recordDict = null;
             return true;
         }
 
-        void IDataTableSetter.Clear()
+        void ITableSetter.Clear()
         {
             _table.Clear();
-            _tableDict = null;
+            _recordDict = null;
         }
 
-        List<IDataRecord> IDataTableSetter.GetListCopy()
+        List<IRecord> ITableSetter.GetListCopy()
         {
-            return new List<IDataRecord>(_table);
+            return new List<IRecord>(_table);
         }
+
+        
 #endif
     }
 }
