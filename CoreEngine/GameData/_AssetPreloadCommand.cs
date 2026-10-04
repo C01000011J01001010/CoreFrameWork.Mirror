@@ -10,11 +10,11 @@ namespace CoreEngine.GameData
     [Serializable]
     internal abstract class _AssetPreloadCommand
     {
-        [SerializeField] protected int[] ids;
-        public int[] Ids => ids;
+        [SerializeField] protected ulong[] ids;
+        public ulong[] Ids => ids;
 
         protected _AssetPreloadCommand() { }
-        protected _AssetPreloadCommand(int[] ids) { this.ids = ids; }
+        protected _AssetPreloadCommand(ulong[] ids) { this.ids = ids; }
 
         public abstract Task LoadAsync();
         public abstract void Release();
@@ -28,14 +28,14 @@ namespace CoreEngine.GameData
     {
         //public readonly static Type RegistryType = typeof(TAssetRegistry);
 
-        public AssetPreloadCommand(int[] ids) : base(ids) { }
+        public AssetPreloadCommand(ulong[] ids) : base(ids) { }
 
         public override async Task LoadAsync()
         {
             if (ids == null || ids.Length == 0) return;
 
             var loadTasks = new List<Task>(ids.Length);
-            foreach (int id in ids)
+            foreach (ulong id in ids)
             {
                 if (id > 0)
                 {
@@ -51,7 +51,7 @@ namespace CoreEngine.GameData
         {
             if (ids == null || ids.Length == 0) return;
 
-            foreach (int id in ids)
+            foreach (ulong id in ids)
             {
                 if (id > 0)
                 {

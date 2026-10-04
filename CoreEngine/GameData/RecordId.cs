@@ -11,10 +11,10 @@ namespace CoreEngine.GameData
         public readonly static Type TableType = typeof(TTable);
 
         [SerializeField]
-        private int id;
-        public int Id => id;
+        private ulong id;
+        ulong IIdentifiable.ID => id;
 
-        public RecordId(int id)
+        public RecordId(ulong id)
         {
             this.id = id;
         }
@@ -24,7 +24,7 @@ namespace CoreEngine.GameData
             return TableRouter.GetRecord(TableType, id) as TRecord;
         }
 
-        public static implicit operator RecordId<TRecord, TTable>(int id)
+        public static implicit operator RecordId<TRecord, TTable>(ulong id)
             => new RecordId<TRecord, TTable>(id);
 
         public bool Equals(RecordId<TRecord, TTable> other)

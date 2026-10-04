@@ -18,7 +18,7 @@ namespace CoreEngine.GameData
 
         public abstract void InitializeRuntimeCache();
 
-        public abstract IRecord GetRecord(int id);
+        public abstract IRecord GetRecord(ulong id);
 
         // ==========================================
         // [런타임 전용] TableAssetLoadManager가 호출할 API

@@ -7,11 +7,11 @@ namespace CoreEngine.GameData
     {
         public abstract void InitializeRuntimeCache();
 
-        public abstract Object GetAsset(int id);
+        public abstract Object GetAsset(ulong id);
 
-        public abstract Task<Object> LoadAssetAsync(int id);
+        public abstract Task<Object> LoadAssetAsync(ulong id);
 
-        public abstract void ReleaseAsset(int id);
+        public abstract void ReleaseAsset(ulong id);
 
     }
 }

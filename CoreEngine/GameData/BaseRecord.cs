@@ -2,22 +2,31 @@ using UnityEngine;
 
 namespace CoreEngine.GameData
 {
+
     public interface IIdentifiable
     {
-        int Id { get; }
+        ulong ID { get; }
+        
     }
-    public interface IRecord : IIdentifiable { }
+    public interface IRecord : IIdentifiable 
+    { 
+        void BakeID(); 
+    }
     /// <summary>
     /// <para>규칙1: 데이터 필드는 protected로 선언하며, 이름은 소문자로 시작한다.</para>
     /// <para>규칙2: 데이터 필드에 대한 접근 프로퍼티는 public으로 선언하며, 이름은 대문자로 시작한다.</para>
     /// </summary>
     [System.Serializable]
-    public class BaseRecord: IRecord
+    public abstract class BaseRecord: IRecord
     {
-        [TableColumn, SerializeField]
-        protected int id;
+        [SerializeField]
+        protected ulong HashCode;
 
-        public int Id => id;
+        ulong IIdentifiable.ID => HashCode;
+
+        void IRecord.BakeID() => BakeID();
+
+        protected abstract void BakeID();
     }
 }
 

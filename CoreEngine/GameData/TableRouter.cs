@@ -31,7 +31,7 @@ namespace CoreEngine.GameData
             return null;
         }
 
-        public static IRecord GetRecord(Type tableType, int id)
+        public static IRecord GetRecord(Type tableType, ulong id)
         {
             if (_tableMap.TryGetValue(tableType, out _Table table))
             {

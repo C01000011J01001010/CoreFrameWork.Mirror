@@ -23,14 +23,14 @@ namespace CoreEngine.GameData
         [SerializeField, ReadOnly]
         private List<TRecord> _table = new();
 
-        private Dictionary<int, TRecord> _runtimeRecordDict;
+        private Dictionary<ulong, TRecord> _runtimeRecordDict;
 
         private void OnEnable()
         {
             _runtimeRecordDict = null;
         }
 
-        internal Dictionary<int, TRecord> GetCachedTableDict()
+        internal Dictionary<ulong, TRecord> GetCachedTableDict()
         {
             if(_runtimeRecordDict == null) InitializeRuntimeCache();
             return _runtimeRecordDict;
@@ -47,7 +47,7 @@ namespace CoreEngine.GameData
             _runtimeRecordDict = new(_table.Count);
             for (int i = 0; i < _table.Count; i++)
             {
-                int index = _table[i].Id;
+                ulong index = _table[i].ID;
                 if (_runtimeRecordDict.ContainsKey(index))
                 {
                     LogHelper.LogWarning($"{this.name}에 동일한 index의 데이터가 존재합니다.");
@@ -57,7 +57,7 @@ namespace CoreEngine.GameData
             }
         }
 
-        public override IRecord GetRecord(int id)
+        public override IRecord GetRecord(ulong id)
         {
             if (_runtimeRecordDict == null) InitializeRuntimeCache();
             if (_runtimeRecordDict.TryGetValue(id, out TRecord record))
@@ -69,7 +69,7 @@ namespace CoreEngine.GameData
         }
 
 #if UNITY_EDITOR
-        private static readonly IComparer<TRecord> _indexComparer = Comparer<TRecord>.Create((x, y) => x.Id.CompareTo(y.Id));
+        private static readonly IComparer<TRecord> _indexComparer = Comparer<TRecord>.Create((x, y) => x.ID.CompareTo(y.ID));
 
         void ITableSetter.SetCapacity(int count)
         {

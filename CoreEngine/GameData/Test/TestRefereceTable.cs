@@ -1,3 +1,4 @@
+using CoreEngine.Helpers;
 using UnityEngine;
 
 namespace CoreEngine.GameData.Test
@@ -7,6 +8,7 @@ namespace CoreEngine.GameData.Test
 
     public sealed class TestReferenceRecord : BaseRecord
     {
+        [TableColumn, SerializeField] private ulong id;
         [TableColumn, SerializeField] private TestSpriteId spriteIdTest;
         [TableColumn, SerializeField] private TestSpriteId[] spriteIdArrayTest;
 
@@ -15,6 +17,11 @@ namespace CoreEngine.GameData.Test
 
         public Sprite TestSprite => spriteIdTest.Get();
         public TestRecord TestRecord => recordIdTest.Get();
+
+        protected override void BakeID()
+        {
+            HashCode = id;
+        }
     }
     public sealed class TestRefereceTable : BaseTable<TestReferenceRecord> { }
 }

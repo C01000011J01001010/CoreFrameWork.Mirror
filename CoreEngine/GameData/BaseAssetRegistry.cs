@@ -17,16 +17,16 @@ namespace CoreEngine.GameData
         [Serializable]
         public struct AssetEntry : IIdentifiable
         {
-            public int Id;
+            public ulong Id;
             public string PathDetail;
 
-            int IIdentifiable.Id => Id;
+            ulong IIdentifiable.ID => Id;
         }
 
         [SerializeField] private string _baseDirectory;
         [SerializeField] private List<AssetEntry> _entries = new List<AssetEntry>();
 
-        private Dictionary<int, string> _runtimeAddressDict;
+        private Dictionary<ulong, string> _runtimeAddressDict;
 
         // ResourceManager를 캐싱
         private ResourceManager _resourceManager;
@@ -57,7 +57,7 @@ namespace CoreEngine.GameData
             }
         }
 
-        public override Object GetAsset(int id)
+        public override Object GetAsset(ulong id)
         {
             if (!TryGetValidAddress(id, out string address))
                 return null;
@@ -65,7 +65,7 @@ namespace CoreEngine.GameData
             return _resourceManager?.LoadSceneAssetSync<Object>(address);
         }
 
-        public override Task<Object> LoadAssetAsync(int id)
+        public override Task<Object> LoadAssetAsync(ulong id)
         {
             if (!TryGetValidAddress(id, out string address))
                 return Task.FromResult<Object>(null);
@@ -80,7 +80,7 @@ namespace CoreEngine.GameData
             }
         }
 
-        public override void ReleaseAsset(int id)
+        public override void ReleaseAsset(ulong id)
         {
             if (!TryGetValidAddress(id, out string address))
                 return;
@@ -89,7 +89,7 @@ namespace CoreEngine.GameData
             _resourceManager?.ReleaseSceneAsset(address);
         }
 
-        private bool TryGetValidAddress(int id, out string address)
+        private bool TryGetValidAddress(ulong id, out string address)
         {
             if (_runtimeAddressDict == null) InitializeRuntimeCache();
 

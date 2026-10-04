@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using CoreEngine.GameData;
 using CoreEditor.Helpers;
+using CoreEngine.GameData.Test;
 
 namespace CoreEditor.GameData
 {
@@ -396,7 +397,7 @@ namespace CoreEditor.GameData
             where TRecord : BaseRecord, IRecord, new()
         {
             List<IRecord> temporaryRecords = new List<IRecord>();
-            HashSet<int> usedIds = new HashSet<int>();
+            HashSet<ulong> usedIds = new();
 
             for (int row = startRow; row < lines.Length; row++)
             {
@@ -422,9 +423,11 @@ namespace CoreEditor.GameData
                     }
                 }
 
-                if (!usedIds.Add(record.Id))
+                record.BakeID();
+
+                if (!usedIds.Add(record.ID))
                 {
-                    throw new Exception($"[행: {row + 1}] 중복된 ID({record.Id})가 발견되었습니다.");
+                    throw new Exception($"[행: {row + 1}] 중복된 ID({record.ID})가 발견되었습니다.");
                 }
 
                 temporaryRecords.Add(record);
@@ -470,7 +473,7 @@ namespace CoreEditor.GameData
             }
 
             // 타입별로 ID를 모아두는 딕셔너리 (중복 방지를 위해 HashSet 사용)
-            var typeToIdsMap = new Dictionary<Type, HashSet<int>>();
+            Dictionary<Type, HashSet<ulong>> typeToIdsMap = new();
 
             foreach (IRecord record in records)
             {
@@ -483,13 +486,13 @@ namespace CoreEditor.GameData
                     object assetIdObj = assetIdFieldInfo.GetValue(record);
 
                     // 리플렉션(GetProperty) 제거 -> 인터페이스를 통해 직접 호출 (압도적으로 빠름)
-                    int id = ((IIdentifiable)assetIdObj).Id;
+                    ulong id = ((IIdentifiable)assetIdObj).ID;
 
                     if (id > 0)
                     {
                         if (!typeToIdsMap.TryGetValue(cmdType, out var idSet))
                         {
-                            idSet = new HashSet<int>();
+                            idSet = new HashSet<ulong>();
                             typeToIdsMap[cmdType] = idSet;
                         }
                         idSet.Add(id); // HashSet이므로 알아서 중복 무시됨
@@ -506,14 +509,14 @@ namespace CoreEditor.GameData
                     {
                         if (!typeToIdsMap.TryGetValue(cmdType, out var idSet))
                         {
-                            idSet = new HashSet<int>();
+                            idSet = new HashSet<ulong>();
                             typeToIdsMap[cmdType] = idSet;
                         }
 
                         foreach (var item in arr)
                         {
                             // 배열도 인터페이스로 캐스팅하여 즉시 호출
-                            int id = ((IIdentifiable)item).Id;
+                            ulong id = ((IIdentifiable)item).ID;
                             if (id > 0) idSet.Add(id);
                         }
                     }
@@ -525,7 +528,7 @@ namespace CoreEditor.GameData
             foreach (var kvp in typeToIdsMap)
             {
                 Type cmdType = kvp.Key;
-                int[] uniqueIdsArray = kvp.Value.ToArray(); // HashSet -> int[] 배열로 변환
+                ulong[] uniqueIdsArray = kvp.Value.ToArray(); // HashSet -> int[] 배열로 변환
                 Array.Sort(uniqueIdsArray); // 보기 좋게 정렬
 
                 var cmd = (_AssetPreloadCommand)Activator.CreateInstance(cmdType,

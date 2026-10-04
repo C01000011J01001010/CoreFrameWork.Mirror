@@ -22,7 +22,7 @@ namespace CoreEngine.GameData
             registry.InitializeRuntimeCache();
         }
 
-        public static Object Get(Type registryType, int id)
+        public static Object Get(Type registryType, ulong id)
         {
             if(_registryMap.TryGetValue(registryType, out _AssetRegistry registry))
             {
@@ -31,7 +31,7 @@ namespace CoreEngine.GameData
             return null;
         }
 
-        public static Task<Object> LoadAsync(Type registryType, int id)
+        public static Task<Object> LoadAsync(Type registryType, ulong id)
         {
             if(_registryMap.TryGetValue(registryType, out _AssetRegistry registry))
             {
@@ -40,7 +40,7 @@ namespace CoreEngine.GameData
             return Task.FromResult<Object>(null);
         }
 
-        public static void Release(Type registryType, int id)
+        public static void Release(Type registryType, ulong id)
         {
             if(_registryMap.TryGetValue(registryType, out _AssetRegistry registry))
             {

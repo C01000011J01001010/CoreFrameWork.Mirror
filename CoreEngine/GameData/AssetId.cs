@@ -13,10 +13,10 @@ namespace CoreEngine.GameData
         public readonly static Type RegistryType = typeof(TRegistry);
 
         [SerializeField]
-        private int id;
-        public int Id => id;
+        private ulong id;
+        public ulong ID => id;
 
-        public AssetId(int id)
+        public AssetId(ulong id)
         {
             this.id = id;
         }
@@ -24,10 +24,10 @@ namespace CoreEngine.GameData
         public TAsset Get()
         {
             if (id <= 0) return null;
-            return AssetRegistryRouter.Get(RegistryType, id) as TAsset;
+            return AssetRegistryRouter.Get(RegistryType, ID) as TAsset;
         }
 
-        public static implicit operator AssetId<TAsset, TRegistry>(int id)
+        public static implicit operator AssetId<TAsset, TRegistry>(ulong id)
             => new AssetId<TAsset, TRegistry>(id);
 
         public bool Equals(AssetId<TAsset, TRegistry> other) 
