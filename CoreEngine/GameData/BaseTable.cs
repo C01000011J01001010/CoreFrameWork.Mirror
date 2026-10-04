@@ -23,14 +23,17 @@ namespace CoreEngine.GameData
         [SerializeField, ReadOnly]
         private List<TRecord> _table = new();
 
-        private Dictionary<int, TRecord> _recordDict = null;
+        private Dictionary<int, TRecord> _runtimeRecordDict;
+
+        private void OnEnable()
+        {
+            _runtimeRecordDict = null;
+        }
 
         internal Dictionary<int, TRecord> GetCachedTableDict()
         {
-            if (_recordDict != null) return _recordDict;
-
-            InitializeRuntimeCache();
-            return _recordDict;
+            if(_runtimeRecordDict == null) InitializeRuntimeCache();
+            return _runtimeRecordDict;
         }
 
         public override void InitializeRuntimeCache()
@@ -41,22 +44,23 @@ namespace CoreEngine.GameData
                 return;
             }
 
-            _recordDict = new(_table.Count);
+            _runtimeRecordDict = new(_table.Count);
             for (int i = 0; i < _table.Count; i++)
             {
                 int index = _table[i].Id;
-                if (_recordDict.ContainsKey(index))
+                if (_runtimeRecordDict.ContainsKey(index))
                 {
                     LogHelper.LogWarning($"{this.name}에 동일한 index의 데이터가 존재합니다.");
                     continue;
                 }
-                _recordDict.Add(index, _table[i]);
+                _runtimeRecordDict.Add(index, _table[i]);
             }
         }
 
         public override IRecord GetRecord(int id)
         {
-            if (_recordDict != null && _recordDict.TryGetValue(id, out TRecord record))
+            if (_runtimeRecordDict == null) InitializeRuntimeCache();
+            if (_runtimeRecordDict.TryGetValue(id, out TRecord record))
             {
                 return record;
             }
@@ -82,14 +86,14 @@ namespace CoreEngine.GameData
 
             listIndex = ~listIndex;
             _table.Insert(listIndex, recordAsT);
-            _recordDict = null;
+            _runtimeRecordDict = null;
             return true;
         }
 
         void ITableSetter.Clear()
         {
             _table.Clear();
-            _recordDict = null;
+            _runtimeRecordDict = null;
         }
 
         List<IRecord> ITableSetter.GetListCopy()

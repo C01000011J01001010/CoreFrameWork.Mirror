@@ -15,10 +15,12 @@ namespace CoreEngine.GameData
         _AssetRegistry where TAsset : Object
     {
         [Serializable]
-        public struct AssetEntry
+        public struct AssetEntry : IIdentifiable
         {
             public int Id;
             public string PathDetail;
+
+            int IIdentifiable.Id => Id;
         }
 
         [SerializeField] private string _baseDirectory;
@@ -28,6 +30,12 @@ namespace CoreEngine.GameData
 
         // ResourceManager를 캐싱
         private ResourceManager _resourceManager;
+
+        private void OnEnable()
+        {
+            // 만약의 쓰레기 객체 정리용
+            _runtimeAddressDict = null;
+        }
 
         public override void InitializeRuntimeCache()
         {
@@ -39,7 +47,7 @@ namespace CoreEngine.GameData
             }
 
             // 주소 딕셔너리 구성
-            _runtimeAddressDict = new Dictionary<int, string>(_entries.Count);
+            _runtimeAddressDict = new(_entries.Count);
             foreach (var entry in _entries)
             {
                 if (entry.Id > 0)
@@ -51,7 +59,7 @@ namespace CoreEngine.GameData
 
         public override Object GetAsset(int id)
         {
-            if (TryGetValidAddress(id, out string address))
+            if (!TryGetValidAddress(id, out string address))
                 return null;
 
             return _resourceManager?.LoadSceneAssetSync<Object>(address);
@@ -59,7 +67,7 @@ namespace CoreEngine.GameData
 
         public override Task<Object> LoadAssetAsync(int id)
         {
-            if (TryGetValidAddress(id, out string address))
+            if (!TryGetValidAddress(id, out string address))
                 return Task.FromResult<Object>(null);
 
             if (_resourceManager != null)
@@ -74,7 +82,7 @@ namespace CoreEngine.GameData
 
         public override void ReleaseAsset(int id)
         {
-            if (TryGetValidAddress(id, out string address))
+            if (!TryGetValidAddress(id, out string address))
                 return;
 
             // 캐싱된 ResourceManager를 통해 어드레서블 릴리즈 요청
@@ -83,11 +91,8 @@ namespace CoreEngine.GameData
 
         private bool TryGetValidAddress(int id, out string address)
         {
-            if(_runtimeAddressDict == null)
-            {
-                address = null;
-                return false;
-            }
+            if (_runtimeAddressDict == null) InitializeRuntimeCache();
+
             return _runtimeAddressDict.TryGetValue(id, out address);
         }
     }
