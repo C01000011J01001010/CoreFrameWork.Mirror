@@ -61,17 +61,27 @@ namespace CoreEngine.DesignPattern.Singleton
         }
 
 #if UNITY_EDITOR
+        // SO에셋 중복 생성 차단
         private void Awake()
         {
-            if (_instance == null) _instance = this as T;
-            else
+            if (_instance != null && _instance != this)
             {
-                string path = AssetDatabase.GetAssetPath(_instance);
-                LogHelper.LogError($"{typeof(T).Name} 객체가 path({path})에 존재합니다.");
-                Destroy(this);
+                string path = AssetDatabase.GetAssetPath(this); // 현재 생성되려는 중복 객체의 경로
+                string originalPath = AssetDatabase.GetAssetPath(_instance); // 원본의 경로
+
+                LogHelper.LogError($"{typeof(T).Name} 객체가 이미 존재합니다! \n원본: {originalPath} \n삭제됨: {path}");
+
+                // 메모리에서 즉시 파괴 (Destroy 대신 즉각적인 처리)
+                DestroyImmediate(this, true);
+                return;
             }
         }
 #endif
+        // 도메인 리로드 및 런타임에 AutoPreloadAsset로 자동 로드시 싱글톤 처리
+        protected virtual void OnEnable()
+        {
+            _instance = this as T;
+        }
     }
 }
 
