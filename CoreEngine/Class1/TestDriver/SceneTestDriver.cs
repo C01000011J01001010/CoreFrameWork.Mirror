@@ -78,8 +78,8 @@ namespace CoreEngine.Test
             // 전역 씬 Additive 로드
             SceneManager.LoadSceneAsync(GlobalScene, LoadSceneMode.Additive);
 
-            // SceneContext가 초기화 될때까지 대기
-            yield return new WaitUntil(CoreFacadeState.GetSceneInit);
+            // Project가 초기화 될때까지 대기
+            yield return new WaitUntil(CoreFacadeState.GetProjectInit);
 
             // [재부팅] 전역 코어 세팅이 완료되었으므로, 동면했던 객체들을 깨움
             LogHelper.Log($"[SceneTester] 전역 코어 세팅 완료! " +
