@@ -3,31 +3,25 @@ using System.Collections.Generic;
 
 namespace CoreEngine.GameData
 {
-    public class DataTableHandler<TTable, TRecord>
+    public class TableHandler<TTable, TRecord>
         where TTable : BaseTable<TRecord>
         where TRecord : class, IRecord
     {
-        private readonly TTable _table;
-        private readonly Dictionary<int, TRecord> _recordDict;
-
-        public DataTableHandler()
-        {
-            _table = RecordRouter.GetTable<TTable>();
-
-            if (_table == null)
-            {
-                LogHelper.LogWarning($"{GetType().Name}: {typeof(TTable).Name} 로드 실패.");
-                return;
-            }
-
-            _recordDict = _table.GetCachedTableDict();
-        }
+        private TTable _table;
+        private TTable Table => _table ??= TableRouter.GetTable<TTable>();
+        private Dictionary<int, TRecord> _recordDict;
+        private Dictionary<int, TRecord> RecordDict => _recordDict ??= Table?.GetCachedTableDict();
 
         public TRecord GetRecord(int id)
         {
-            if (_recordDict == null || !_recordDict.TryGetValue(id, out TRecord record))
+            if (RecordDict == null)
             {
-                LogHelper.LogWarning($"{GetType().Name}.GetRecord Failed. ID: {id}");
+                LogHelper.LogWarning($"{GetType().Name}.{nameof(GetRecord)} Failed. Table is null. ID: {id}");
+                return null;
+            }
+            if (!_recordDict.TryGetValue(id, out TRecord record))
+            {
+                LogHelper.LogWarning($"{GetType().Name}.{nameof(GetRecord)} Failed. Table has no record. ID: {id}");
                 return null;
             }
             return record;
@@ -44,7 +38,11 @@ namespace CoreEngine.GameData
         public List<TRecord> GetRecords(System.Func<TRecord, bool> predicate)
         {
             List<TRecord> result = new();
-            if (_recordDict == null) return result;
+            if (RecordDict == null)
+            {
+                LogHelper.LogWarning($"{GetType().Name}.{nameof(GetRecords)} Failed. Table is null.");
+                return result;
+            }
 
             foreach (var record in _recordDict.Values)
             {

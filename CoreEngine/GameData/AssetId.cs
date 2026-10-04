@@ -1,52 +1,47 @@
 using System;
-using System.Threading.Tasks;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace CoreEngine.GameData
 {
-    
-
+    // [최적화] 완벽한 struct 값 타입. 상속(class) 제거.
     [Serializable]
-    public class AssetId<TAsset, TAssetRegistry> : _AssetId, IEquatable<AssetId<TAsset, TAssetRegistry>> 
+    public struct AssetId<TAsset, TRegistry> : IIdentifiable, IEquatable<AssetId<TAsset, TRegistry>>
         where TAsset : Object
-        where TAssetRegistry : BaseAssetRegistry<TAsset>
+        where TRegistry : BaseAssetRegistry<TAsset>
     {
-        public readonly static Type RegistryType = typeof(TAssetRegistry);
-        // 부모 생성자 호출
-        public AssetId() : base() { }
-        public AssetId(int id) : base(id) { }
+        public readonly static Type RegistryType = typeof(TRegistry);
+
+        [SerializeField]
+        private int id;
+        public int Id => id;
+
+        public AssetId(int id)
+        {
+            this.id = id;
+        }
 
         public TAsset Get()
         {
             if (id <= 0) return null;
-            return AssetRouter.Get(RegistryType, id) as TAsset;
+            return AssetRegistryRouter.Get(RegistryType, id) as TAsset;
         }
 
-        public override Task LoadAsync()
-        {
-            if (id <= 0) return Task.CompletedTask;
-            return AssetRouter.LoadAsync(RegistryType, id);
-        }
+        public static implicit operator AssetId<TAsset, TRegistry>(int id)
+            => new AssetId<TAsset, TRegistry>(id);
 
-        public override void Release()
-        {
-            if (id <= 0) return;
-            AssetRouter.Release(RegistryType, id); // 라우터에 해제 요청
-        }
+        public bool Equals(AssetId<TAsset, TRegistry> other) 
+            => id == other.id;
 
-        public static implicit operator AssetId<TAsset, TAssetRegistry>(int id) 
-            => new AssetId<TAsset, TAssetRegistry>(id);
+        public override bool Equals(object obj) 
+            => obj is AssetId<TAsset, TRegistry> other && Equals(other);
 
-        public bool Equals(AssetId<TAsset, TAssetRegistry> other)
-        {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return id == other.id;
-        }
-
-        public override bool Equals(object obj) => Equals(obj as AssetId<TAsset, TAssetRegistry>);
         public override int GetHashCode() => id.GetHashCode();
-        public static bool operator ==(AssetId<TAsset, TAssetRegistry> left, AssetId<TAsset, TAssetRegistry> right) => Equals(left, right);
-        public static bool operator !=(AssetId<TAsset, TAssetRegistry> left, AssetId<TAsset, TAssetRegistry> right) => !Equals(left, right);
+
+        public static bool operator ==(AssetId<TAsset, TRegistry> left, AssetId<TAsset, TRegistry> right) 
+            => left.Equals(right);
+
+        public static bool operator !=(AssetId<TAsset, TRegistry> left, AssetId<TAsset, TRegistry> right) 
+            => !left.Equals(right);
     }
 }

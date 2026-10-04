@@ -12,7 +12,7 @@ namespace CoreEditor.GameData
         public bool IsEnabled = true;
     }
 
-    public class PreloadAddresableSetterSettings : BaseToolSettings<PreloadAddresableSetterSettings>
+    public class PreloadAddressableSetterSettings : BaseToolSettings<PreloadAddressableSetterSettings>
     {
         public string TargetGroupName = "Preload Group";
         public string TargetLabel = "Preload";

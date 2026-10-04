@@ -72,7 +72,7 @@ namespace CoreEngine.GameData
             foreach (var type in toRelease)
             {
                 // [수정 완료] 싱글톤 호출 제거, Facade로 찾은 매니저 인스턴스 사용
-                var table = RecordRouter.GetTable(type);
+                var table = TableRouter.GetTable(type);
                 if (table != null)
                 {
                     table.ReleaseAssets();
@@ -85,7 +85,7 @@ namespace CoreEngine.GameData
             var loadTasks = new List<Task>();
             foreach (var type in toLoad)
             {
-                var table = RecordRouter.GetTable(type);
+                var table = TableRouter.GetTable(type);
                 if (table != null)
                 {
                     loadTasks.Add(table.PreloadAssetsAsync());

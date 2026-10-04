@@ -4,14 +4,15 @@ using UnityEngine;
 namespace CoreEngine.GameData
 {
     [Serializable]
-    public struct RecordId<TRecord, TTable> : IEquatable<RecordId<TRecord, TTable>>
+    public struct RecordId<TRecord, TTable> : IIdentifiable, IEquatable<RecordId<TRecord, TTable>>
         where TRecord : class, IRecord
         where TTable : BaseTable<TRecord>
     {
+        public readonly static Type TableType = typeof(TTable);
+
         [SerializeField]
         private int id;
         public int Id => id;
-        public readonly static Type TableType = typeof(TTable);
 
         public RecordId(int id)
         {
@@ -20,16 +21,14 @@ namespace CoreEngine.GameData
 
         public TRecord Get()
         {
-            return RecordRouter.Get(TableType, id) as TRecord;
+            return TableRouter.GetRecord(TableType, id) as TRecord;
         }
 
         public static implicit operator RecordId<TRecord, TTable>(int id)
             => new RecordId<TRecord, TTable>(id);
 
         public bool Equals(RecordId<TRecord, TTable> other)
-        {
-            return id == other.id;
-        }
+            => id == other.id;
 
         public override bool Equals(object obj)
             => obj is RecordId<TRecord, TTable> other && Equals(other);

@@ -68,8 +68,8 @@ namespace CoreEditor.GameData
             GUI.backgroundColor = Color.cyan; // 현재 탭 하이라이트
             if (GUILayout.Button("1. " + WindowName, EditorStyles.toolbarButton)) { }
             GUI.backgroundColor = Color.white;
-            if (GUILayout.Button("2. " + PreloadAddresableSetter.WindowName, EditorStyles.toolbarButton))
-                GetWindow<PreloadAddresableSetter>(PreloadAddresableSetter.WindowName).Show();
+            if (GUILayout.Button("2. " + PreloadAddressableSetter.WindowName, EditorStyles.toolbarButton))
+                GetWindow<PreloadAddressableSetter>(PreloadAddressableSetter.WindowName).Show();
             if (GUILayout.Button("3. " + CsvToTableBatchProcessor.WindowName, EditorStyles.toolbarButton))
                 GetWindow<CsvToTableBatchProcessor>(CsvToTableBatchProcessor.WindowName).Show();
             EditorGUILayout.EndHorizontal();

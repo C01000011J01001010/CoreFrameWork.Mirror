@@ -37,11 +37,11 @@ namespace CoreEngine.GameData
                         // 내부 dictionary로 중복 등록 차단
                         if (asset is _Table table)
                         {
-                            RecordRouter.InjectTable(table);
+                            TableRouter.InjectTable(table);
                         }
                         else if (asset is _AssetRegistry registry)
                         {
-                            AssetRouter.InjectRegistry(registry);
+                            AssetRegistryRouter.InjectRegistry(registry);
                         }
                     }
                 }

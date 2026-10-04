@@ -10,18 +10,18 @@ using CoreEngine.Settings;
 
 namespace CoreEditor.GameData
 {
-    public class PreloadAddresableSetter : EditorWindow
+    public class PreloadAddressableSetter : EditorWindow
     {
         private List<ScriptableObject> _tableInstances = new List<ScriptableObject>();
         private List<ScriptableObject> _registryInstances = new List<ScriptableObject>();
         private Vector2 _scrollPosition;
         private string _searchQuery = ""; // [UX] 검색 필터
 
-        public const string WindowName = "Preload Addresable Setter";
+        public const string WindowName = "Preload Addressable Setter";
         [MenuItem(Constants.ToolRootGameData + WindowName, priority = Constants.GameDataPriority + 1)]
         private static void Open()
         {
-            var window = GetWindow<PreloadAddresableSetter>(WindowName);
+            var window = GetWindow<PreloadAddressableSetter>(WindowName);
             window.minSize = new Vector2(550, 500);
             window.Show();
         }
@@ -80,14 +80,14 @@ namespace CoreEditor.GameData
             float originalLabelWidth = EditorGUIUtility.labelWidth;
             EditorGUIUtility.labelWidth = 150f;
 
-            PreloadAddresableSetterSettings.Instance.TargetGroupName = EditorGUILayout.TextField("대상 그룹 이름", PreloadAddresableSetterSettings.Instance.TargetGroupName);
-            PreloadAddresableSetterSettings.Instance.TargetLabel = EditorGUILayout.TextField("부여할 라벨", PreloadAddresableSetterSettings.Instance.TargetLabel);
+            PreloadAddressableSetterSettings.Instance.TargetGroupName = EditorGUILayout.TextField("대상 그룹 이름", PreloadAddressableSetterSettings.Instance.TargetGroupName);
+            PreloadAddressableSetterSettings.Instance.TargetLabel = EditorGUILayout.TextField("부여할 라벨", PreloadAddressableSetterSettings.Instance.TargetLabel);
 
             EditorGUIUtility.labelWidth = originalLabelWidth;
 
             if (EditorGUI.EndChangeCheck())
             {
-                EditorUtility.SetDirty(PreloadAddresableSetterSettings.Instance);
+                EditorUtility.SetDirty(PreloadAddressableSetterSettings.Instance);
             }
             EditorGUILayout.EndVertical();
         }
@@ -98,14 +98,14 @@ namespace CoreEditor.GameData
             EditorGUILayout.BeginVertical("box");
 
             EditorGUI.BeginChangeCheck();
-            foreach (var state in PreloadAddresableSetterSettings.Instance.TypeStates)
+            foreach (var state in PreloadAddressableSetterSettings.Instance.TypeStates)
             {
                 state.IsEnabled = EditorGUILayout.ToggleLeft(state.TypeName, state.IsEnabled);
             }
 
             if (EditorGUI.EndChangeCheck())
             {
-                EditorUtility.SetDirty(PreloadAddresableSetterSettings.Instance);
+                EditorUtility.SetDirty(PreloadAddressableSetterSettings.Instance);
             }
             EditorGUILayout.EndVertical();
         }
@@ -150,7 +150,7 @@ namespace CoreEditor.GameData
             foreach (var instance in filteredInstances)
             {
                 string typeFullName = instance.GetType().FullName;
-                var state = PreloadAddresableSetterSettings.Instance.TypeStates.FirstOrDefault(t => t.TypeFullName == typeFullName);
+                var state = PreloadAddressableSetterSettings.Instance.TypeStates.FirstOrDefault(t => t.TypeFullName == typeFullName);
                 bool isEnabled = state != null && state.IsEnabled;
 
                 GUI.enabled = isEnabled;
@@ -185,7 +185,7 @@ namespace CoreEditor.GameData
             _registryInstances.Clear();
             var foundTypes = new HashSet<Type>();
 
-            string[] tableGuids = AssetDatabase.FindAssets("t:_DataTable");
+            string[] tableGuids = AssetDatabase.FindAssets($"t:{nameof(_Table)}");
             foreach (string guid in tableGuids)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
@@ -193,7 +193,7 @@ namespace CoreEditor.GameData
                 if (obj != null) { _tableInstances.Add(obj); foundTypes.Add(obj.GetType()); }
             }
 
-            string[] registryGuids = AssetDatabase.FindAssets("t:_AssetRegistry");
+            string[] registryGuids = AssetDatabase.FindAssets($"t:{nameof(_AssetRegistry)}");
             foreach (string guid in registryGuids)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
@@ -204,7 +204,7 @@ namespace CoreEditor.GameData
             _tableInstances = _tableInstances.OrderBy(i => i.GetType().Name).ThenBy(i => i.name).ToList();
             _registryInstances = _registryInstances.OrderBy(i => i.GetType().Name).ThenBy(i => i.name).ToList();
 
-            PreloadAddresableSetterSettings.Instance.SyncTypes(foundTypes);
+            PreloadAddressableSetterSettings.Instance.SyncTypes(foundTypes);
         }
 
         private void ExecuteBake()
@@ -216,8 +216,8 @@ namespace CoreEditor.GameData
                 return;
             }
 
-            string groupName = PreloadAddresableSetterSettings.Instance.TargetGroupName;
-            string targetLabel = PreloadAddresableSetterSettings.Instance.TargetLabel;
+            string groupName = PreloadAddressableSetterSettings.Instance.TargetGroupName;
+            string targetLabel = PreloadAddressableSetterSettings.Instance.TargetLabel;
 
             // 1. 런타임 셋팅 SO에 라벨명 동기화
             if (CoreEngineAutoSettingsSO.Instance is IGameDataLabelSetter Setter)
@@ -246,7 +246,7 @@ namespace CoreEditor.GameData
             {
                 if (instance == null) continue;
 
-                var state = PreloadAddresableSetterSettings.Instance.TypeStates.FirstOrDefault(t => t.TypeFullName == instance.GetType().FullName);
+                var state = PreloadAddressableSetterSettings.Instance.TypeStates.FirstOrDefault(t => t.TypeFullName == instance.GetType().FullName);
                 if (state != null && state.IsEnabled)
                 {
                     string guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(instance));

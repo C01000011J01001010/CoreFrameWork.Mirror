@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 namespace CoreEngine.GameData
 {
-    public static class AssetRouter
+    public static class AssetRegistryRouter
     {
         private readonly static Dictionary<Type, _AssetRegistry> _registryMap = new();
 

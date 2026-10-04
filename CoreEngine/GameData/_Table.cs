@@ -7,14 +7,14 @@ namespace CoreEngine.GameData
     internal interface IPreloadAssetIdsBaker
     {
 #if UNITY_EDITOR
-        void BakePreloadAssetIds(_AssetId[] bakedIds);
+        void BakePreloadCommands(_AssetPreloadCommand[] bakedIds);
 #endif
     }
     public abstract class _Table : ScriptableObject, IPreloadAssetIdsBaker
     {
         // [핵심] SerializeReference를 통해 자식 제네릭 클래스들의 다형성을 유지하며 저장
         [SerializeReference, ReadOnly]
-        private _AssetId[] _preloadAssetIds;
+        private _AssetPreloadCommand[] _preloadCommands;
 
         public abstract void InitializeRuntimeCache();
 
@@ -25,42 +25,38 @@ namespace CoreEngine.GameData
         // ==========================================
         internal async Task PreloadAssetsAsync()
         {
-            if (_preloadAssetIds == null || _preloadAssetIds.Length == 0) return;
+            if (_preloadCommands == null || _preloadCommands.Length == 0) return;
 
-            var loadTasks = new List<Task>(_preloadAssetIds.Length);
-            foreach (var assetId in _preloadAssetIds)
+            var loadTasks = new List<Task>(_preloadCommands.Length);
+            foreach (var cmd in _preloadCommands)
             {
-                if (assetId != null && assetId.Id > 0)
+                if (cmd != null)
                 {
-                    loadTasks.Add(assetId.LoadAsync());
+                    loadTasks.Add(cmd.LoadAsync());
                 }
             }
-
-            // 배열 내 모든 에셋의 로드가 끝날 때까지 병렬 대기
             await Task.WhenAll(loadTasks);
         }
 
         internal void ReleaseAssets()
         {
-            if (_preloadAssetIds == null || _preloadAssetIds.Length == 0) return;
+            if (_preloadCommands == null || _preloadCommands.Length == 0) return;
 
-            foreach (var assetId in _preloadAssetIds)
+            foreach (var cmd in _preloadCommands)
             {
-                if (assetId != null && assetId.Id > 0)
+                if (cmd != null)
                 {
-                    assetId.Release();
+                    cmd.Release();
                 }
             }
         }
 
 
 #if UNITY_EDITOR
-        void IPreloadAssetIdsBaker.BakePreloadAssetIds(_AssetId[] bakedIds)
+        void IPreloadAssetIdsBaker.BakePreloadCommands(_AssetPreloadCommand[] bakedIds)
         {
-            _preloadAssetIds = bakedIds;
+            _preloadCommands = bakedIds;
         }
-
-        
 #endif
     }
 }

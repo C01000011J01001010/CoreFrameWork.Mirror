@@ -37,6 +37,8 @@ namespace CoreEditor.GameData
         private string _searchQuery = "";
         #endregion
 
+        private string tableTypeName = nameof(_Table);
+
         public const string WindowName = "CSV To Table Batch Processor";
         [MenuItem(Constants.ToolRootGameData + WindowName, priority = Constants.GameDataPriority + 2)]
         private static void Open()
@@ -75,8 +77,8 @@ namespace CoreEditor.GameData
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
             if (GUILayout.Button("1. " + GameDataOrganizer.WindowName, EditorStyles.toolbarButton))
                 GetWindow<GameDataOrganizer>(GameDataOrganizer.WindowName).Show();
-            if (GUILayout.Button("2. " + PreloadAddresableSetter.WindowName, EditorStyles.toolbarButton))
-                GetWindow<PreloadAddresableSetter>(PreloadAddresableSetter.WindowName).Show();
+            if (GUILayout.Button("2. " + PreloadAddressableSetter.WindowName, EditorStyles.toolbarButton))
+                GetWindow<PreloadAddressableSetter>(PreloadAddressableSetter.WindowName).Show();
 
             GUI.backgroundColor = Color.cyan;
             if (GUILayout.Button("3. " + WindowName, EditorStyles.toolbarButton)) { }
@@ -113,7 +115,7 @@ namespace CoreEditor.GameData
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, "box");
 
             if (_tableInfos.Count == 0)
-                EditorGUILayout.HelpBox("프로젝트 내에 _DataTable을 상속받는 에셋이 없습니다.", MessageType.Info);
+                EditorGUILayout.HelpBox($"프로젝트 내에 {tableTypeName}을 상속받는 에셋이 없습니다.", MessageType.Info);
 
             var filteredInfos = _tableInfos.Where(info =>
                 string.IsNullOrEmpty(_searchQuery) ||
@@ -193,7 +195,7 @@ namespace CoreEditor.GameData
         private void ScanProjectForTables()
         {
             _tableInfos.Clear();
-            string[] tableGuids = AssetDatabase.FindAssets("t:_DataTable");
+            string[] tableGuids = AssetDatabase.FindAssets($"t:{tableTypeName}");
 
             foreach (string guid in tableGuids)
             {
@@ -205,7 +207,7 @@ namespace CoreEditor.GameData
 
                 var info = new TableProcessInfo { TableAsset = tableAsset };
                 string tableName = tableAsset.name;
-                string[] csvGuids = AssetDatabase.FindAssets($"{tableName} t:TextAsset");
+                string[] csvGuids = AssetDatabase.FindAssets($"{tableName} t:{nameof(TextAsset)}");
 
                 List<TextAsset> validCsvs = new List<TextAsset>();
                 foreach (string cGuid in csvGuids)
@@ -317,11 +319,11 @@ namespace CoreEditor.GameData
             // 3. 실제 데이터 파싱 및 객체 생성
             var records = ParseRecords<TRecord>(lines, schemaRowIndex + 1, headers);
 
-            // 4. 생성된 객체들로부터 _AssetId 일괄 추출 (베이킹 준비)
-            var bakedAssetIds = ExtractAssetIdsForBaking<TRecord>(records);
+            // 4. 생성된 객체들로부터 _AssetId -> PreloadCommand 일괄 추출 (베이킹 준비)
+            var bakedCommands = ExtractPreloadCommands<TRecord>(records);
 
             // 5. 인터페이스를 통한 최종 데이터 주입 및 에셋 저장
-            ApplyToTableAsset(tableSetter, records, bakedAssetIds);
+            ApplyToTableAsset(tableSetter, records, bakedCommands);
         }
 
         private List<FieldSchema> ExtractSchemaHeaders(string[] lines, out int schemaRowIndex)
@@ -431,46 +433,112 @@ namespace CoreEditor.GameData
             return temporaryRecords;
         }
 
-        private _AssetId[] ExtractAssetIdsForBaking<TRecord>(List<IRecord> records)
+        struct Field2Type
         {
-            var assetIdFields = new List<FieldInfo>();
-            var assetIdArrayFields = new List<FieldInfo>();
-
-            var allFields = typeof(TRecord).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            foreach (var field in allFields)
+            public readonly FieldInfo fieldInfo;
+            public readonly Type cmdType;
+            public Field2Type(FieldInfo fieldInfo, Type cmdType)
             {
-                if (typeof(_AssetId).IsAssignableFrom(field.FieldType))
-                    assetIdFields.Add(field);
-                else if (field.FieldType.IsArray && typeof(_AssetId).IsAssignableFrom(field.FieldType.GetElementType()))
-                    assetIdArrayFields.Add(field);
+                this.fieldInfo = fieldInfo;
+                this.cmdType = cmdType;
+            }
+        }
+        private _AssetPreloadCommand[] ExtractPreloadCommands<TRecord>(List<IRecord> records)
+        {
+            // [최적화] FieldInfo와 매칭될 Command의 타입(Type)을 미리 캐싱
+            var singleAssetIdFields = new List<Field2Type>();
+            var arrayAssetIdFields = new List<Field2Type>();
+
+            // AssetId<,> 타입인 필드들을 찾아 분류하고 Command 타입 미리 계산
+            var allFieldInfos = typeof(TRecord).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            foreach (var fieldInfo in allFieldInfos)
+            {
+                Type ft = fieldInfo.FieldType;
+                
+                if (ft.IsGenericType && ft.GetGenericTypeDefinition() == typeof(AssetId<,>))
+                {
+                    Type[] genArgs = ft.GetGenericArguments();
+                    Type cmdType = typeof(AssetPreloadCommand<,>).MakeGenericType(genArgs[0], genArgs[1]);
+                    singleAssetIdFields.Add(new(fieldInfo, cmdType));
+                }
+                else if (ft.IsArray && ft.GetElementType().IsGenericType && ft.GetElementType().GetGenericTypeDefinition() == typeof(AssetId<,>))
+                {
+                    Type[] genArgs = ft.GetElementType().GetGenericArguments();
+                    Type cmdType = typeof(AssetPreloadCommand<,>).MakeGenericType(genArgs[0], genArgs[1]);
+                    arrayAssetIdFields.Add(new(fieldInfo, cmdType));
+                }
             }
 
-            var bakedAssetIds = new List<_AssetId>();
-            foreach (var rec in records)
+            // 타입별로 ID를 모아두는 딕셔너리 (중복 방지를 위해 HashSet 사용)
+            var typeToIdsMap = new Dictionary<Type, HashSet<int>>();
+
+            foreach (IRecord record in records)
             {
                 // 단일 필드 추출
-                foreach (var field in assetIdFields)
+                foreach (Field2Type field2Type in singleAssetIdFields)
                 {
-                    if (field.GetValue(rec) is _AssetId val && val.Id > 0)
-                        bakedAssetIds.Add(val);
-                }
-                // 배열 필드 추출
-                foreach (var field in assetIdArrayFields)
-                {
-                    if (field.GetValue(rec) is Array arr)
+                    FieldInfo assetIdFieldInfo = field2Type.fieldInfo;
+                    Type cmdType = field2Type.cmdType;
+
+                    object assetIdObj = assetIdFieldInfo.GetValue(record);
+
+                    // 리플렉션(GetProperty) 제거 -> 인터페이스를 통해 직접 호출 (압도적으로 빠름)
+                    int id = ((IIdentifiable)assetIdObj).Id;
+
+                    if (id > 0)
                     {
+                        if (!typeToIdsMap.TryGetValue(cmdType, out var idSet))
+                        {
+                            idSet = new HashSet<int>();
+                            typeToIdsMap[cmdType] = idSet;
+                        }
+                        idSet.Add(id); // HashSet이므로 알아서 중복 무시됨
+                    }
+                }
+
+                // 배열 필드 추출
+                foreach (Field2Type field2Type in arrayAssetIdFields)
+                {
+                    FieldInfo arrayFieldInfo = field2Type.fieldInfo;
+                    Type cmdType = field2Type.cmdType;
+
+                    if (arrayFieldInfo.GetValue(record) is Array arr)
+                    {
+                        if (!typeToIdsMap.TryGetValue(cmdType, out var idSet))
+                        {
+                            idSet = new HashSet<int>();
+                            typeToIdsMap[cmdType] = idSet;
+                        }
+
                         foreach (var item in arr)
                         {
-                            if (item is _AssetId val && val.Id > 0)
-                                bakedAssetIds.Add(val);
+                            // 배열도 인터페이스로 캐스팅하여 즉시 호출
+                            int id = ((IIdentifiable)item).Id;
+                            if (id > 0) idSet.Add(id);
                         }
                     }
                 }
             }
-            return bakedAssetIds.ToArray();
+
+            // 수집된 Map을 바탕으로 타입당 단 1개의 Command 객체만 생성하여 반환
+            var bakedCommands = new List<_AssetPreloadCommand>();
+            foreach (var kvp in typeToIdsMap)
+            {
+                Type cmdType = kvp.Key;
+                int[] uniqueIdsArray = kvp.Value.ToArray(); // HashSet -> int[] 배열로 변환
+                Array.Sort(uniqueIdsArray); // 보기 좋게 정렬
+
+                var cmd = (_AssetPreloadCommand)Activator.CreateInstance(cmdType,
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                    null, new object[] { uniqueIdsArray }, null);
+
+                bakedCommands.Add(cmd);
+            }
+
+            return bakedCommands.ToArray();
         }
 
-        private void ApplyToTableAsset(ITableSetter tableSetter, List<IRecord> records, _AssetId[] bakedAssetIds)
+        private void ApplyToTableAsset(ITableSetter tableSetter, List<IRecord> records, _AssetPreloadCommand[] bakedCommands)
         {
             tableSetter.Clear();
             tableSetter.SetCapacity(records.Count);
@@ -479,8 +547,8 @@ namespace CoreEditor.GameData
                 tableSetter.Add(rec);
             }
 
-            // 확장된 IDataTableSetter 인터페이스를 통해 직접 주입 (다운캐스팅 불필요)
-            tableSetter.BakePreloadAssetIds(bakedAssetIds);
+            // 변경된 인터페이스 메서드 호출 (AssetId[] -> _AssetPreloadCommand[])
+            tableSetter.BakePreloadCommands(bakedCommands);
 
             EditorUtility.SetDirty((UnityEngine.Object)tableSetter);
         }
