@@ -144,7 +144,7 @@ namespace CoreEditor.GameData
                     EditorGUILayout.Space(10, false); // 들여쓰기
 
                     // 💡 잘못된 값을 빨간색(<color=#FF4444>)으로 확실하게 강조하여 출력
-                    string errorMsg = $"[행: {error.RowIndex}] <b>{error.FieldName}</b> 필드 ➔ 잘못된 값: <color=#FF4444><b>{error.MissingValue}</b></color>  <color=#888888>(키: {error.RecordKey})</color>";
+                    string errorMsg = $"[행: {error.RowIndex}] <b>{error.FieldName}</b> 필드 ➔ 잘못된 값: <color=#FF4444><b>{error.MissingValue}</b></color>  <color=#888888>(PK: {error.RecordKey})</color>";
                     EditorGUILayout.LabelField(errorMsg, richTextStyle, GUILayout.ExpandWidth(true));
 
                     // 스마트 핑 버튼
@@ -363,12 +363,14 @@ namespace CoreEditor.GameData
             // 캐시에 없거나(해당 타입 데이터가 아예 없음), 해당 ID가 없으면 에러
             if (!cache.TryGetValue(targetType, out var validIds) || !validIds.Contains(id))
             {
+                string rawValue = (idObj as IReferenceKey)?.GetEditorRawKey() ?? "null";
+
                 report.Errors.Add(new ReferenceError
                 {
                     RowIndex = rowIndex,
                     RecordKey = recordKey,
                     FieldName = fieldName,
-                    MissingValue = idObj?.ToString() ?? "null", // 💡 문제가 된 값 문자열화
+                    MissingValue = rawValue, // 💡 문제가 된 값 문자열화
                     TargetType = targetType,
                     IsAssetId = isAssetId
                 });

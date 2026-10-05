@@ -8,6 +8,7 @@ namespace CoreEngine.GameData.Test
     [System.Serializable]
     public sealed class TestReferenceRecord : BaseRecord
     {
+        [TableColumn, SerializeField] private string tempPK;
         [TableColumn, SerializeField] private TestSpriteId spriteIdTest;
         [TableColumn, SerializeField] private TestForeignKey recordIdTest;
 
@@ -17,9 +18,9 @@ namespace CoreEngine.GameData.Test
         public Sprite TestSprite => spriteIdTest.Get();
         public TestRecord TestRecord => recordIdTest.Get();
 
-        protected override ulong BakeID()
+        protected override string GetPrimaryKey()
         {
-            return GetMashedKey(spriteIdTest, recordIdTest, spriteIdArrayTest, recordIdArrayTest);
+            return tempPK.ToString();
         }
     }
     public sealed class TestRefereceTable : BaseTable<TestReferenceRecord> { }

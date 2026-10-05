@@ -15,12 +15,12 @@ namespace CoreEngine.GameData.Test
         [TableColumn, SerializeField] private bool[] boolArrayTest;
         [TableColumn, SerializeField] private string[] stringArrayTest;
 
-        protected override ulong BakeID()
+
+        protected override string GetPrimaryKey()
         {
-#if UNITY_EDITOR
-            return GetMashedKey(intTest, floatTest, boolTest, stringTest);
-#endif
+            return GetCompositeKey(intTest, floatTest, boolTest, stringTest);
         }
+
     }
 
     public sealed class TestTable : BaseTable<TestRecord> { }

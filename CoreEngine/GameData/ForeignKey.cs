@@ -6,6 +6,9 @@ namespace CoreEngine.GameData
 {
     [Serializable]
     public struct ForeignKey<TRecord, TTable> : IIdentifiable, IEquatable<ForeignKey<TRecord, TTable>>
+#if UNITY_EDITOR
+        , IReferenceKey
+#endif
         where TRecord : class, IRecord
         where TTable : BaseTable<TRecord>
     {
@@ -53,10 +56,14 @@ namespace CoreEngine.GameData
             => !left.Equals(right);
 
 #if UNITY_EDITOR
-        // 키 조합용
         public override string ToString()
         {
-            return '{' + _key + '}';
+            return BaseRecord.KeyException;
+        }
+
+        string IReferenceKey.GetEditorRawKey()
+        {
+            return _key;
         }
 #endif
     }

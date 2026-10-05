@@ -1,4 +1,3 @@
-using CoreEngine.Helpers;
 using System;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -8,6 +7,9 @@ namespace CoreEngine.GameData
     // [최적화] 완벽한 struct 값 타입. 상속(class) 제거.
     [Serializable]
     public struct AssetId<TAsset, TRegistry> : IIdentifiable, IEquatable<AssetId<TAsset, TRegistry>>
+#if UNITY_EDITOR
+        ,IReferenceKey
+#endif
         where TAsset : Object
         where TRegistry : BaseAssetRegistry<TAsset>
     {
@@ -16,6 +18,7 @@ namespace CoreEngine.GameData
         [SerializeField]
         private ulong _id;
         public ulong ID => _id;
+
 
         public AssetId(ulong id)
         {
@@ -49,8 +52,12 @@ namespace CoreEngine.GameData
             => !left.Equals(right);
 
 #if UNITY_EDITOR
-        // 키 조합용
         public override string ToString()
+        {
+            return BaseRecord.KeyException;
+        }
+
+        string IReferenceKey.GetEditorRawKey()
         {
             return _id.ToString();
         }
