@@ -544,11 +544,12 @@ namespace CoreEditor.GameData
         private void ApplyToTableAsset(ITableSetter tableSetter, List<IRecord> records, _AssetPreloadCommand[] bakedCommands)
         {
             tableSetter.Clear();
-            tableSetter.SetCapacity(records.Count);
-            foreach (var rec in records)
-            {
-                tableSetter.Add(rec);
-            }
+            tableSetter.Set(records);
+            //tableSetter.SetCapacity(records.Count);
+            //foreach (var rec in records)
+            //{
+            //    tableSetter.Add(rec);
+            //}
 
             // 변경된 인터페이스 메서드 호출 (AssetId[] -> _AssetPreloadCommand[])
             tableSetter.BakePreloadCommands(bakedCommands);

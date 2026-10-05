@@ -1,5 +1,6 @@
 using CoreEngine.Helpers;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace CoreEngine.GameData
@@ -10,10 +11,10 @@ namespace CoreEngine.GameData
     internal interface ITableSetter : IPreloadAssetIdsBaker
     {
 #if UNITY_EDITOR
-        void SetCapacity(int count);
-        bool Add(IRecord record);
+        //void SetCapacity(int count);
+        bool Set(List<IRecord> record);
         void Clear();
-        List<IRecord> GetListCopy();
+        //List<IRecord> GetListCopy();
 #endif
     }
 
@@ -21,7 +22,7 @@ namespace CoreEngine.GameData
         where TRecord : class, IRecord
     {
         [SerializeField]
-        private List<TRecord> _table = new();
+        private TRecord[] _table;
 
         private Dictionary<ulong, TRecord> _runtimeRecordDict;
 
@@ -38,14 +39,14 @@ namespace CoreEngine.GameData
 
         public override void InitializeRuntimeCache()
         {
-            if (_table.Count == 0)
+            if (_table.Length == 0)
             {
                 LogHelper.LogWarning($"table({this.name})이 사용할 수 없는 상태입니다.");
                 return;
             }
 
-            _runtimeRecordDict = new(_table.Count);
-            for (int i = 0; i < _table.Count; i++)
+            _runtimeRecordDict = new(_table.Length);
+            for (int i = 0; i < _table.Length; i++)
             {
                 ulong index = _table[i].ID;
                 if (_runtimeRecordDict.ContainsKey(index))
@@ -69,39 +70,34 @@ namespace CoreEngine.GameData
         }
 
 #if UNITY_EDITOR
-        private static readonly IComparer<TRecord> _indexComparer = Comparer<TRecord>.Create((x, y) => x.ID.CompareTo(y.ID));
+        //void ITableSetter.SetCapacity(int count)
+        //{
+        //    if (count > _table.Capacity)
+        //        _table.Capacity = count;
+        //}
 
-        void ITableSetter.SetCapacity(int count)
+        bool ITableSetter.Set(List<IRecord> newRecords)
         {
-            if (count > _table.Capacity)
-                _table.Capacity = count;
-        }
+            _table = newRecords.Cast<TRecord>().ToArray();
+            //if (newRecord is not TRecord recordAsT) return false;
 
-        bool ITableSetter.Add(IRecord newRecord)
-        {
-            if (newRecord is not TRecord recordAsT) return false;
+            //// 💡 정렬/중복검사 없이 순차 삽입 (CSV 원본 순서 유지 & O(1) 속도)
+            //_table.Add(recordAsT);
+            //_runtimeRecordDict = null;
 
-            int listIndex = _table.BinarySearch(recordAsT, _indexComparer);
-            if (listIndex >= 0) return false;
-
-            listIndex = ~listIndex;
-            _table.Insert(listIndex, recordAsT);
-            _runtimeRecordDict = null;
             return true;
         }
 
         void ITableSetter.Clear()
         {
-            _table.Clear();
+            _table = null;
             _runtimeRecordDict = null;
         }
 
-        List<IRecord> ITableSetter.GetListCopy()
-        {
-            return new List<IRecord>(_table);
-        }
-
-        
+        //List<IRecord> ITableSetter.GetListCopy()
+        //{
+        //    return new List<IRecord>(_table);
+        //}
 #endif
     }
 }
