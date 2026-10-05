@@ -1,3 +1,4 @@
+using CoreEngine.Helpers;
 using System;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -13,30 +14,33 @@ namespace CoreEngine.GameData
         public readonly static Type RegistryType = typeof(TRegistry);
 
         [SerializeField]
-        private ulong id;
-        public ulong ID => id;
+        private ulong _id;
+        public ulong ID => _id;
 
         public AssetId(ulong id)
         {
-            this.id = id;
+            _id = id;
+        }
+
+        public AssetId(string numericString)
+        {
+            ulong.TryParse(numericString, out this._id);
         }
 
         public TAsset Get()
         {
-            if (id <= 0) return null;
+            if (_id <= 0) return null;
             return AssetRegistryRouter.Get(RegistryType, ID) as TAsset;
         }
-
-        public static implicit operator AssetId<TAsset, TRegistry>(ulong id)
-            => new AssetId<TAsset, TRegistry>(id);
+        
 
         public bool Equals(AssetId<TAsset, TRegistry> other) 
-            => id == other.id;
+            => _id == other._id;
 
         public override bool Equals(object obj) 
             => obj is AssetId<TAsset, TRegistry> other && Equals(other);
 
-        public override int GetHashCode() => id.GetHashCode();
+        public override int GetHashCode() => _id.GetHashCode();
 
         public static bool operator ==(AssetId<TAsset, TRegistry> left, AssetId<TAsset, TRegistry> right) 
             => left.Equals(right);

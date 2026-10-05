@@ -423,7 +423,7 @@ namespace CoreEditor.GameData
                     }
                 }
 
-                record.BakeID();
+                ((IBakeId)record).BakeID();
 
                 if (!usedIds.Add(record.ID))
                 {
@@ -588,11 +588,10 @@ namespace CoreEditor.GameData
                 throw new FormatException($"'{value}'은(는) 유효한 열거형 값이 아닙니다.");
             }
 
-            ConstructorInfo intConstructor = targetType.GetConstructor(new Type[] { typeof(int) });
-            if (intConstructor != null)
+            ConstructorInfo stringConstructor = targetType.GetConstructor(new Type[] { typeof(string) });
+            if (stringConstructor != null)
             {
-                if (int.TryParse(value, out int parsedInt)) return intConstructor.Invoke(new object[] { parsedInt });
-                throw new FormatException("AssetId 변환 실패 (정수가 아님)");
+                return stringConstructor.Invoke(new object[] { value });
             }
 
             return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);

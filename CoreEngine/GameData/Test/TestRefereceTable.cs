@@ -4,23 +4,22 @@ using UnityEngine;
 namespace CoreEngine.GameData.Test
 {
     using TestSpriteId = AssetId<Sprite, TestSpriteRegistry>;
-    using TestRecordId = RecordId<TestRecord, TestTable>;
+    using TestForeignKey = ForeignKey<TestRecord, TestTable>;
 
     public sealed class TestReferenceRecord : BaseRecord
     {
-        [TableColumn, SerializeField] private ulong id;
         [TableColumn, SerializeField] private TestSpriteId spriteIdTest;
-        [TableColumn, SerializeField] private TestSpriteId[] spriteIdArrayTest;
+        [TableColumn, SerializeField] private TestForeignKey recordIdTest;
 
-        [TableColumn, SerializeField] private TestRecordId recordIdTest;
-        [TableColumn, SerializeField] private TestRecordId[] recordIdArrayTest;
+        [TableColumn, SerializeField] private TestSpriteId[] spriteIdArrayTest;
+        [TableColumn, SerializeField] private TestForeignKey[] recordIdArrayTest;
 
         public Sprite TestSprite => spriteIdTest.Get();
         public TestRecord TestRecord => recordIdTest.Get();
 
-        protected override void BakeID()
+        protected override ulong BakeID()
         {
-            HashCode = id;
+            return GetMashedKey(spriteIdTest, recordIdTest, spriteIdArrayTest, recordIdArrayTest);
         }
     }
     public sealed class TestRefereceTable : BaseTable<TestReferenceRecord> { }
