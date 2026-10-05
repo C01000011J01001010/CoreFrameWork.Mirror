@@ -1,10 +1,11 @@
+using CoreEditor.Helpers;
+using CoreEngine.GameData;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-using CoreEngine.GameData;
 
 namespace CoreEditor.GameData
 {
@@ -42,10 +43,10 @@ namespace CoreEditor.GameData
         public const string WindowName = "Table Integrity Checker";
 
         [MenuItem(Constants.ToolRootGameData + WindowName, priority = Constants.GameDataPriority + 3)]
-        private static void Open()
+        private static void ShowWindow()
         {
             var window = GetWindow<TableIntegrityChecker>(WindowName);
-            window.minSize = new Vector2(700, 500);
+            window.minSize = GameDataNavigationHelper.TapSize;
             window.Show();
         }
 
@@ -54,7 +55,7 @@ namespace CoreEditor.GameData
         #region 에디터 윈도우 UI 렌더링
         private void OnGUI()
         {
-            DrawTopNavigationBar();
+            GameDataNavigationHelper.DrawTopNavigationBar(GameDataNavigationHelper.Tab.IntegrityChecker);
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("🔗 데이터 참조 무결성 검사기", EditorStyles.boldLabel);
@@ -76,25 +77,6 @@ namespace CoreEditor.GameData
             }
 
             DrawErrorReports();
-        }
-
-        private void DrawTopNavigationBar()
-        {
-            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-
-            if (GUILayout.Button("1. " + GameDataOrganizer.WindowName, EditorStyles.toolbarButton))
-                GetWindow<GameDataOrganizer>(GameDataOrganizer.WindowName).Show();
-
-            if (GUILayout.Button("2. " + PreloadAddressableSetter.WindowName, EditorStyles.toolbarButton))
-                GetWindow<PreloadAddressableSetter>(PreloadAddressableSetter.WindowName).Show();
-
-            if (GUILayout.Button("3. " + CsvToTableBatchProcessor.WindowName, EditorStyles.toolbarButton))
-                GetWindow<CsvToTableBatchProcessor>(CsvToTableBatchProcessor.WindowName).Show();
-
-            GUI.backgroundColor = Color.cyan;
-            if (GUILayout.Button("4. " + WindowName, EditorStyles.toolbarButton)) { }
-            GUI.backgroundColor = Color.white;
-            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawErrorReports()

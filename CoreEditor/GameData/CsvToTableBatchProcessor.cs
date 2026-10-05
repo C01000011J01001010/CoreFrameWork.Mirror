@@ -42,10 +42,10 @@ namespace CoreEditor.GameData
 
         public const string WindowName = "CSV To Table Batch Processor";
         [MenuItem(Constants.ToolRootGameData + WindowName, priority = Constants.GameDataPriority + 2)]
-        private static void Open()
+        private static void ShowWindow()
         {
             var window = GetWindow<CsvToTableBatchProcessor>(WindowName);
-            window.minSize = new Vector2(600, 400);
+            window.minSize = GameDataNavigationHelper.TapSize;
             window.Show();
         }
 
@@ -54,7 +54,7 @@ namespace CoreEditor.GameData
         #region 에디터 윈도우 UI 렌더링
         private void OnGUI()
         {
-            DrawTopNavigationBar();
+            GameDataNavigationHelper.DrawTopNavigationBar(GameDataNavigationHelper.Tab.CsvProcessor);
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("🚀 일괄 데이터 변환 대시보드", EditorStyles.boldLabel);
@@ -71,20 +71,6 @@ namespace CoreEditor.GameData
             GUILayout.FlexibleSpace();
             EditorGUILayout.Space();
             DrawBottomActions();
-        }
-
-        private void DrawTopNavigationBar()
-        {
-            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            if (GUILayout.Button("1. " + GameDataOrganizer.WindowName, EditorStyles.toolbarButton))
-                GetWindow<GameDataOrganizer>(GameDataOrganizer.WindowName).Show();
-            if (GUILayout.Button("2. " + PreloadAddressableSetter.WindowName, EditorStyles.toolbarButton))
-                GetWindow<PreloadAddressableSetter>(PreloadAddressableSetter.WindowName).Show();
-
-            GUI.backgroundColor = Color.cyan;
-            if (GUILayout.Button("3. " + WindowName, EditorStyles.toolbarButton)) { }
-            GUI.backgroundColor = Color.white;
-            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawSettings()

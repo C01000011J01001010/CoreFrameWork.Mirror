@@ -1,10 +1,11 @@
+using CoreEditor.Helpers;
+using CoreEngine.GameData;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using CoreEngine.GameData;
 
 namespace CoreEditor.GameData
 {
@@ -24,7 +25,7 @@ namespace CoreEditor.GameData
         public static void ShowWindow()
         {
             var window = GetWindow<GameDataOrganizer>(WindowName);
-            window.minSize = new Vector2(500, 500);
+            window.minSize = GameDataNavigationHelper.TapSize;
             window.Show();
         }
 
@@ -35,7 +36,7 @@ namespace CoreEditor.GameData
 
         private void OnGUI()
         {
-            DrawTopNavigationBar(); // [UX] 공통 상단 탭
+            GameDataNavigationHelper.DrawTopNavigationBar(GameDataNavigationHelper.Tab.Organizer);
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Game Data SO 대시보드", EditorStyles.boldLabel);
@@ -59,20 +60,6 @@ namespace CoreEditor.GameData
 
             EditorGUILayout.Space();
             DrawBottomActions();
-        }
-
-        // [UX] 상단 네비게이션 탭
-        private void DrawTopNavigationBar()
-        {
-            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            GUI.backgroundColor = Color.cyan; // 현재 탭 하이라이트
-            if (GUILayout.Button("1. " + WindowName, EditorStyles.toolbarButton)) { }
-            GUI.backgroundColor = Color.white;
-            if (GUILayout.Button("2. " + PreloadAddressableSetter.WindowName, EditorStyles.toolbarButton))
-                GetWindow<PreloadAddressableSetter>(PreloadAddressableSetter.WindowName).Show();
-            if (GUILayout.Button("3. " + CsvToTableBatchProcessor.WindowName, EditorStyles.toolbarButton))
-                GetWindow<CsvToTableBatchProcessor>(CsvToTableBatchProcessor.WindowName).Show();
-            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawPathSettings()

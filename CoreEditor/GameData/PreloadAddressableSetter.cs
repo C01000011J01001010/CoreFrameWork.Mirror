@@ -1,3 +1,6 @@
+using CoreEditor.Helpers;
+using CoreEngine.GameData;
+using CoreEngine.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,8 +8,6 @@ using UnityEditor;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings;
 using UnityEngine;
-using CoreEngine.GameData;
-using CoreEngine.Settings;
 
 namespace CoreEditor.GameData
 {
@@ -19,10 +20,10 @@ namespace CoreEditor.GameData
 
         public const string WindowName = "Preload Addressable Setter";
         [MenuItem(Constants.ToolRootGameData + WindowName, priority = Constants.GameDataPriority + 1)]
-        private static void Open()
+        private static void ShowWindow()
         {
             var window = GetWindow<PreloadAddressableSetter>(WindowName);
-            window.minSize = new Vector2(550, 500);
+            window.minSize = GameDataNavigationHelper.TapSize;
             window.Show();
         }
 
@@ -33,7 +34,7 @@ namespace CoreEditor.GameData
 
         private void OnGUI()
         {
-            DrawTopNavigationBar(); // [UX] 상단 탭 네비게이션
+            GameDataNavigationHelper.DrawTopNavigationBar(GameDataNavigationHelper.Tab.PreloadSetter);
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("📦 Preload 메타데이터 어드레서블 관리", EditorStyles.boldLabel);
@@ -55,21 +56,6 @@ namespace CoreEditor.GameData
 
             EditorGUILayout.Space();
             DrawBottomActions();
-        }
-
-        private void DrawTopNavigationBar()
-        {
-            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-            if (GUILayout.Button("1. " + GameDataOrganizer.WindowName, EditorStyles.toolbarButton))
-                GetWindow<GameDataOrganizer>(GameDataOrganizer.WindowName).Show();
-
-            GUI.backgroundColor = Color.cyan;
-            if (GUILayout.Button("2. " + WindowName, EditorStyles.toolbarButton)) { }
-            GUI.backgroundColor = Color.white;
-
-            if (GUILayout.Button("3. " + CsvToTableBatchProcessor.WindowName, EditorStyles.toolbarButton))
-                GetWindow<CsvToTableBatchProcessor>(CsvToTableBatchProcessor.WindowName).Show();
-            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawSettings()
