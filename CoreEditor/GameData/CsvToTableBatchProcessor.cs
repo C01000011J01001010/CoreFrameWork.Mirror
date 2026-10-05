@@ -397,7 +397,9 @@ namespace CoreEditor.GameData
             where TRecord : BaseRecord, IRecord, new()
         {
             List<IRecord> temporaryRecords = new List<IRecord>();
-            HashSet<ulong> usedIds = new();
+
+            // HashSet 대신 Dictionary를 사용하여 해시 충돌 원천 차단
+            Dictionary<ulong, string> usedIdsMap = new Dictionary<ulong, string>();
 
             for (int row = startRow; row < lines.Length; row++)
             {
@@ -423,13 +425,44 @@ namespace CoreEditor.GameData
                     }
                 }
 
+                // ID 베이킹 (문자열 -> XXH64 ulong 변환)
                 ((IBakeId)record).BakeID();
+                ulong recordId = record.ID;
 
-                if (!usedIds.Add(record.ID))
+                // BaseRecord에 숨겨진 _primarykey 원본 문자열을 리플렉션으로 빼오기 (에디터 전용이므로 성능 부담 없음)
+                string rawKey = "Unknown";
+                Type currentType = record.GetType();
+                while (currentType != null)
                 {
-                    throw new Exception($"[행: {row + 1}] 중복된 ID({record.ID})가 발견되었습니다.");
+                    var pkField = currentType.GetField("_primarykey", BindingFlags.Instance | BindingFlags.NonPublic);
+                    if (pkField != null)
+                    {
+                        rawKey = pkField.GetValue(record) as string ?? "Unknown";
+                        break;
+                    }
+                    currentType = currentType.BaseType;
                 }
 
+                // 64비트 해시 충돌 및 중복 기입 검사 로직
+                if (usedIdsMap.TryGetValue(recordId, out string existingKey))
+                {
+                    if (existingKey != rawKey)
+                    {
+                        // ID는 같은데 기획자가 적은 원본 텍스트가 다름 -> XXH64 알고리즘 충돌! (기적의 확률)
+                        throw new Exception(
+                            $"[CoreEngine FATAL] 해시 충돌(Hash Collision) 검출! (행: {row + 1})\n" +
+                            $"Key A: '{existingKey}'\n" +
+                            $"Key B: '{rawKey}'\n" +
+                            $"두 문자열이 우연히 동일한 고유 ID({recordId})를 생성했습니다. Key B의 문자열을 살짝 변경해주세요.");
+                    }
+                    else
+                    {
+                        // 원본 텍스트도 완전히 같음 -> 기획자가 엑셀에 똑같은 키를 실수로 두 번 복붙함
+                        throw new Exception($"[행: {row + 1}] 중복된 데이터(Key: '{rawKey}')가 엑셀에 존재합니다.");
+                    }
+                }
+
+                usedIdsMap.Add(recordId, rawKey);
                 temporaryRecords.Add(record);
             }
 

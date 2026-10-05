@@ -1,32 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.IO.Hashing;
 using System.Text;
 
 namespace CoreEngine.Helpers
 {
-    public class HashHelper
+    public static class HashHelper
     {
         /// <summary>
-        /// 문자열을 충돌 없는 64비트 ulong으로 변환
+        /// 문자열을 숫자로 변환하거나, 불가능할 경우 XXH64 해시값(ulong)을 반환합니다.
         /// </summary>
-        public static ulong GetHash64(string text)
-        {
-            if (string.IsNullOrEmpty(text)) return 0;
-
-            ulong hash = 14695981039346656037; // FNV-1a 64-bit offset basis
-            foreach (char c in text)
-            {
-                hash ^= c;
-                hash *= 1099511628211; // FNV-1a 64-bit prime
-            }
-            return hash;
-        }
-
         public static ulong StringToId(string key)
         {
-            if (string.IsNullOrEmpty(key)) return 0;
-            if (ulong.TryParse(key, out ulong numericId)) return numericId;
-            return GetHash64(key);
+            if (string.IsNullOrEmpty(key))
+                return 0; // 0은 Invalid/Empty ID로 예약
+
+            // 이미 숫자로 된 문자열이면 그대로 ulong 변환
+            if (ulong.TryParse(key, out ulong numericId))
+            {
+                return numericId;
+            }
+
+            // 일반 문자열이면 XXH64 알고리즘으로 64비트 해시 생성
+            byte[] bytes = Encoding.UTF8.GetBytes(key);
+            return XxHash64.HashToUInt64(bytes);
         }
     }
 }
