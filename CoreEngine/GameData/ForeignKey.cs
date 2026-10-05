@@ -51,5 +51,13 @@ namespace CoreEngine.GameData
 
         public static bool operator !=(ForeignKey<TRecord, TTable> left, ForeignKey<TRecord, TTable> right)
             => !left.Equals(right);
+
+#if UNITY_EDITOR
+        // 키 조합용
+        public override string ToString()
+        {
+            return '{' + _key + '}';
+        }
+#endif
     }
 }

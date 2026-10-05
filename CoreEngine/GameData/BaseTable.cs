@@ -20,7 +20,7 @@ namespace CoreEngine.GameData
     public class BaseTable<TRecord> : _Table, ITableSetter
         where TRecord : class, IRecord
     {
-        [SerializeField, ReadOnly]
+        [SerializeField]
         private List<TRecord> _table = new();
 
         private Dictionary<ulong, TRecord> _runtimeRecordDict;

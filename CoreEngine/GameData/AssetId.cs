@@ -47,5 +47,13 @@ namespace CoreEngine.GameData
 
         public static bool operator !=(AssetId<TAsset, TRegistry> left, AssetId<TAsset, TRegistry> right) 
             => !left.Equals(right);
+
+#if UNITY_EDITOR
+        // 키 조합용
+        public override string ToString()
+        {
+            return _id.ToString();
+        }
+#endif
     }
 }

@@ -1,4 +1,3 @@
-using CoreEngine.Helpers;
 using UnityEngine;
 
 namespace CoreEngine.GameData.Test
@@ -6,6 +5,7 @@ namespace CoreEngine.GameData.Test
     using TestSpriteId = AssetId<Sprite, TestSpriteRegistry>;
     using TestForeignKey = ForeignKey<TestRecord, TestTable>;
 
+    [System.Serializable]
     public sealed class TestReferenceRecord : BaseRecord
     {
         [TableColumn, SerializeField] private TestSpriteId spriteIdTest;

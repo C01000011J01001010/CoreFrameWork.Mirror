@@ -1,11 +1,9 @@
-using CoreEngine.Helpers;
-using System.Text;
 using UnityEngine;
 
 namespace CoreEngine.GameData.Test
 {
     [System.Serializable]
-    public class TestRecord : BaseRecord
+    public sealed class TestRecord : BaseRecord
     {
         [TableColumn, SerializeField] private int intTest;
         [TableColumn, SerializeField] private float floatTest;
@@ -25,6 +23,6 @@ namespace CoreEngine.GameData.Test
         }
     }
 
-    public class TestTable : BaseTable<TestRecord> { }
+    public sealed class TestTable : BaseTable<TestRecord> { }
 }
 

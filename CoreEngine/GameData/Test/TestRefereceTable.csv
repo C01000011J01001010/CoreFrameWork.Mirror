@@ -1,0 +1,6 @@
+﻿{spriteIdTest},{recordIdTest},{spriteIdArrayTest},{recordIdArrayTest}
+101,1/10.5/True/Alpha,101|102|103,1/10.5/True/Alpha|2/10.5/True/Bravo|3/12/False/Charlie
+102,4/12/False/Delta,104|105,4/12/False/Delta|5/15.25/True/Echo
+103,6/15.25/False/Foxtrot,106|107|108,6/15.25/False/Foxtrot|7/18.75/True/Golf|8/18.75/False/Hotel
+104,9/20/True/India,109,9/20/True/India
+105,10/20/False/Juliet,110|111,10/20/False/Juliet|11/22.5/True/Kilo
