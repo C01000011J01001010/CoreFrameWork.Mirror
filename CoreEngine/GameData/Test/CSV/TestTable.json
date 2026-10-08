@@ -1,0 +1,12 @@
+{
+  "csvFileName": "TestTable.csv",
+  "primaryKey": [
+    "intTest"
+  ],
+  "foreignKeys": {},
+  "candidateKeys": [
+    [
+      "intTest"
+    ]
+  ]
+}

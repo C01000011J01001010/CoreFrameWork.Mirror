@@ -1,0 +1,25 @@
+{
+  "csvFileName": "TestRefereceTable.csv",
+  "primaryKey": [
+    "tempPK"
+  ],
+  "foreignKeys": {
+    "TestTableFK": {
+      "columns": [
+        "tableId"
+      ],
+      "targetTable": "TestTable.csv"
+    }
+  },
+  "candidateKeys": [
+    [
+      "tempPK"
+    ],
+    [
+      "tableId"
+    ],
+    [
+      "spriteIdTest"
+    ]
+  ]
+}

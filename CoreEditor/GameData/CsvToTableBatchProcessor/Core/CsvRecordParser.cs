@@ -75,7 +75,9 @@ namespace CoreEditor.GameData
                     else throw new Exception($"[행: {row + 1}] PK 컬럼('{pkName}')을 찾을 수 없습니다.");
                 }
 
-                string rawKey = string.Join("_", pkParts);
+                // ASCII 31 (Unit Separator)를 내부 구분자로 사용
+                string rawKey = string.Join("\x1F", pkParts);
+
                 ulong recordId = HashHelper.StringToId(rawKey);
 
                 if (usedIdsMap.TryGetValue(recordId, out string existingKey))

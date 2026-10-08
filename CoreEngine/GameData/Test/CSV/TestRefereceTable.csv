@@ -1,0 +1,6 @@
+﻿{tempPK/string/NOT NULL/UNIQUE},{tableId/int/NOT NULL/UNIQUE},{spriteIdTest/AssetId/NOT NULL},{spriteIdArrayTest/AssetId[]}
+Ref01,1,1001,1001|1002
+Ref02,2,1002,1003
+Ref03,3,1003,1001|1004|1005
+Ref04,4,1004,1002|1005
+Ref05,20,1005,1006

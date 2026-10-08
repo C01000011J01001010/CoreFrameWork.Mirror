@@ -1,6 +1,0 @@
-﻿{tempPK},{spriteIdTest},{recordIdTest},{spriteIdArrayTest},{recordIdArrayTest}
-Ref_01,1001,<1>_<10.5>_<True>_<Alpha>,1001|1002,<2>_<10.5>_<True>_<Bravo>|<3>_<12>_<False>_<Charlie>
-Ref_02,1002,<2>_<10.5>_<True>_<Bravo>,1003,<1>_<10.5>_<True>_<Alpha>
-Ref_03,1003,<3>_<12>_<False>_<Charlie>,1001|1004|1005,<4>_<12>_<False>_<Delta>
-Ref_04,1004,<4>_<12>_<False>_<DeltaTrash>,1002|1005,<5>_<15.25>_<True>_<Echo>|<1>_<10.5>_<True>_<Alpha>
-Ref_05,1005,<5>_<15.25>_<True>_<Echo>,1006,<3>_<12>_<False>_<Charlie>|<4>_<12>_<False>_<Delta>
