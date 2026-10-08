@@ -13,9 +13,6 @@ namespace CoreEngine.GameData
     /// </summary>
     [System.Serializable]
     public abstract partial class BaseRecord: IRecord
-#if UNITY_EDITOR
-        ,IBakeId
-#endif
     {
         [SerializeField]
         private ulong _hashCode;
