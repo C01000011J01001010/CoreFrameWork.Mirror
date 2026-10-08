@@ -9,11 +9,12 @@ namespace CoreEngine.GameData.Test
     public sealed class TestReferenceRecord : BaseRecord
     {
         [TableColumn, SerializeField] private string tempPK;
-        [TableColumn, SerializeField] private TestSpriteId spriteIdTest;
-        [TableColumn, SerializeField] private TestForeignKey recordIdTest;
+        [TableColumn, SerializeField] private int tableId;
 
+        [TableColumn, SerializeField] private TestSpriteId spriteIdTest;
         [TableColumn, SerializeField] private TestSpriteId[] spriteIdArrayTest;
-        [TableColumn, SerializeField] private TestForeignKey[] recordIdArrayTest;
+
+        [TableColumn, SerializeField] private TestForeignKey recordIdTest;
 
         public Sprite TestSprite => spriteIdTest.Get();
         public TestRecord TestRecord => recordIdTest.Get();
