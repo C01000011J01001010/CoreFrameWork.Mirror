@@ -21,15 +21,28 @@ namespace CoreEngine.GameData
     public class BaseTable<TRecord> : _Table, ITableSetter
         where TRecord : class, IRecord
     {
+        public delegate ulong GetForeignKeyHash(TRecord record);
+
         [SerializeField]
         private TRecord[] _table;
 
-        private Dictionary<ulong, TRecord> _runtimeRecordDict;
+
+        #region 런타임 캐시
+
+        private Dictionary<ulong/*내 레코드 해시*/, TRecord> _runtimeRecordDict;
+
+        private Dictionary<uint/*index*/, 
+            Dictionary<ulong/*참조 대상의 해시*/, List<TRecord>>> _reverseIndexes;
+
+        #endregion
 
         private void OnEnable()
         {
             _runtimeRecordDict = null;
+            _reverseIndexes = null;
         }
+
+        #region 초기화
 
         internal Dictionary<ulong, TRecord> GetCachedTableDict()
         {
@@ -38,6 +51,11 @@ namespace CoreEngine.GameData
         }
 
         public override void InitializeRuntimeCache()
+        {
+            InitializeTableDict();
+            InitializeReverseIndex();
+        }
+        private void InitializeTableDict()
         {
             if (_table.Length == 0)
             {
@@ -58,6 +76,44 @@ namespace CoreEngine.GameData
             }
         }
 
+        private void InitializeReverseIndex()
+        {
+            foreach(var kv in GetReverseIndexBuilder())
+            {
+                BuildReverseIndex(kv.Key, kv.Value);
+            }
+        }
+
+        // 필요시 재정의
+        protected virtual List<KeyValuePair<uint, GetForeignKeyHash>> GetReverseIndexBuilder()
+        {
+            return new();
+        }
+
+        private void BuildReverseIndex(uint index, GetForeignKeyHash getForignKey)
+        {
+            if (_reverseIndexes == null) _reverseIndexes = new();
+
+            Dictionary<ulong, List<TRecord>> indexMap = new();
+
+            foreach (var record in _table)
+            {
+                ulong fk = getForignKey(record);
+
+                if (fk == 0) continue; // 0이거나 유효하지 않은 키는 건너뜀
+
+                if (!indexMap.ContainsKey(fk)) 
+                {
+                    indexMap[fk] = new List<TRecord>();
+                }
+                indexMap[fk].Add(record);
+            }
+
+            _reverseIndexes[index] = indexMap;
+        }
+
+        #endregion
+
         public override IRecord GetRecord(ulong id)
         {
             if (_runtimeRecordDict == null) InitializeRuntimeCache();
@@ -69,22 +125,37 @@ namespace CoreEngine.GameData
             return null;
         }
 
+        /// <summary>
+        /// 타겟 ID를 나를 참조하고 있는 레코드 리스트를 반환
+        /// </summary>
+        public List<TRecord> GetReferencingRecords(uint index, ulong targetId)
+        {
+            if(_reverseIndexes == null)
+            {
+                LogHelper.Log($"{GetType().Name}은 참조키 인덱스 Dictionary가 존재하지 않습니다.");
+                return null;
+            }
+
+            if(!_reverseIndexes.TryGetValue(index, out var indexMap))
+            {
+                LogHelper.LogWarning($"{GetType().Name}의 참조키 인덱스로 \"{index}\"가 유효하지 않습니다.");
+                return null;
+            }
+
+            if (!indexMap.TryGetValue(targetId, out var resultList))
+            {
+                LogHelper.LogWarning($"{GetType()}의 참조키 인덱스 \"{index}\"에서 id \"{targetId}\"를 참조하지 않습니다.");
+                return null;
+            }
+
+            return resultList;
+        }
+
 #if UNITY_EDITOR
-        //void ITableSetter.SetCapacity(int count)
-        //{
-        //    if (count > _table.Capacity)
-        //        _table.Capacity = count;
-        //}
 
         bool ITableSetter.Set(List<IRecord> newRecords)
         {
             _table = newRecords.Cast<TRecord>().ToArray();
-            //if (newRecord is not TRecord recordAsT) return false;
-
-            //// 💡 정렬/중복검사 없이 순차 삽입 (CSV 원본 순서 유지 & O(1) 속도)
-            //_table.Add(recordAsT);
-            //_runtimeRecordDict = null;
-
             return true;
         }
 
@@ -92,12 +163,8 @@ namespace CoreEngine.GameData
         {
             _table = null;
             _runtimeRecordDict = null;
+            _reverseIndexes = null;
         }
-
-        //List<IRecord> ITableSetter.GetListCopy()
-        //{
-        //    return new List<IRecord>(_table);
-        //}
 #endif
     }
 }

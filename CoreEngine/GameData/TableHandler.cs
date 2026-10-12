@@ -53,6 +53,12 @@ namespace CoreEngine.GameData
             return TryGetRecord(id, out record);
         }
 
+        public bool TryGetReferencingRecords(uint indexName, ulong targetId, out IReadOnlyList<TRecord> result)
+        {
+            result = Table.GetReferencingRecords(indexName, targetId);
+            return result != null && result.Count > 0;
+        }
+
         // ==========================================
         // 3. 필터링 검색
         // ==========================================
