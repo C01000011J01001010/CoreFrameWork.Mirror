@@ -21,7 +21,7 @@ namespace CoreEngine.GameData
 
         [SerializeField]
         private ulong _hashcode;
-        ulong IIdentifiable.ID => _hashcode;
+        public ulong ID => _hashcode;
 
 
 
