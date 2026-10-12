@@ -1,0 +1,19 @@
+{
+  "superKeys": [
+    [
+      "intTest"
+    ],
+    [
+      "intTest",
+      "boolTest"
+    ],
+    [
+      "intTest",
+      "stringTest"
+    ]
+  ],
+  "primaryKey": [
+    "intTest"
+  ],
+  "foreignKeys": {}
+}

@@ -1,0 +1,36 @@
+{
+  "superKeys": [
+    [
+      "tempPK"
+    ],
+    [
+      "tableId"
+    ],
+    [
+      "spriteIdTest"
+    ],
+    [
+      "tempPK",
+      "tableId"
+    ],
+    [
+      "tempPK",
+      "spriteIdTest"
+    ],
+    [
+      "tableId",
+      "spriteIdTest"
+    ]
+  ],
+  "primaryKey": [
+    "tempPK"
+  ],
+  "foreignKeys": {
+    "testFK": {
+      "columns": [
+        "tableId"
+      ],
+      "targetTable": "TestTable.csv"
+    }
+  }
+}
