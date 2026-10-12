@@ -1,9 +1,11 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace CoreEngine.GameData.Test
 {
-    using TestSpriteId = AssetId<Sprite, TestSpriteRegistry>;
     using TestForeignKey = ForeignKey<TestRecord, TestTable>;
+    using TestSpriteId = AssetId<Sprite, TestSpriteRegistry>;
 
     [System.Serializable]
     public sealed class TestReferenceRecord : BaseRecord
@@ -17,13 +19,23 @@ namespace CoreEngine.GameData.Test
         [TableColumn, SerializeField] private TestForeignKey recordIdTest;
 
         public Sprite TestSprite => spriteIdTest.Get();
-        public TestRecord TestRecord => recordIdTest.Get();
+        public TestForeignKey TestRecord => recordIdTest;
 
         protected override string GetPrimaryKey()
         {
             return tempPK.ToString();
         }
     }
-    public sealed class TestRefereceTable : BaseTable<TestReferenceRecord> { }
+    public sealed class TestRefereceTable : BaseTable<TestReferenceRecord> 
+    {
+        public const uint TEST_INDEX = 1;
+        protected override List<KeyValuePair<uint, GetForeignKeyHash>> GetReverseIndexBuilder()
+        {
+            return new()
+            {
+                new(TEST_INDEX, record => record.TestRecord.ID)
+            };
+        }
+    }
 }
     
