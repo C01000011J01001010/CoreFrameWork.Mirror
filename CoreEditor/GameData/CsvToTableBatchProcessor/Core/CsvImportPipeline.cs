@@ -29,13 +29,13 @@ namespace CoreEditor.GameData
         {
             // 0. 메타데이터(.json) 로드
             string csvPath = AssetDatabase.GetAssetPath(csvAsset);
-            string jsonPath = Path.ChangeExtension(csvPath, ".json");
+            string metaPath = Path.ChangeExtension(csvPath, ".csvmeta");
 
-            if (!File.Exists(jsonPath))
-                throw new Exception($"[메타 누락] {jsonPath} 파일을 찾을 수 없습니다. 파이썬 툴에서 메타데이터를 추출해주세요.");
+            if (!File.Exists(metaPath))
+                throw new Exception($"[메타 누락] {metaPath} 파일을 찾을 수 없습니다. 파이썬 툴에서 메타데이터를 추출해주세요.");
 
-            string jsonText = File.ReadAllText(jsonPath);
-            TableMetaData metaData = JsonUtility.FromJson<TableMetaData>(jsonText);
+            string metaText = File.ReadAllText(metaPath);
+            TableMetaData metaData = JsonUtility.FromJson<TableMetaData>(metaText);
 
             if (metaData.primaryKey == null || metaData.primaryKey.Length == 0)
                 throw new Exception($"[메타 오류] {csvAsset.name}.json 에 기본키(PK)가 설정되어 있지 않습니다.");
