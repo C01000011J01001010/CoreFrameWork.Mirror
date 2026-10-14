@@ -52,11 +52,6 @@ namespace CoreEngine.GameData
             => !left.Equals(right);
 
 #if UNITY_EDITOR
-        public override string ToString()
-        {
-            return BaseRecord.KeyException;
-        }
-
         string IReferenceKey.GetEditorRawKey()
         {
             return _id.ToString();

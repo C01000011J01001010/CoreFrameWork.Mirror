@@ -15,8 +15,6 @@ namespace CoreEngine.GameData
 
     public abstract partial class BaseRecord : IEditorRecordSetup
     {
-        internal const string KeyException = "[INVALID_REFERENCE_KEY_IN_PK_DETECTED]";
-
         [SerializeField]
         private string _primarykey;
 
