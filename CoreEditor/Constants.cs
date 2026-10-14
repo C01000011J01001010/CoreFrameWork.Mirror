@@ -15,6 +15,10 @@ namespace CoreEditor
 
         public const string EditorDirectory = "Assets/CoreFramework/Editor";
 
+
         public const int GameDataPriority = 0;
+
+
+        public const string KeySeparator = "\x1F";
     }
 }

@@ -76,7 +76,7 @@ namespace CoreEditor.GameData
                 }
 
                 // ASCII 31 (Unit Separator)를 내부 구분자로 사용
-                string rawKey = string.Join("\x1F", pkParts);
+                string rawKey = string.Join(Constants.KeySeparator, pkParts);
 
                 ulong recordId = HashHelper.StringToId(rawKey);
 
