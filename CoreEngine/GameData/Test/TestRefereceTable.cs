@@ -20,11 +20,6 @@ namespace CoreEngine.GameData.Test
 
         public Sprite TestSprite => spriteIdTest.Get();
         public TestForeignKey TestRecord => recordIdTest;
-
-        protected override string GetPrimaryKey()
-        {
-            return tempPK.ToString();
-        }
     }
     public sealed class TestRefereceTable : BaseTable<TestReferenceRecord> 
     {

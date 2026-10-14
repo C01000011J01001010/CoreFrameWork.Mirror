@@ -15,12 +15,6 @@ namespace CoreEngine.GameData.Test
         [TableColumn, SerializeField] private bool[] boolArrayTest;
         [TableColumn, SerializeField] private string[] stringArrayTest;
 
-
-        protected override string GetPrimaryKey()
-        {
-            return GetCompositeKey(intTest, floatTest, boolTest, stringTest);
-        }
-
     }
 
     public sealed class TestTable : BaseTable<TestRecord> { }
