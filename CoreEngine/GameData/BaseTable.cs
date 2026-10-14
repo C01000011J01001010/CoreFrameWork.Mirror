@@ -23,7 +23,7 @@ namespace CoreEngine.GameData
     {
         public delegate ulong GetForeignKeyHash(TRecord record);
 
-        [SerializeField]
+        [SerializeField, ReadOnly]
         private TRecord[] _table;
 
 
