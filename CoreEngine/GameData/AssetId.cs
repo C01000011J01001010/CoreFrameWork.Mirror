@@ -4,7 +4,6 @@ using Object = UnityEngine.Object;
 
 namespace CoreEngine.GameData
 {
-    // [최적화] 완벽한 struct 값 타입. 상속(class) 제거.
     [Serializable]
     public struct AssetId<TAsset, TRegistry> : IIdentifiable, IEquatable<AssetId<TAsset, TRegistry>>
 #if UNITY_EDITOR

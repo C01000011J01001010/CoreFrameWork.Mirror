@@ -38,9 +38,7 @@ namespace CoreEngine.GameData
             return TableRouter.GetRecord(TableType, _hashcode) as TRecord;
         }
 
-        // ===============================================
-        // 비교 연산자 (유저님 작성본과 동일)
-        // ===============================================
+
         public bool Equals(ForeignKey<TRecord, TTable> other)
             => _hashcode == other._hashcode;
 
