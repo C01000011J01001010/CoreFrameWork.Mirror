@@ -6,5 +6,6 @@
         "includeSubDirectories": true,
         "excludePrefix": "Disabled"
     },
-    "created_at": "2026-10-11 11:17:47"
+    "created_at": "2026-10-11 11:17:47",
+    "erdHtmlPath": "FrameworkTest_ERD.html"
 }

@@ -17,8 +17,11 @@ namespace CoreEditor.GameData
         {
             string[] lines = csvText.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
 
+            // 1. 헤더 추출 및 C# 필드 캐싱
             var headers = ExtractSchemaHeaders(lines, out int schemaRowIndex);
-            ValidateAndMapFields<TRecord>(headers);
+            var csFields = GetTableColumnFields<TRecord>();
+
+            ValidateAndMapFields(headers, csFields);
 
             List<IRecord> temporaryRecords = new List<IRecord>();
             Dictionary<ulong, string> usedIdsMap = new Dictionary<ulong, string>();
@@ -31,63 +34,20 @@ namespace CoreEditor.GameData
 
                 string[] columns = CsvParserHelper.ParseLine(line);
                 TRecord record = new TRecord();
-                Dictionary<string, string> rowRawValues = new Dictionary<string, string>();
 
-                for (int i = 0; i < headers.Count; i++)
-                {
-                    var schema = headers[i];
-                    string rawValue = schema.ColumnIndex < columns.Length ? columns[schema.ColumnIndex].Trim() : string.Empty;
+                // 2. 일반 컬럼 데이터 파싱, 필드 주입 및 제약조건 검사
+                var rowRawValues = ParseRowFields(record, headers, columns, row);
 
-                    if (string.IsNullOrEmpty(rawValue) && schema.HasDefault) rawValue = schema.DefaultValue;
-                    if (string.IsNullOrEmpty(rawValue) && schema.IsNotNull)
-                        throw new Exception($"[행: {row + 1}] '{schema.FieldName}' 컬럼(NOT NULL)이 비어있습니다.");
+                // 3. 다중 컬럼 기본키(PK) 조합 및 해싱
+                (ulong recordId, string rawKey) = GeneratePrimaryKey(metaData.primaryKey, rowRawValues, row);
 
-                    object typedValue = null;
-                    try
-                    {
-                        typedValue = ConvertValue(rawValue, schema.FieldType, row, schema.FieldName);
-                        schema.Field.SetValue(record, typedValue);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception($"[행: {row + 1}, 열: '{schema.FieldName}'] 값 변환 실패: {ex.Message}");
-                    }
+                // 4. ID 해시 충돌 및 중복 검사
+                ValidateKeyCollision(usedIdsMap, recordId, rawKey, row);
 
-                    if (typedValue != null && schema.CheckExpressions.Count > 0)
-                    {
-                        Array checkArray = schema.IsArray ? (Array)typedValue : new object[] { typedValue };
-                        foreach (var item in checkArray)
-                        {
-                            foreach (var expr in schema.CheckExpressions)
-                            {
-                                if (!ConstraintEvaluator.EvaluateCheck(expr, item))
-                                    throw new Exception($"[행: {row + 1}] '{schema.FieldName}' 값이 CHECK({expr}) 조건을 위반했습니다.");
-                            }
-                        }
-                    }
-                    rowRawValues[schema.FieldName] = rawValue;
-                }
+                // 5. 다중 컬럼 외래키(FK) 조합 및 주입 (Newtonsoft 지원 딕셔너리 연동)
+                InjectForeignKeys(record, csFields, metaData.foreignKeys, rowRawValues, row);
 
-                List<string> pkParts = new List<string>();
-                foreach (string pkName in metaData.primaryKey)
-                {
-                    if (rowRawValues.TryGetValue(pkName, out string val)) pkParts.Add(val);
-                    else throw new Exception($"[행: {row + 1}] PK 컬럼('{pkName}')을 찾을 수 없습니다.");
-                }
-
-                // ASCII 31 (Unit Separator)를 내부 구분자로 사용
-                string rawKey = string.Join(Constants.KeySeparator, pkParts);
-
-                ulong recordId = HashHelper.StringToId(rawKey);
-
-                if (usedIdsMap.TryGetValue(recordId, out string existingKey))
-                {
-                    if (existingKey != rawKey)
-                        throw new Exception($"[CoreEngine FATAL] 해시 충돌! Key A: '{existingKey}', Key B: '{rawKey}' (ID: {recordId})");
-                    else
-                        throw new Exception($"[행: {row + 1}] 중복된 기본키 데이터('{rawKey}')가 존재합니다.");
-                }
-
+                // 6. 최종 등록 및 캐싱
                 usedIdsMap.Add(recordId, rawKey);
                 extractedKeys.Add(rawKey);
 
@@ -95,6 +55,160 @@ namespace CoreEditor.GameData
                 temporaryRecords.Add(record);
             }
             return temporaryRecords;
+        }
+
+        #region 파싱 헬퍼 메서드
+
+        /// <summary>
+        /// 레코드 타입의 모든 [TableColumn] 필드를 리플렉션으로 가져옵니다.
+        /// </summary>
+        private static List<FieldInfo> GetTableColumnFields<TRecord>()
+        {
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+            List<FieldInfo> csFields = new List<FieldInfo>();
+            Type currentType = typeof(TRecord);
+
+            while (currentType != null && currentType != typeof(object))
+            {
+                csFields.AddRange(currentType.GetFields(flags).Where(f => f.GetCustomAttribute<TableColumnAttribute>() != null));
+                currentType = currentType.BaseType;
+            }
+            return csFields;
+        }
+
+        private static void ValidateAndMapFields(List<CsvColumnSchema> csvHeaders, List<FieldInfo> csFields)
+        {
+            foreach (var header in csvHeaders)
+            {
+                FieldInfo matchedField = csFields.FirstOrDefault(f => string.Equals(f.Name, header.FieldName, StringComparison.OrdinalIgnoreCase));
+                if (matchedField == null) throw new Exception($"C# 클래스에 '{header.FieldName}' 필드가 없습니다.");
+                header.Field = matchedField;
+                header.FieldType = matchedField.FieldType;
+            }
+        }
+
+        private static Dictionary<string, string> ParseRowFields<TRecord>(
+            TRecord record, List<CsvColumnSchema> headers, string[] columns, int row)
+        {
+            var rowRawValues = new Dictionary<string, string>();
+
+            for (int i = 0; i < headers.Count; i++)
+            {
+                var schema = headers[i];
+                string rawValue = schema.ColumnIndex < columns.Length ? columns[schema.ColumnIndex].Trim() : string.Empty;
+
+                if (string.IsNullOrEmpty(rawValue) && schema.HasDefault) rawValue = schema.DefaultValue;
+                if (string.IsNullOrEmpty(rawValue) && schema.IsNotNull)
+                    throw new Exception($"[행: {row + 1}] '{schema.FieldName}' 컬럼(NOT NULL)이 비어있습니다.");
+
+                object typedValue = null;
+                try
+                {
+                    typedValue = ConvertValue(rawValue, schema.FieldType, row, schema.FieldName);
+                    schema.Field.SetValue(record, typedValue);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"[행: {row + 1}, 열: '{schema.FieldName}'] 값 변환 실패: {ex.Message}");
+                }
+
+                EvaluateConstraints(schema, typedValue, row);
+                rowRawValues[schema.FieldName] = rawValue;
+            }
+
+            return rowRawValues;
+        }
+
+        private static void EvaluateConstraints(CsvColumnSchema schema, object typedValue, int row)
+        {
+            if (typedValue == null || schema.CheckExpressions.Count == 0) return;
+
+            Array checkArray = schema.IsArray ? (Array)typedValue : new object[] { typedValue };
+            foreach (var item in checkArray)
+            {
+                foreach (var expr in schema.CheckExpressions)
+                {
+                    if (!ConstraintEvaluator.EvaluateCheck(expr, item))
+                        throw new Exception($"[행: {row + 1}] '{schema.FieldName}' 값이 CHECK({expr}) 조건을 위반했습니다.");
+                }
+            }
+        }
+
+        private static (ulong id, string rawKey) GeneratePrimaryKey(string[] primaryKeyMeta, Dictionary<string, string> rowRawValues, int row)
+        {
+            List<string> pkParts = new List<string>();
+            foreach (string pkName in primaryKeyMeta)
+            {
+                if (rowRawValues.TryGetValue(pkName, out string val)) pkParts.Add(val);
+                else throw new Exception($"[행: {row + 1}] PK 컬럼('{pkName}')을 찾을 수 없습니다.");
+            }
+
+            string rawKey = string.Join(Constants.KeySeparator, pkParts);
+            ulong recordId = HashHelper.StringToId(rawKey);
+
+            return (recordId, rawKey);
+        }
+
+        private static void ValidateKeyCollision(Dictionary<ulong, string> usedIdsMap, ulong recordId, string rawKey, int row)
+        {
+            if (usedIdsMap.TryGetValue(recordId, out string existingKey))
+            {
+                if (existingKey != rawKey)
+                    throw new Exception($"[CoreEngine FATAL] 해시 충돌! Key A: '{existingKey}', Key B: '{rawKey}' (ID: {recordId})");
+                else
+                    throw new Exception($"[행: {row + 1}] 중복된 기본키 데이터('{rawKey}')가 존재합니다.");
+            }
+        }
+
+        private static void InjectForeignKeys<TRecord>(
+            TRecord record, List<FieldInfo> csFields, Dictionary<string, ForeignKeyMeta> foreignKeysMeta, Dictionary<string, string> rowRawValues, int row)
+        {
+            if (foreignKeysMeta == null || foreignKeysMeta.Count == 0) return;
+
+            foreach (var kvp in foreignKeysMeta)
+            {
+                string fkFieldName = kvp.Key;
+                string[] fkColumns = kvp.Value.columns;
+
+                List<string> fkParts = new List<string>();
+                foreach (string colName in fkColumns)
+                {
+                    if (rowRawValues.TryGetValue(colName, out string val)) fkParts.Add(val);
+                    else throw new Exception($"[행: {row + 1}] FK 조합용 컬럼('{colName}')을 찾을 수 없습니다.");
+                }
+
+                if (fkParts.All(string.IsNullOrEmpty)) continue;
+
+                string rawFkKey = string.Join(Constants.KeySeparator, fkParts);
+                ulong targetFkId = HashHelper.StringToId(rawFkKey);
+
+                FieldInfo fkField = csFields.FirstOrDefault(f => f.Name == fkFieldName);
+                if (fkField == null)
+                {
+                    throw new Exception($"[FK 매핑 오류] 행 {row + 1}: 메타데이터의 FK 이름('{fkFieldName}')과 일치하는 C# 레코드 클래스의 필드가 없습니다! 파일명과 필드명을 확인해주세요.");
+                }
+
+                // 💡 [수정된 부분] 
+                // 1. 매개변수 없는 기본 생성자로 구조체(또는 클래스)를 먼저 생성합니다.
+                object fkInstance = Activator.CreateInstance(fkField.FieldType);
+
+                // 2. ForeignKey 구조체 내부의 모든 필드를 뒤져서 타입에 맞게 직접 값을 주입합니다.
+                FieldInfo[] internalFields = fkField.FieldType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                foreach (var field in internalFields)
+                {
+                    if (field.FieldType == typeof(ulong))
+                    {
+                        field.SetValue(fkInstance, targetFkId); // Hashcode 주입
+                    }
+                    else if (field.FieldType == typeof(string))
+                    {
+                        field.SetValue(fkInstance, rawFkKey); // Key 문자열 주입 (인스펙터 확인용)
+                    }
+                }
+
+                // 3. 완성된 FK 객체를 레코드에 할당합니다.
+                fkField.SetValue(record, fkInstance);
+            }
         }
 
         private static List<CsvColumnSchema> ExtractSchemaHeaders(string[] lines, out int schemaRowIndex)
@@ -127,27 +241,6 @@ namespace CoreEditor.GameData
                 }
             }
             return csvHeaders;
-        }
-
-        private static void ValidateAndMapFields<TRecord>(List<CsvColumnSchema> csvHeaders)
-        {
-            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
-            List<FieldInfo> csFields = new List<FieldInfo>();
-            Type currentType = typeof(TRecord);
-
-            while (currentType != null && currentType != typeof(object))
-            {
-                csFields.AddRange(currentType.GetFields(flags).Where(f => f.GetCustomAttribute<TableColumnAttribute>() != null));
-                currentType = currentType.BaseType;
-            }
-
-            foreach (var header in csvHeaders)
-            {
-                FieldInfo matchedField = csFields.FirstOrDefault(f => string.Equals(f.Name, header.FieldName, StringComparison.OrdinalIgnoreCase));
-                if (matchedField == null) throw new Exception($"C# 클래스에 '{header.FieldName}' 필드가 없습니다.");
-                header.Field = matchedField;
-                header.FieldType = matchedField.FieldType;
-            }
         }
 
         private static object ConvertValue(string value, Type targetType, int row, string columnName)
@@ -184,5 +277,7 @@ namespace CoreEditor.GameData
 
             return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
         }
+
+        #endregion
     }
 }

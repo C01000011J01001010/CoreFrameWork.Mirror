@@ -5,14 +5,31 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using CoreEngine.GameData;
+using Newtonsoft.Json;
 
 namespace CoreEditor.GameData
 {
     [System.Serializable]
+    public class ForeignKeyMeta
+    {
+        [JsonProperty("columns")]
+        public string[] columns;
+
+        [JsonProperty("targetTable")]
+        public string targetTable;
+    }
+
+    [System.Serializable]
     public class TableMetaData
     {
+        [JsonProperty("csvFileName")]
         public string csvFileName;
+
+        [JsonProperty("primaryKey")]
         public string[] primaryKey;
+
+        [JsonProperty("foreignKeys")]
+        public Dictionary<string, ForeignKeyMeta> foreignKeys;
     }
 
     public static class CsvImportPipeline
@@ -35,7 +52,7 @@ namespace CoreEditor.GameData
                 throw new Exception($"[메타 누락] {metaPath} 파일을 찾을 수 없습니다. 파이썬 툴에서 메타데이터를 추출해주세요.");
 
             string metaText = File.ReadAllText(metaPath);
-            TableMetaData metaData = JsonUtility.FromJson<TableMetaData>(metaText);
+            TableMetaData metaData = JsonConvert.DeserializeObject<TableMetaData>(metaText);
 
             if (metaData.primaryKey == null || metaData.primaryKey.Length == 0)
                 throw new Exception($"[메타 오류] {csvAsset.name}.json 에 기본키(PK)가 설정되어 있지 않습니다.");

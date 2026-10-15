@@ -16,10 +16,10 @@ namespace CoreEngine.GameData.Test
         [TableColumn, SerializeField] private TestSpriteId spriteIdTest;
         [TableColumn, SerializeField] private TestSpriteId[] spriteIdArrayTest;
 
-        [TableColumn, SerializeField] private TestForeignKey recordIdTest;
+        [TableColumn, SerializeField] private TestForeignKey testFK;
 
         public Sprite TestSprite => spriteIdTest.Get();
-        public TestForeignKey TestRecord => recordIdTest;
+        public TestForeignKey TestFK => testFK;
     }
     public sealed class TestRefereceTable : BaseTable<TestReferenceRecord> 
     {
@@ -28,7 +28,7 @@ namespace CoreEngine.GameData.Test
         {
             return new()
             {
-                new(TEST_INDEX, record => record.TestRecord.ID)
+                new(TEST_INDEX, record => record.TestFK.ID)
             };
         }
     }
