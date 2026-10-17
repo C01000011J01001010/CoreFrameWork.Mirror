@@ -53,9 +53,13 @@ namespace CoreEngine.GameData
             return TryGetRecord(id, out record);
         }
 
-        public bool TryGetReferencingRecords(uint indexName, ulong targetId, out IReadOnlyList<TRecord> result)
+        public bool TryGetReferencingRecords(uint index, IRecord record, out IReadOnlyList<TRecord> result)
         {
-            result = Table.GetReferencingRecords(indexName, targetId);
+            return TryGetReferencingRecords(index, record.ID, out result);
+        }
+        public bool TryGetReferencingRecords(uint index, ulong targetId, out IReadOnlyList<TRecord> result)
+        {
+            result = Table.GetReferencingRecords(index, targetId);
             return result != null && result.Count > 0;
         }
 
