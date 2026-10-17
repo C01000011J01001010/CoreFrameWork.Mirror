@@ -20,7 +20,7 @@ namespace CoreEngine.GameData
 
         void IEditorRecordSetup.EditorSetupId(ulong id, string primaryKey)
         {
-            _hashCode = id;
+            _hash = id;
             _primarykey = primaryKey;
         }
     }

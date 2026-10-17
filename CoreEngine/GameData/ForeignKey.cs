@@ -20,9 +20,10 @@ namespace CoreEngine.GameData
 #endif
 
         [SerializeField]
-        private ulong _hashcode;
-        public ulong ID => _hashcode;
+        private ulong _hash;
 
+        public ulong TargetHashedPK => _hash;
+        ulong IIdentifiable.ID => _hash;
 
 
         public ForeignKey(string key)
@@ -30,22 +31,22 @@ namespace CoreEngine.GameData
 #if UNITY_EDITOR
             _key = key;
 #endif
-            _hashcode = HashHelper.StringToId(key);
+            _hash = HashHelper.StringToId(key);
         }
 
         public TRecord Get()
         {
-            return TableRouter.GetRecord(TableType, _hashcode) as TRecord;
+            return TableRouter.GetRecord(TableType, _hash) as TRecord;
         }
 
 
         public bool Equals(ForeignKey<TRecord, TTable> other)
-            => _hashcode == other._hashcode;
+            => _hash == other._hash;
 
         public override bool Equals(object obj)
             => obj is ForeignKey<TRecord, TTable> other && Equals(other);
 
-        public override int GetHashCode() => _hashcode.GetHashCode();
+        public override int GetHashCode() => _hash.GetHashCode();
 
         public static bool operator ==(ForeignKey<TRecord, TTable> left, ForeignKey<TRecord, TTable> right)
             => left.Equals(right);

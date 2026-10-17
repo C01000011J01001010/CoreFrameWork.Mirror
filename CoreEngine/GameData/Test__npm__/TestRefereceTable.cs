@@ -28,7 +28,7 @@ namespace CoreEngine.GameData.Test
         {
             return new()
             {
-                new(TEST_INDEX, record => record.TestFK.ID)
+                new(TEST_INDEX, record => record.TestFK.TargetHashedPK)
             };
         }
     }
