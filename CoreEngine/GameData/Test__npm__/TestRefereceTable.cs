@@ -16,7 +16,7 @@ namespace CoreEngine.GameData.Test
         [TableColumn, SerializeField] private TestSpriteId spriteIdTest;
         [TableColumn, SerializeField] private TestSpriteId[] spriteIdArrayTest;
 
-        [TableColumn, SerializeField] private TestForeignKey testFK;
+        [SerializeField] private TestForeignKey testFK;
 
         public Sprite TestSprite => spriteIdTest.Get();
         public TestForeignKey TestFK => testFK;

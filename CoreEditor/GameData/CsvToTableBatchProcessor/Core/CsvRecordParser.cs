@@ -7,6 +7,7 @@ using CoreEngine.GameData;
 using CoreEditor.Helpers;
 using CoreEngine.Helpers;
 using CoreEditor.GameData.Validation;
+using UnityEngine;
 
 namespace CoreEditor.GameData
 {
@@ -17,11 +18,14 @@ namespace CoreEditor.GameData
         {
             string[] lines = csvText.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
 
-            // 1. 헤더 추출 및 C# 필드 캐싱
+            // 1. 헤더 추출 및 C# 필드 분리 캐싱 (전체 필드 vs [TableColumn] 필드)
             var headers = ExtractSchemaHeaders(lines, out int schemaRowIndex);
-            var csFields = GetTableColumnFields<TRecord>();
+            var allFields = GetAllRecordFields<TRecord>();
+            var tableColumnFields = allFields.Where(f => f.GetCustomAttribute<TableColumnAttribute>() != null).ToList();
 
-            ValidateAndMapFields(headers, csFields);
+            // CSV 컬럼은 [TableColumn] 필드와 매핑, FK는 전체 필드와 매핑
+            ValidateAndMapFields(headers, tableColumnFields);
+            var fkFieldMap = ValidateAndMapForeignKeys(metaData.foreignKeys, allFields);
 
             List<IRecord> temporaryRecords = new List<IRecord>();
             Dictionary<ulong, string> usedIdsMap = new Dictionary<ulong, string>();
@@ -44,8 +48,8 @@ namespace CoreEditor.GameData
                 // 4. ID 해시 충돌 및 중복 검사
                 ValidateKeyCollision(usedIdsMap, recordId, rawKey, row);
 
-                // 5. 다중 컬럼 외래키(FK) 조합 및 주입 (Newtonsoft 지원 딕셔너리 연동)
-                InjectForeignKeys(record, csFields, metaData.foreignKeys, rowRawValues, row);
+                // 5. 다중 컬럼 외래키(FK) 조합 및 주입
+                InjectForeignKeys(record, metaData.foreignKeys, fkFieldMap, rowRawValues, row);
 
                 // 6. 최종 등록 및 캐싱
                 usedIdsMap.Add(recordId, rawKey);
@@ -60,31 +64,63 @@ namespace CoreEditor.GameData
         #region 파싱 헬퍼 메서드
 
         /// <summary>
-        /// 레코드 타입의 모든 [TableColumn] 필드를 리플렉션으로 가져옵니다.
+        /// 레코드 타입의 모든 인스턴스 필드를 리플렉션으로 가져옵니다. ([TableColumn] 유무 무관)
         /// </summary>
-        private static List<FieldInfo> GetTableColumnFields<TRecord>()
+        private static List<FieldInfo> GetAllRecordFields<TRecord>()
         {
             const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
-            List<FieldInfo> csFields = new List<FieldInfo>();
+            List<FieldInfo> allFields = new List<FieldInfo>();
             Type currentType = typeof(TRecord);
 
-            while (currentType != null && currentType != typeof(object))
+            while (currentType != null && currentType != typeof(BaseRecord) && currentType != typeof(object))
             {
-                csFields.AddRange(currentType.GetFields(flags).Where(f => f.GetCustomAttribute<TableColumnAttribute>() != null));
+                allFields.AddRange(currentType.GetFields(flags));
                 currentType = currentType.BaseType;
             }
-            return csFields;
+            return allFields;
         }
 
-        private static void ValidateAndMapFields(List<CsvColumnSchema> csvHeaders, List<FieldInfo> csFields)
+        private static void ValidateAndMapFields(List<CsvColumnSchema> csvHeaders, List<FieldInfo> tableColumnFields)
         {
             foreach (var header in csvHeaders)
             {
-                FieldInfo matchedField = csFields.FirstOrDefault(f => string.Equals(f.Name, header.FieldName, StringComparison.OrdinalIgnoreCase));
-                if (matchedField == null) throw new Exception($"C# 클래스에 '{header.FieldName}' 필드가 없습니다.");
+                FieldInfo matchedField = tableColumnFields.FirstOrDefault(f => string.Equals(f.Name, header.FieldName, StringComparison.OrdinalIgnoreCase));
+                if (matchedField == null)
+                    throw new Exception($"C# 클래스에 [TableColumn]이 선언된 '{header.FieldName}' 필드가 없습니다.");
+
                 header.Field = matchedField;
                 header.FieldType = matchedField.FieldType;
             }
+        }
+
+        /// <summary>
+        /// 메타데이터에 정의된 외래키(FK) 이름이 C# 레코드 클래스의 필드와 일치하는지 사전 검증하고 캐싱합니다.
+        /// </summary>
+        private static Dictionary<string, FieldInfo> ValidateAndMapForeignKeys(
+            Dictionary<string, ForeignKeyMeta> foreignKeysMeta, List<FieldInfo> allFields)
+        {
+            var fkFieldMap = new Dictionary<string, FieldInfo>();
+            if (foreignKeysMeta == null || foreignKeysMeta.Count == 0) return fkFieldMap;
+
+            foreach (var kvp in foreignKeysMeta)
+            {
+                string fkFieldName = kvp.Key;
+                FieldInfo fkField = allFields.FirstOrDefault(f => f.Name == fkFieldName);
+
+                if (fkField == null)
+                {
+                    throw new Exception($"[FK 매핑 오류] 메타데이터의 FK 이름('{fkFieldName}')과 일치하는 C# 레코드 클래스의 필드가 없습니다! 파일명과 필드명을 확인해주세요.");
+                }
+
+                if (!fkField.IsPublic && fkField.GetCustomAttribute<SerializeField>() == null)
+                {
+                    throw new Exception($"[FK 직렬화 오류] C# 레코드의 '{fkFieldName}' 필드에 [SerializeField] 어트리뷰트가 누락되어 SO에 저장할 수 없습니다.");
+                }
+
+                fkFieldMap[fkFieldName] = fkField;
+            }
+
+            return fkFieldMap;
         }
 
         private static Dictionary<string, string> ParseRowFields<TRecord>(
@@ -161,7 +197,11 @@ namespace CoreEditor.GameData
         }
 
         private static void InjectForeignKeys<TRecord>(
-            TRecord record, List<FieldInfo> csFields, Dictionary<string, ForeignKeyMeta> foreignKeysMeta, Dictionary<string, string> rowRawValues, int row)
+            TRecord record,
+            Dictionary<string, ForeignKeyMeta> foreignKeysMeta,
+            Dictionary<string, FieldInfo> fkFieldMap,
+            Dictionary<string, string> rowRawValues,
+            int row)
         {
             if (foreignKeysMeta == null || foreignKeysMeta.Count == 0) return;
 
@@ -182,31 +222,22 @@ namespace CoreEditor.GameData
                 string rawFkKey = string.Join(Constants.KeySeparator, fkParts);
                 ulong targetFkId = HashHelper.StringToId(rawFkKey);
 
-                FieldInfo fkField = csFields.FirstOrDefault(f => f.Name == fkFieldName);
-                if (fkField == null)
-                {
-                    throw new Exception($"[FK 매핑 오류] 행 {row + 1}: 메타데이터의 FK 이름('{fkFieldName}')과 일치하는 C# 레코드 클래스의 필드가 없습니다! 파일명과 필드명을 확인해주세요.");
-                }
-
-                // 💡 [수정된 부분] 
-                // 1. 매개변수 없는 기본 생성자로 구조체(또는 클래스)를 먼저 생성합니다.
+                FieldInfo fkField = fkFieldMap[fkFieldName];
                 object fkInstance = Activator.CreateInstance(fkField.FieldType);
 
-                // 2. ForeignKey 구조체 내부의 모든 필드를 뒤져서 타입에 맞게 직접 값을 주입합니다.
                 FieldInfo[] internalFields = fkField.FieldType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 foreach (var field in internalFields)
                 {
                     if (field.FieldType == typeof(ulong))
                     {
-                        field.SetValue(fkInstance, targetFkId); // Hashcode 주입
+                        field.SetValue(fkInstance, targetFkId);
                     }
                     else if (field.FieldType == typeof(string))
                     {
-                        field.SetValue(fkInstance, rawFkKey); // Key 문자열 주입 (인스펙터 확인용)
+                        field.SetValue(fkInstance, rawFkKey);
                     }
                 }
 
-                // 3. 완성된 FK 객체를 레코드에 할당합니다.
                 fkField.SetValue(record, fkInstance);
             }
         }
