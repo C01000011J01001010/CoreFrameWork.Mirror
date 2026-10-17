@@ -128,7 +128,7 @@ namespace CoreEngine.GameData
         /// <summary>
         /// 타겟 ID를 나를 참조하고 있는 레코드 리스트를 반환
         /// </summary>
-        public List<TRecord> GetReferencingRecords(uint index, ulong targetId)
+        public List<TRecord> GetReferencingRecords(uint refIndex, ulong targetId)
         {
             if(_reverseIndexes == null)
             {
@@ -136,15 +136,15 @@ namespace CoreEngine.GameData
                 return null;
             }
 
-            if(!_reverseIndexes.TryGetValue(index, out var indexMap))
+            if(!_reverseIndexes.TryGetValue(refIndex, out var indexMap))
             {
-                LogHelper.LogWarning($"{GetType().Name}의 참조키 인덱스로 \"{index}\"가 유효하지 않습니다.");
+                LogHelper.LogWarning($"{GetType().Name}의 참조키 인덱스로 \"{refIndex}\"가 유효하지 않습니다.");
                 return null;
             }
 
             if (!indexMap.TryGetValue(targetId, out var resultList))
             {
-                LogHelper.LogWarning($"{GetType()}의 참조키 인덱스 \"{index}\"에서 id \"{targetId}\"를 참조하지 않습니다.");
+                LogHelper.LogWarning($"{GetType()}의 참조키 인덱스 \"{refIndex}\"에서 id \"{targetId}\"를 참조하지 않습니다.");
                 return null;
             }
 
