@@ -44,7 +44,7 @@ namespace CoreEditor.GameData
         private static void ProcessTableGeneric<TRecord>(ITableSetter tableSetter, TextAsset csvAsset)
             where TRecord : BaseRecord, IRecord, IEditorRecordSetup, new()
         {
-            // 0. 메타데이터(.json) 로드
+            // 0. 메타데이터(.csvmeta) 로드
             string csvPath = AssetDatabase.GetAssetPath(csvAsset);
             string metaPath = Path.ChangeExtension(csvPath, ".csvmeta");
 
@@ -55,7 +55,7 @@ namespace CoreEditor.GameData
             TableMetaData metaData = JsonConvert.DeserializeObject<TableMetaData>(metaText);
 
             if (metaData.primaryKey == null || metaData.primaryKey.Length == 0)
-                throw new Exception($"[메타 오류] {csvAsset.name}.json 에 기본키(PK)가 설정되어 있지 않습니다.");
+                throw new Exception($"[메타 오류] {csvAsset.name}.csvmeta 에 기본키(PK)가 설정되어 있지 않습니다.");
 
             // 1. 파싱 엔진을 통한 데이터 파싱
             var records = CsvRecordParser.Parse<TRecord>(csvAsset.text, metaData, out List<string> generatedRawKeys);
@@ -69,8 +69,8 @@ namespace CoreEditor.GameData
             tableSetter.BakePreloadCommands(bakedCommands);
             EditorUtility.SetDirty((UnityEngine.Object)tableSetter);
 
-            // 4. 상수 키 C# 스크립트 생성
-            KeyClassGenerator.Generate(csvAsset, typeof(TRecord), generatedRawKeys);
+            // 4. 테이블 클래스 기준 상수 키 C# 스크립트 생성
+            KeyClassGenerator.Generate(tableSetter, generatedRawKeys);
         }
     }
 }
