@@ -38,6 +38,16 @@ namespace CoreEditor.GameData
 
         private void OnEnable() => ScanProjectForTables();
 
+        private void OnDisable()
+        {
+            // 창이 닫히거나 에디터가 종료될 때 대기 중인 TableKeys.cs가 있다면 자동 생성
+            if (KeyClassGenerator.HasPendingScripts)
+            {
+                int count = KeyClassGenerator.FlushPendingScripts();
+                Debug.Log($"[CoreEditor] 창이 닫히면서 대기 중이던 {count}개의 TableKeys.cs 스크립트가 자동 생성되었습니다.");
+            }
+        }
+
         #region 에디터 윈도우 UI 렌더링
         private void OnGUI()
         {
@@ -153,11 +163,40 @@ namespace CoreEditor.GameData
         private void DrawBottomActions()
         {
             EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("🔄 전체 다시 스캔", GUILayout.Height(40))) ScanProjectForTables();
+
+            if (GUILayout.Button("🔄 전체 다시 스캔", GUILayout.Height(40)))
+            {
+                ScanProjectForTables();
+            }
 
             GUI.backgroundColor = Color.cyan;
-            if (GUILayout.Button("✨ 체크된 항목 일괄 변환", GUILayout.Height(40))) ExecuteBatchConversion();
+            if (GUILayout.Button("✨ 체크된 항목 일괄 변환", GUILayout.Height(40)))
+            {
+                ExecuteBatchConversion();
+            }
             GUI.backgroundColor = Color.white;
+
+            // TableKeys.cs 수동 생성 버튼 (대기열이 있을 때만 활성화)
+            bool hasPending = KeyClassGenerator.HasPendingScripts;
+            int pendingCount = KeyClassGenerator.PendingCount;
+
+            using (new EditorGUI.DisabledScope(!hasPending))
+            {
+                if (hasPending) GUI.backgroundColor = Color.yellow;
+
+                string buttonLabel = hasPending
+                    ? $"🔑 TableKeys.cs 생성 (대기: {pendingCount})"
+                    : "🔑 TableKeys.cs 생성 (대기: 0)";
+
+                if (GUILayout.Button(buttonLabel, GUILayout.Height(40), GUILayout.Width(220)))
+                {
+                    int generatedCount = KeyClassGenerator.FlushPendingScripts();
+                    this.ShowNotification(new GUIContent($"{generatedCount}개의 TableKeys.cs 생성 완료!"));
+                }
+
+                GUI.backgroundColor = Color.white;
+            }
+
             EditorGUILayout.EndHorizontal();
         }
         #endregion

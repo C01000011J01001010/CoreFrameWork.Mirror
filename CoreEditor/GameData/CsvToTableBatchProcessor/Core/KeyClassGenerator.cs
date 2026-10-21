@@ -11,7 +11,19 @@ namespace CoreEditor.GameData
 {
     public static class KeyClassGenerator
     {
-        internal static void Generate(ITableSetter tableSetter, List<string> rawKeys)
+        // Key: 생성될 파일의 전체 경로(outputPath), Value: 생성될 C# 코드 내용(codeContent)
+        private static readonly Dictionary<string, string> _pendingScripts = new Dictionary<string, string>();
+
+        /// <summary> 현재 생성 대기 중인 TableKeys.cs 파일 개수 </summary>
+        public static int PendingCount => _pendingScripts.Count;
+
+        /// <summary> 생성 대기 중인 TableKeys.cs 파일 존재 여부 </summary>
+        public static bool HasPendingScripts => _pendingScripts.Count > 0;
+
+        /// <summary>
+        /// 즉시 파일을 생성하지 않고 메모리 대기열에 TableKeys.cs 코드 데이터를 등록합니다.
+        /// </summary>
+        internal static void Enqueue(ITableSetter tableSetter, List<string> rawKeys)
         {
             if (tableSetter is not ScriptableObject tableSO)
                 throw new ArgumentException("[KeyClassGenerator] tableSetter가 ScriptableObject가 아닙니다.");
@@ -39,12 +51,47 @@ namespace CoreEditor.GameData
             // 3. C# 코드 빌드
             string codeContent = BuildClassContent(namespaceName, className, rawKeys);
 
-            // 기존 파일과 내용이 완전히 동일하면 불필요한 재컴파일 방지를 위해 덮어쓰지 않음
+            // 4. 디스크의 기존 파일과 내용이 완전히 동일하면 대기열에 넣지 않음 (이전 대기열에 있었다면 제거)
             if (File.Exists(outputPath) && File.ReadAllText(outputPath, Encoding.UTF8) == codeContent)
+            {
+                _pendingScripts.Remove(outputPath);
                 return;
+            }
 
-            File.WriteAllText(outputPath, codeContent, Encoding.UTF8);
-            AssetDatabase.ImportAsset(outputPath, ImportAssetOptions.ForceUpdate);
+            // 5. 대기열에 등록 (동일 경로가 이미 있으면 최신 내용으로 덮어쓰기)
+            _pendingScripts[outputPath] = codeContent;
+        }
+
+        /// <summary>
+        /// 대기열에 쌓인 모든 TableKeys.cs 파일을 디스크에 기록하고 단 한 번의 Refresh로 컴파일을 수행합니다.
+        /// </summary>
+        /// <returns>실제로 생성(갱신)된 스크립트 파일 개수</returns>
+        public static int FlushPendingScripts()
+        {
+            if (_pendingScripts.Count == 0)
+                return 0;
+
+            // Refresh() 호출 시 발생하는 OnDisable 재진입(무한 루프)을 방지하기 위해 복사본 생성 후 즉시 Clear
+            var scriptsToWrite = new Dictionary<string, string>(_pendingScripts);
+            _pendingScripts.Clear();
+
+            int writtenCount = 0;
+            foreach (var kvp in scriptsToWrite)
+            {
+                string outputPath = kvp.Key;
+                string codeContent = kvp.Value;
+
+                File.WriteAllText(outputPath, codeContent, Encoding.UTF8);
+                writtenCount++;
+            }
+
+            if (writtenCount > 0)
+            {
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+
+            return writtenCount;
         }
 
         private static string BuildClassContent(string namespaceName, string className, List<string> rawKeys)
@@ -74,7 +121,6 @@ namespace CoreEditor.GameData
                 ulong hashedPK = HashHelper.StringToId(rawKey);
                 string identifier = SanitizeIdentifier(rawKey);
 
-                // 변환된 변수명이 중복될 경우 접미사 추가
                 string uniqueIdentifier = identifier;
                 int suffix = 1;
                 while (!usedIdentifiers.Add(uniqueIdentifier))
@@ -96,12 +142,8 @@ namespace CoreEditor.GameData
             return sb.ToString();
         }
 
-        /// <summary>
-        /// 원본 키 문자열을 유효한 C# 상수 식별자 이름으로 변환합니다.
-        /// </summary>
         private static string SanitizeIdentifier(string rawKey)
         {
-            // 구분자(KeySeparator)를 언더스코어로 우선 치환
             string replaced = rawKey.Replace(Constants.KeySeparator, "_");
             StringBuilder sb = new StringBuilder(replaced.Length + 1);
 
@@ -121,7 +163,6 @@ namespace CoreEditor.GameData
             if (sb.Length == 0)
                 return "_EmptyKey";
 
-            // C# 식별자는 숫자로 시작할 수 없으므로 앞에 '_' 추가
             if (char.IsDigit(sb[0]))
             {
                 sb.Insert(0, '_');

@@ -69,8 +69,8 @@ namespace CoreEditor.GameData
             tableSetter.BakePreloadCommands(bakedCommands);
             EditorUtility.SetDirty((UnityEngine.Object)tableSetter);
 
-            // 4. 테이블 클래스 기준 상수 키 C# 스크립트 생성
-            KeyClassGenerator.Generate(tableSetter, generatedRawKeys);
+            // 4. 상수 키 C# 스크립트 생성 대기열에 등록 (즉시 컴파일 방지)
+            KeyClassGenerator.Enqueue(tableSetter, generatedRawKeys);
         }
     }
 }
