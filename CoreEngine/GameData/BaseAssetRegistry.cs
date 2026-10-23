@@ -9,10 +9,9 @@ using Object = UnityEngine.Object;
 namespace CoreEngine.GameData
 {
     /// <summary>
-    /// Type 안정성을 위해 제네릭 유지
+    /// Type 안정성 및 서브 에셋(Sprite 등) 정밀 로드를 지원하는 제네릭 레지스트리 베이스
     /// </summary>
-    public class BaseAssetRegistry<TAsset> : 
-        _AssetRegistry where TAsset : Object
+    public class BaseAssetRegistry<TAsset> : _AssetRegistry where TAsset : Object
     {
         [Serializable]
         public struct AssetEntry : IIdentifiable
@@ -27,57 +26,57 @@ namespace CoreEngine.GameData
         [SerializeField] private List<AssetEntry> _entries = new List<AssetEntry>();
 
         private Dictionary<ulong, string> _runtimeAddressDict;
-
-        // ResourceManager를 캐싱
         private ResourceManager _resourceManager;
 
         private void OnEnable()
         {
-            // 만약의 쓰레기 객체 정리용
             _runtimeAddressDict = null;
         }
 
         public override void InitializeRuntimeCache()
         {
-            // 매니저 캐싱 (단 1회 수행)
             _resourceManager = CoreFacade.GetManager<ResourceManager>();
             if (_resourceManager == null)
             {
                 Debug.LogError("[BaseAssetRegistry] ResourceManager를 찾을 수 없습니다!");
             }
 
-            // 주소 딕셔너리 구성
-            _runtimeAddressDict = new(_entries.Count);
+            _runtimeAddressDict = new Dictionary<ulong, string>(_entries.Count);
+            string cleanBaseDir = string.IsNullOrEmpty(_baseDirectory) ? string.Empty : _baseDirectory.TrimEnd('/');
+
             foreach (var entry in _entries)
             {
                 if (entry.Id > 0)
                 {
-                    _runtimeAddressDict.Add(entry.Id, $"{_baseDirectory}/{entry.PathDetail}");
+                    _runtimeAddressDict[entry.Id] = $"{cleanBaseDir}/{entry.PathDetail}";
                 }
             }
         }
 
-        public override Object GetAsset(ulong id)
+        public override Object GetAsset(ulong id) => GetTypedAsset(id);
+
+        /// <summary>
+        /// TAsset 타입을 명시하여 서브 에셋(Sprite 등)까지 정확히 동기 로드합니다.
+        /// </summary>
+        public TAsset GetTypedAsset(ulong id)
         {
             if (!TryGetValidAddress(id, out string address))
                 return null;
 
-            return _resourceManager?.LoadSceneAssetSync<Object>(address);
+            return _resourceManager?.LoadSceneAssetSync<TAsset>(address);
         }
 
-        public override Task<Object> LoadAssetAsync(ulong id)
-        {
-            if (!TryGetValidAddress(id, out string address))
-                return Task.FromResult<Object>(null);
+        public override async Task<Object> LoadAssetAsync(ulong id) => await LoadTypedAssetAsync(id);
 
-            if (_resourceManager != null)
-            {
-                return _resourceManager.LoadSceneAssetAsync<Object>(address);
-            }
-            else
-            {
-                return Task.FromResult<Object>(null);
-            }
+        /// <summary>
+        /// TAsset 타입을 명시하여 서브 에셋(Sprite 등)까지 정확히 비동기 로드합니다.
+        /// </summary>
+        public Task<TAsset> LoadTypedAssetAsync(ulong id)
+        {
+            if (!TryGetValidAddress(id, out string address) || _resourceManager == null)
+                return Task.FromResult<TAsset>(null);
+
+            return _resourceManager.LoadSceneAssetAsync<TAsset>(address);
         }
 
         public override void ReleaseAsset(ulong id)
@@ -85,7 +84,6 @@ namespace CoreEngine.GameData
             if (!TryGetValidAddress(id, out string address))
                 return;
 
-            // 캐싱된 ResourceManager를 통해 어드레서블 릴리즈 요청
             _resourceManager?.ReleaseSceneAsset(address);
         }
 
