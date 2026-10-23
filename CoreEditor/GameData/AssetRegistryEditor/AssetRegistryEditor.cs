@@ -1,10 +1,11 @@
+using CoreEngine.GameData;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
-using CoreEngine.GameData;
 using Object = UnityEngine.Object;
 
 namespace CoreEditor.GameData
@@ -139,9 +140,37 @@ namespace CoreEditor.GameData
             }
 
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.PropertyField(baseDirProp, new GUIContent("📁 관리 대상 루트 폴더"));
 
-            if (GUILayout.Button("📂", GUILayout.Width(30)))
+            string fullPath = baseDirProp.stringValue;
+            string folderName = string.IsNullOrEmpty(fullPath)
+                ? "(설정되지 않음)"
+                : Path.GetFileName(fullPath.TrimEnd('/', '\\'));
+
+            GUI.enabled = false;
+            EditorGUILayout.TextField(new GUIContent("📁 관리 대상 폴더"), folderName);
+            GUI.enabled = true;
+
+            // 🎯 [추가] 프로젝트 창에서 해당 폴더를 핑(Ping)하고 선택하는 버튼
+            if (GUILayout.Button(new GUIContent("🎯", "프로젝트 창에서 폴더 위치 찾기"), GUILayout.Width(30)))
+            {
+                string folderPath = baseDirProp.stringValue;
+                if (!string.IsNullOrEmpty(folderPath))
+                {
+                    // 경로에 해당하는 폴더 객체(DefaultAsset)를 로드
+                    Object folderObj = AssetDatabase.LoadAssetAtPath<Object>(folderPath);
+                    if (folderObj != null)
+                    {
+                        EditorGUIUtility.PingObject(folderObj);
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[AssetRegistry] 경로에 해당하는 폴더를 찾을 수 없습니다: {folderPath}");
+                    }
+                }
+            }
+
+            // 기존 폴더 탐색기(OS 폴더 열기) 버튼
+            if (GUILayout.Button(new GUIContent("📂", "OS 탐색기에서 폴더 열기"), GUILayout.Width(30)))
             {
                 string path = EditorUtility.OpenFolderPanel("관리할 에셋 폴더 선택", Application.dataPath, "");
                 if (!string.IsNullOrEmpty(path) && path.StartsWith(Application.dataPath))
