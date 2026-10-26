@@ -8,9 +8,6 @@ using Object = UnityEngine.Object;
 
 namespace CoreEditor.GameData
 {
-    /// <summary>
-    /// 관리 대상 폴더를 스캔하여 B+Tree 구조 및 에셋 상태를 진단합니다.
-    /// </summary>
     public class AssetRegistryScanner
     {
         public RegistryScanReport Scan(string rawBaseDir, Type assetType)
@@ -27,19 +24,10 @@ namespace CoreEditor.GameData
             report.IsValidDirectory = true;
             report.BaseDirectory = baseDir;
 
-            // 1. 디렉터리 트리 구성
             Dictionary<string, FolderNode> folderMap = BuildFolderTree(baseDir, report);
-
-            // 2. 에셋 스캔 및 분류
             ScanAndClassifyAssets(baseDir, assetType, folderMap, report);
-
-            // 3. Bottom-Up 서브트리 [MinId, MaxId] 계산 및 자식 노드 정렬
             ComputeSubtreeRangesRecursive(report.RootNode);
-
-            // 4. 형제 서브트리 간 [MinId ~ MaxId] 대역 교차 검사
             DetectRangeConflictsRecursive(report.RootNode, report.RangeConflicts);
-
-            // 5. 정렬된 단말(Leaf) 폴더 수집 및 안전 허용 슬롯 계산
             CollectSortedLeavesRecursive(report.RootNode, report.LeafNodes);
             ComputeAllowedSlotsForLeaves(report.LeafNodes);
 
@@ -121,6 +109,10 @@ namespace CoreEditor.GameData
                 string path = AssetDatabase.GUIDToAssetPath(guid).Replace('\\', '/');
                 if (AssetDatabase.IsValidFolder(path)) continue;
 
+                string fileName = Path.GetFileName(path);
+                // 숨김 메타/로그 파일(.regimeta, .regilog 등)은 스캔 대상에서 제외
+                if (fileName.StartsWith(".", StringComparison.Ordinal)) continue;
+
                 int targetAssetCount = CountTargetAssetsAtPath(path, assetType);
                 string folderPath = Path.GetDirectoryName(path)?.Replace('\\', '/') ?? baseDir;
 
@@ -134,7 +126,7 @@ namespace CoreEditor.GameData
                     Guid = guid,
                     AssetPath = path,
                     FolderPath = folderPath,
-                    FileName = Path.GetFileName(path),
+                    FileName = fileName,
                     Extension = Path.GetExtension(path),
                     PathDetail = path.Substring(baseDir.Length + 1),
                     TargetAssetCount = targetAssetCount
@@ -164,7 +156,6 @@ namespace CoreEditor.GameData
                     info.NameWithoutId = nameWithoutExt;
                 }
 
-                // B+Tree 규칙 1: 비단말(Internal) 폴더에는 에셋 배치 불가
                 if (!parentFolder.IsLeaf)
                 {
                     report.NonLeafAssetsViolation.Add(info);

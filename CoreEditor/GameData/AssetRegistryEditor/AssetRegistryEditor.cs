@@ -1,4 +1,3 @@
-using CoreEngine.GameData;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,6 +5,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using CoreEngine.GameData;
 using Object = UnityEngine.Object;
 
 namespace CoreEditor.GameData
@@ -32,8 +32,10 @@ namespace CoreEditor.GameData
         private readonly AssetRegistryValidator _validator = new();
         private readonly AssetRegistryNamingService _namingService = new();
         private readonly AssetRegistryAddressableBaker _baker = new();
+        private readonly AssetRegistryLogService _logService = new();
 
         private Type _assetType;
+        private string _targetSoGuid;
         private RegistryScanReport _report = new();
 
         private readonly Dictionary<string, LeafFolderUIState> _leafUIStates = new();
@@ -45,6 +47,8 @@ namespace CoreEditor.GameData
         #region 생명주기
         private void OnEnable()
         {
+            _targetSoGuid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(target));
+
             Type current = target.GetType();
             while (current != null && (!current.IsGenericType || current.GetGenericTypeDefinition() != typeof(BaseAssetRegistry<>)))
             {
@@ -60,7 +64,8 @@ namespace CoreEditor.GameData
             serializedObject.Update();
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField($"📇 Asset Registry [{_assetType?.Name ?? "Unknown"}]", EditorStyles.boldLabel);
+            string revBadge = _report.HasRegiMeta ? $" (Rev {_report.CurrentRevision})" : " (Unbaked)";
+            EditorGUILayout.LabelField($"📇 Asset Registry [{_assetType?.Name ?? "Unknown"}]{revBadge}", EditorStyles.boldLabel);
             EditorGUILayout.Space();
 
             DrawTopSettings();
@@ -91,6 +96,11 @@ namespace CoreEditor.GameData
             string baseDir = baseDirProp != null ? baseDirProp.stringValue : string.Empty;
 
             _report = _scanner.Scan(baseDir, _assetType);
+            if (_report.IsValidDirectory)
+            {
+                _logService.InspectMetaState(_report.BaseDirectory, _targetSoGuid, _report);
+            }
+
             SyncLeafUIStates();
             Repaint();
         }
@@ -103,11 +113,16 @@ namespace CoreEditor.GameData
 
             // 2. 레지스트리 데이터 베이킹 및 어드레서블 그룹 동기화/정렬
             _baker.BakeAndSync(serializedObject, target, _report);
+
+            // 3. .regimeta 및 .regilog 스냅샷 기록 (실제 변경 시에만 Revision +1)
+            int committedRev = _logService.CommitSyncLog(target, _targetSoGuid, _assetType, _report);
+            Refresh();
+
+            Debug.Log($"[AssetRegistry] .regimeta & .regilog 기록 완료 (Current Revision: {committedRev})");
         }
 
         private void ExecuteStrideWorkflow(List<FolderNode> activeLeaves, ulong baseStartId, ulong stride)
         {
-            // UI에서 사용자가 드래그해 둔 순서가 있으면 추출하여 전달
             Dictionary<string, List<AssetInfo>> customOrders = new();
             foreach (var leaf in activeLeaves)
             {
@@ -141,36 +156,37 @@ namespace CoreEditor.GameData
 
             EditorGUILayout.BeginHorizontal();
 
+            // 전체 경로 대신 가장 마지막 폴더명만 추출하여 읽기 전용으로 표시 (툴팁으로 전체 경로 제공)
             string fullPath = baseDirProp.stringValue;
             string folderName = string.IsNullOrEmpty(fullPath)
                 ? "(설정되지 않음)"
                 : Path.GetFileName(fullPath.TrimEnd('/', '\\'));
 
             GUI.enabled = false;
-            EditorGUILayout.TextField(new GUIContent("📁 관리 대상 폴더"), folderName);
+            EditorGUILayout.TextField(
+                new GUIContent("📁 관리 대상 루트 폴더", fullPath),
+                folderName);
             GUI.enabled = true;
 
-            // 🎯 [추가] 프로젝트 창에서 해당 폴더를 핑(Ping)하고 선택하는 버튼
-            if (GUILayout.Button(new GUIContent("🎯", "프로젝트 창에서 폴더 위치 찾기"), GUILayout.Width(30)))
+            // 🎯 인스펙터 이동 없이 프로젝트 뷰에서 해당 루트 폴더만 핑(Ping)
+            if (GUILayout.Button(new GUIContent("🎯", "프로젝트 창에서 폴더 위치 핑(Ping)"), GUILayout.Width(30)))
             {
-                string folderPath = baseDirProp.stringValue;
-                if (!string.IsNullOrEmpty(folderPath))
+                if (!string.IsNullOrEmpty(fullPath))
                 {
-                    // 경로에 해당하는 폴더 객체(DefaultAsset)를 로드
-                    Object folderObj = AssetDatabase.LoadAssetAtPath<Object>(folderPath);
+                    Object folderObj = AssetDatabase.LoadAssetAtPath<Object>(fullPath);
                     if (folderObj != null)
                     {
                         EditorGUIUtility.PingObject(folderObj);
                     }
                     else
                     {
-                        Debug.LogWarning($"[AssetRegistry] 경로에 해당하는 폴더를 찾을 수 없습니다: {folderPath}");
+                        Debug.LogWarning($"[AssetRegistry] 경로에 해당하는 폴더를 찾을 수 없습니다: {fullPath}");
                     }
                 }
             }
 
-            // 기존 폴더 탐색기(OS 폴더 열기) 버튼
-            if (GUILayout.Button(new GUIContent("📂", "OS 탐색기에서 폴더 열기"), GUILayout.Width(30)))
+            // 📂 폴더 선택 창 열기
+            if (GUILayout.Button(new GUIContent("📂", "관리할 루트 폴더 변경"), GUILayout.Width(30)))
             {
                 string path = EditorUtility.OpenFolderPanel("관리할 에셋 폴더 선택", Application.dataPath, "");
                 if (!string.IsNullOrEmpty(path) && path.StartsWith(Application.dataPath))
@@ -193,6 +209,7 @@ namespace CoreEditor.GameData
 
             int renameNeededCount = _report.RenameNeededFolderCount;
             GUI.enabled = renameNeededCount > 0
+                          && !_report.HasOwnerMismatch
                           && _report.RangeConflicts.Count == 0
                           && _report.NonLeafAssetsViolation.Count == 0;
 
@@ -213,6 +230,7 @@ namespace CoreEditor.GameData
             EditorGUILayout.LabelField("📊 B+Tree 스캔 결과 요약", EditorStyles.boldLabel);
             EditorGUILayout.BeginVertical("box");
 
+            DrawSummaryLine("🔖 현재 기록된 Revision (.regilog)", _report.CurrentRevision, Color.cyan, "Rev ");
             DrawSummaryLine("✅ 정상 등록 대기 에셋", _report.ValidAssets.Count, Color.green);
             DrawSummaryLine("🌿 단말(Leaf) 폴더 수", _report.LeafNodes.Count, Color.cyan);
             DrawSummaryLine("🚫 잘못된 파일 타입", _report.InvalidTypeAssets.Count, Color.red);
@@ -225,12 +243,12 @@ namespace CoreEditor.GameData
             EditorGUILayout.EndVertical();
         }
 
-        private static void DrawSummaryLine(string label, int count, Color color)
+        private static void DrawSummaryLine(string label, int count, Color color, string prefix = "")
         {
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(label, GUILayout.Width(210));
             GUI.contentColor = count > 0 ? color : Color.white;
-            EditorGUILayout.LabelField($"{count}건");
+            EditorGUILayout.LabelField(string.IsNullOrEmpty(prefix) ? $"{count}건" : $"{prefix}{count}");
             GUI.contentColor = Color.white;
             EditorGUILayout.EndHorizontal();
         }
@@ -239,6 +257,8 @@ namespace CoreEditor.GameData
         #region UI 렌더링: Stride 일괄 배분 도구
         private void DrawStrideAllocationSection()
         {
+            if (_report.HasOwnerMismatch) return;
+
             List<FolderNode> activeLeaves = _report.LeafNodes.Where(l => l.AllTargetAssets.Count > 0).ToList();
             if (activeLeaves.Count == 0) return;
 
@@ -318,6 +338,20 @@ namespace CoreEditor.GameData
 
             EditorGUILayout.LabelField("🚨 구조 및 정책 위반 항목", EditorStyles.boldLabel);
 
+            // 0. .regimeta 레지스트리 소유권 충돌
+            if (_report.HasOwnerMismatch)
+            {
+                EditorGUILayout.BeginVertical("box");
+                GUI.contentColor = Color.red;
+                EditorGUILayout.LabelField("[🔒 레지스트리 소유권 충돌] 다른 레지스트리 에셋이 관리 중인 폴더입니다!");
+                GUI.contentColor = Color.white;
+                EditorGUILayout.HelpBox(
+                    $"이 폴더의 .regimeta에는 '{_report.OwnerRegistryName}' (GUID: {_report.OwnerRegistryGuid})가 소유자로 등록되어 있습니다.\n" +
+                    "올바른 폴더를 다시 선택하거나, 기존 레지스트리를 폐기한 경우에만 루트 폴더의 .regimeta 파일을 수동 삭제하세요.",
+                    MessageType.Error);
+                EditorGUILayout.EndVertical();
+            }
+
             // 1. 타입 불일치 에셋
             if (_report.InvalidTypeAssets.Count > 0)
             {
@@ -330,7 +364,7 @@ namespace CoreEditor.GameData
                 {
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.LabelField($" └─ {asset.PathDetail}", EditorStyles.miniLabel);
-                    if (GUILayout.Button("선택", GUILayout.Width(50))) PingAsset(asset.AssetPath);
+                    if (GUILayout.Button("🎯 핑", GUILayout.Width(50))) PingAsset(asset.AssetPath);
                     if (GUILayout.Button("🗑️ 삭제", GUILayout.Width(65)))
                     {
                         _namingService.MoveAssetToTrash(asset);
@@ -354,7 +388,7 @@ namespace CoreEditor.GameData
                 {
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.LabelField($" └─ {asset.PathDetail} ({asset.TargetAssetCount}개 포함됨)", EditorStyles.miniLabel);
-                    if (GUILayout.Button("선택", GUILayout.Width(50))) PingAsset(asset.AssetPath);
+                    if (GUILayout.Button("🎯 핑", GUILayout.Width(50))) PingAsset(asset.AssetPath);
                     EditorGUILayout.EndHorizontal();
                 }
                 EditorGUILayout.EndVertical();
@@ -372,7 +406,7 @@ namespace CoreEditor.GameData
                 {
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.LabelField($" └─ {asset.PathDetail}", EditorStyles.miniLabel);
-                    if (GUILayout.Button("선택", GUILayout.Width(50))) PingAsset(asset.AssetPath);
+                    if (GUILayout.Button("🎯 핑", GUILayout.Width(50))) PingAsset(asset.AssetPath);
                     EditorGUILayout.EndHorizontal();
                 }
                 EditorGUILayout.EndVertical();
@@ -393,7 +427,7 @@ namespace CoreEditor.GameData
                     {
                         EditorGUILayout.BeginHorizontal();
                         EditorGUILayout.LabelField($"   └─ {asset.PathDetail}", EditorStyles.miniLabel);
-                        if (GUILayout.Button("선택", GUILayout.Width(50))) PingAsset(asset.AssetPath);
+                        if (GUILayout.Button("🎯 핑", GUILayout.Width(50))) PingAsset(asset.AssetPath);
                         if (GUILayout.Button("🔄 ID 회수", GUILayout.Width(80)))
                         {
                             _namingService.RevokeId(asset);
@@ -430,7 +464,7 @@ namespace CoreEditor.GameData
         #region UI 렌더링: 단말 폴더별 ReorderableList 관리
         private void DrawLeafFoldersManagementSection()
         {
-            if (_report.LeafNodes.Count == 0) return;
+            if (_report.HasOwnerMismatch || _report.LeafNodes.Count == 0) return;
 
             EditorGUILayout.LabelField("🗂️ 단말(Leaf) 폴더별 에셋 순서 및 일괄 ID 관리", EditorStyles.boldLabel);
 
@@ -447,6 +481,7 @@ namespace CoreEditor.GameData
                 string missingBadge = hasMissing ? $" ⚠️ 신규 {leaf.MissingIdAssets.Count}건" : " ✅ 완료";
                 string renameBadge = leaf.NeedsRename ? $" (예정 폴더명: {leaf.ExpectedFolderName})" : "";
 
+                EditorGUILayout.BeginHorizontal();
                 GUI.contentColor = hasMissing ? Color.yellow : Color.white;
                 uiState.IsExpanded = EditorGUILayout.Foldout(
                     uiState.IsExpanded,
@@ -454,6 +489,12 @@ namespace CoreEditor.GameData
                     true,
                     EditorStyles.foldoutHeader);
                 GUI.contentColor = Color.white;
+
+                if (GUILayout.Button(new GUIContent("🎯", "이 단말 폴더 위치 핑(Ping)"), GUILayout.Width(28)))
+                {
+                    PingAsset(leaf.FolderPath);
+                }
+                EditorGUILayout.EndHorizontal();
 
                 if (uiState.IsExpanded)
                 {
@@ -589,7 +630,7 @@ namespace CoreEditor.GameData
             GUI.backgroundColor = canSync ? Color.cyan : Color.gray;
 
             string btnText = canSync
-                ? "🚀 B+Tree 폴더명 동기화 및 어드레서블 그룹 정렬/베이킹"
+                ? "🚀 B+Tree 폴더명 동기화 · 어드레서블 베이킹 · .regilog 기록"
                 : $"🔒 미해결 항목({_report.TotalIssueCount}건) 해결 후 동기화 가능";
 
             if (GUILayout.Button(btnText, GUILayout.Height(40)))
@@ -603,7 +644,7 @@ namespace CoreEditor.GameData
         }
         #endregion
 
-        #region ReorderableList 바인딩 헬퍼
+        #region ReorderableList 바인딩 & 핑 헬퍼
         private void SyncLeafUIStates()
         {
             foreach (var leaf in _report.LeafNodes)
@@ -675,7 +716,7 @@ namespace CoreEditor.GameData
                     Rect btnRect = new Rect(rect.x + rect.width - 50, rect.y, 50, rect.height - 2);
 
                     EditorGUI.LabelField(leftRect, $"{index + 1}. {item.FileName}  ➔  {previewName}", EditorStyles.miniLabel);
-                    if (GUI.Button(btnRect, "선택", EditorStyles.miniButton))
+                    if (GUI.Button(btnRect, "🎯 핑", EditorStyles.miniButton))
                     {
                         PingAsset(item.AssetPath);
                     }
@@ -683,12 +724,14 @@ namespace CoreEditor.GameData
             };
         }
 
+        /// <summary>
+        /// 인스펙터 포커스(Selection)를 바꾸지 않고 프로젝트 뷰에서 위치만 핑(Ping)합니다.
+        /// </summary>
         private static void PingAsset(string assetPath)
         {
             Object obj = AssetDatabase.LoadMainAssetAtPath(assetPath);
             if (obj != null)
             {
-                Selection.activeObject = obj;
                 EditorGUIUtility.PingObject(obj);
             }
         }
