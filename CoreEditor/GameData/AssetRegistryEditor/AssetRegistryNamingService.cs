@@ -111,52 +111,101 @@ namespace CoreEditor.GameData
         }
 
         /// <summary>
-        /// 동일 폴더 내 파일명 충돌을 막기 위해 임시 이름을 거치는 2단계 일괄 리네임
+            /// 파일명 충돌 여부를 먼저 판별하고, StartAssetEditing 세션을 분리하여 안전하게 일괄 리네임합니다.
         /// </summary>
         public void ExecuteTwoPhaseAssetRename(IReadOnlyList<(AssetInfo asset, ulong newId)> plan)
         {
             if (plan == null || plan.Count == 0) return;
 
-            List<(string tempPath, string finalName)> phase2List = new(plan.Count);
-
-            AssetDatabase.StartAssetEditing();
-            try
+                  // 현재 폴더 내에 존재하는 모든 파일 경로 집합 (대소문자 구분 없이 충돌 검사)
+            HashSet<string> existingPaths = new(StringComparer.OrdinalIgnoreCase);
+            foreach (var (asset, _) in plan)
             {
-                // Phase 1: 임시 파일명으로 변경
-                foreach (var (asset, newId) in plan)
+                existingPaths.Add(asset.AssetPath);
+            }
+
+            List<(AssetInfo asset, string finalName)> directRenameList = new();
+            List<(string guid, string assetPath, string tempName, string finalName)> twoPhaseList = new();
+
+            foreach (var (asset, newId) in plan)
+            {
+                string cleanName = AssetNamingUtility.StripTempPrefix(asset.NameWithoutId).TrimStart('_');
+                string finalName = $"{newId}_{cleanName}";
+
+                        // 이미 목표 파일명과 완전히 같다면 건너뜀
+                if (Path.GetFileNameWithoutExtension(asset.AssetPath) == finalName)
+                    continue;
+
+                string targetPath = $"{asset.FolderPath}/{finalName}{asset.Extension}";
+
+                        // 목표 경로에 이미 다른 에셋 파일이 존재하는 경우에만 2-Phase(__TMP_) 리네임 수행
+                bool hasCollision = existingPaths.Contains(targetPath)
+                                    || AssetDatabase.LoadMainAssetAtPath(targetPath) != null;
+
+                if (hasCollision)
                 {
-                    string cleanName = asset.NameWithoutId.TrimStart('_');
-                    string finalName = $"{newId}_{cleanName}";
-
-                    if (Path.GetFileNameWithoutExtension(asset.AssetPath) == finalName)
-                        continue;
-
                     string tempName = $"__TMP_{asset.Guid}_{cleanName}";
-                    string err = AssetDatabase.RenameAsset(asset.AssetPath, tempName);
-                    if (string.IsNullOrEmpty(err))
-                    {
-                        string tempPath = $"{asset.FolderPath}/{tempName}{asset.Extension}";
-                        phase2List.Add((tempPath, finalName));
-                    }
-                    else
-                    {
-                        Debug.LogError($"[AssetRegistry] 임시 파일명 변경 실패 ({asset.AssetPath}): {err}");
-                    }
+                    twoPhaseList.Add((asset.Guid, asset.AssetPath, tempName, finalName));
                 }
-
-                // Phase 2: 최종 '{newId}_{cleanName}'으로 변경
-                foreach (var (tempPath, finalName) in phase2List)
+                else
                 {
-                    string err = AssetDatabase.RenameAsset(tempPath, finalName);
-                    if (!string.IsNullOrEmpty(err))
-                    {
-                        Debug.LogError($"[AssetRegistry] 최종 파일명 변경 실패 ({tempPath} -> {finalName}): {err}");
-                    }
+                    directRenameList.Add((asset, finalName));
                 }
             }
-            finally
+
+                  //1. 충돌이 없는 일반 에셋들은 1-Phase로 즉시 변경 + 충돌 에셋들의 Phase 1(임시 이름 변경) 수행
+            if (directRenameList.Count > 0 || twoPhaseList.Count > 0)
             {
-                AssetDatabase.StopAssetEditing();
+                AssetDatabase.StartAssetEditing();
+                try
+                {
+                    foreach (var (asset, finalName) in directRenameList)
+                    {
+                        string err = AssetDatabase.RenameAsset(asset.AssetPath, finalName);
+                        if (!string.IsNullOrEmpty(err))
+                        {
+                            Debug.LogError($"[AssetRegistry] 파일명 변경 실패 ({asset.AssetPath} -> {finalName}): {err}");
+                        }
+                    }
+
+                    foreach (var item in twoPhaseList)
+                    {
+                        string err = AssetDatabase.RenameAsset(item.assetPath, item.tempName);
+                        if (!string.IsNullOrEmpty(err))
+                        {
+                            Debug.LogError($"[AssetRegistry] 임시 파일명 변경 실패 ({item.assetPath}): {err}");
+                        }
+                    }
+                }
+                finally
+                {
+                              // StopAssetEditing()이 호출되면서 AssetDatabase 내부 경로 테이블이 최신화됨
+                    AssetDatabase.StopAssetEditing();
+                }
+            }
+
+                  // 2. 충돌 에셋들이 있는 경우, 갱신된 GUID 경로를 조회하여 Phase 2(최종 이름 변경) 수행
+            if (twoPhaseList.Count > 0)
+            {
+                AssetDatabase.StartAssetEditing();
+                try
+                {
+                    foreach (var item in twoPhaseList)
+                    {
+                        string currentTempPath = AssetDatabase.GUIDToAssetPath(item.guid);
+                        if (string.IsNullOrEmpty(currentTempPath)) continue;
+
+                        string err = AssetDatabase.RenameAsset(currentTempPath, item.finalName);
+                        if (!string.IsNullOrEmpty(err))
+                        {
+                            Debug.LogError($"[AssetRegistry] 최종 파일명 변경 실패 ({currentTempPath} -> {item.finalName}): {err}");
+                        }
+                    }
+                }
+                finally
+                {
+                    AssetDatabase.StopAssetEditing();
+                }
             }
 
             AssetDatabase.SaveAssets();

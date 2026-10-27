@@ -107,20 +107,42 @@ namespace CoreEditor.GameData
         public int RenameNeededFolderCount => AllNodes.Count(n => n.NeedsRename);
     }
 
+    /// <summary>
+      /// 파일 및 폴더명의 '{ulong}_{Name}' 규칙 파싱 및 임시 접두사 복구 유틸리티
+    /// </summary>
     public static class AssetNamingUtility
     {
+        private const string TempPrefix = "__TMP_";
+
+        /// <summary>
+            /// 이전 작업 중단으로 남아있는 '__TMP_{GUID}_' 접두사가 있다면 제거하고 원래 이름을 반환합니다.
+        /// </summary>
+        public static string StripTempPrefix(string name)
+        {
+            if (string.IsNullOrEmpty(name) || !name.StartsWith(TempPrefix, StringComparison.Ordinal))
+                return name;
+
+            int secondUnderscoreAfterTmp = name.IndexOf('_', TempPrefix.Length);
+            if (secondUnderscoreAfterTmp > TempPrefix.Length)
+            {
+                return name.Substring(secondUnderscoreAfterTmp + 1);
+            }
+
+            return name;
+        }
+
         public static bool TryParseIdPrefix(string name, out ulong id, out string cleanName)
         {
             id = 0;
-            cleanName = name;
+            cleanName = StripTempPrefix(name);
 
-            if (string.IsNullOrEmpty(name)) return false;
+            if (string.IsNullOrEmpty(cleanName)) return false;
 
-            int underscoreIdx = name.IndexOf('_');
-            if (underscoreIdx > 0 && ulong.TryParse(name.Substring(0, underscoreIdx), out ulong parsedId))
+            int underscoreIdx = cleanName.IndexOf('_');
+            if (underscoreIdx > 0 && ulong.TryParse(cleanName.Substring(0, underscoreIdx), out ulong parsedId))
             {
                 id = parsedId;
-                cleanName = name.Substring(underscoreIdx + 1);
+                cleanName = cleanName.Substring(underscoreIdx + 1);
                 return true;
             }
 
