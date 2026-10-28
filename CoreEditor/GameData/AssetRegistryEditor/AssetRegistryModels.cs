@@ -29,6 +29,9 @@ namespace CoreEditor.GameData
         public List<AssetInfo> Assets = new();
     }
 
+    /// <summary>
+      /// B+Tree 디렉터리 노드 모델
+    /// </summary>
     public class FolderNode
     {
         public string FolderPath;
@@ -43,16 +46,24 @@ namespace CoreEditor.GameData
         public List<FolderNode> Children = new();
         public bool IsLeaf => Children.Count == 0;
 
+            // 해당 폴더 직속 타깃 에셋 목록
         public List<AssetInfo> AllTargetAssets = new();
         public List<AssetInfo> ValidIdAssets = new();
         public List<AssetInfo> MissingIdAssets = new();
 
+            // B+Tree 서브트리 대역 정보
         public bool HasValidIds;
         public ulong SubtreeMinId = ulong.MaxValue;
         public ulong SubtreeMaxId = 0;
 
+            // 단말 폴더 전용: 인접 단말 폴더 기준 안전 허용 대역
         public ulong AllowedMinId = 1ul;
         public ulong AllowedMaxId = ulong.MaxValue;
+
+            // 💡 [추가] 상위 폴더에서 하위 서브트리의 상태를 요약 표시하기 위한 집계 프로퍼티
+        public int SubtreeLeafCount => IsLeaf ? 1 : Children.Sum(c => c.SubtreeLeafCount);
+        public int SubtreeTotalAssetCount => IsLeaf ? AllTargetAssets.Count : Children.Sum(c => c.SubtreeTotalAssetCount);
+        public int SubtreeMissingIdCount => IsLeaf ? MissingIdAssets.Count : Children.Sum(c => c.SubtreeMissingIdCount);
 
         public string ExpectedFolderName => IsRoot
             ? FolderName
